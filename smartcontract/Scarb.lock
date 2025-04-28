@@ -139,5 +139,8 @@ name = "stark_overflow"
 version = "0.1.0"
 dependencies = [
  "openzeppelin",
+ "openzeppelin_access",
+ "openzeppelin_token",
+ "openzeppelin_upgrades",
  "snforge_std",
 ]

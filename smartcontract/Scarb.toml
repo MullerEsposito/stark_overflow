@@ -6,12 +6,17 @@ edition = "2023_11"
 # See more keys and their definitions at https://docs.swmansion.com/scarb/docs/reference/manifest.html
 
 [dependencies]
-starknet = "2.10.1"
+starknet = "2.9.2"
+# OpenZeppelin base
 openzeppelin = "0.20.0"
+# Dependencias específicas para el token ERC20 de gobernanza
+openzeppelin_token = "0.20.0"
+openzeppelin_access = "0.20.0"
+openzeppelin_upgrades = "0.20.0"
 
 [dev-dependencies]
 snforge_std = "0.38.3"
-assert_macros = "2.10.1"
+assert_macros = "2.9.2"
 
 [profile.dev.cairo]
 unstable-add-statements-code-locations-debug-info = true
