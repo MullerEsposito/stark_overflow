@@ -44,7 +44,6 @@ pub trait IStarkOverflowToken<TContractState> {
 
 #[starknet::contract]
 mod StarkOverflowToken {
-    use openzeppelin_token::erc20::interface::{IERC20, IERC20Metadata};
     use starknet::{ContractAddress, get_caller_address, get_contract_address, storage::Map};
     use core::traits::Into;
     use core::array::ArrayTrait;
