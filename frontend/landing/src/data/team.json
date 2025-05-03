@@ -4,20 +4,20 @@
     "role": "Founder & CEO",
     "description": "Fullstack and Smartcontract Developer.",
     "image": "https://avatars.githubusercontent.com/u/20048394?v=4",
-    "socials": {
-      "linkedin": "https://linkedin.com/in/mulleresposito",
-      "github": "https://github.com/mulleresposito",
-      "x": "https://x.com/mulleresposito"
-    }
+    "socials": [
+      { "provider": "linkedin", "url": "https://linkedin.com/in/mulleresposito" },
+      { "provider": "github", "url": "https://github.com/mulleresposito" },
+      { "provider": "x", "url": "https://x.com/mulleresposito" }
+    ]
   },
   {
     "name": "Arnaelcio Gomes",
     "role": "Co-Founder & CTO",
     "description": "Fullstack Developer.",
     "image": "https://avatars.githubusercontent.com/u/69821849?v=4",
-    "socials": {
-      "linkedin": "https://www.linkedin.com/in/arnaelciogomespereira/",
-      "github": "https://github.com/arnaelcio"
-    }
+    "socials": [
+      { "provider": "linkedin", "url": "https://www.linkedin.com/in/arnaelciogomespereira/" },
+      { "provider": "github", "url": "https://github.com/arnaelcio" }
+    ]
   }
 ]

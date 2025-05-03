@@ -7,12 +7,9 @@ export interface MemberCardProps {
   description: string;
   image: string;
   socials: {
-    linkedin?: string;
-    facebook?: string;
-    instagram?: string;
-    github?: string;
-    x?: string;
-  };
+    provider: string
+    url: string
+  }[];
 }
 
 export function MemberCard({ name, role, description, image, socials }: MemberCardProps) {

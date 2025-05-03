@@ -26,6 +26,7 @@
     "baseUrl": "src",
     "paths": {
       "@logos/*": ["assets/logos/*"],
+      "@components/*": ["components/*"],
     }
   },
   "include": ["src"]
