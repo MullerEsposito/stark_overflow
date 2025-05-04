@@ -90,6 +90,9 @@ mod StarkOverflowToken {
         
         // Cap for minting
         max_supply: u256,
+        
+        // Minimum staking period
+        min_staking_period: u64,
     }
     
     // Event structs
@@ -369,6 +372,12 @@ mod StarkOverflowToken {
             
             // Ensure there's a stake to withdraw
             assert(staked_amount > 0, 'No stake to withdraw');
+            
+            // Check minimum staking period
+            let start_time = self.staking_start_time.read(staker);
+            let current_time = starknet::get_block_timestamp();
+            let min_staking_period = self.min_staking_period.read();
+            assert(current_time >= start_time + min_staking_period, 'Minimum staking period not met');
             
             // Calculate rewards
             let rewards = self.get_claimable_rewards(staker);
