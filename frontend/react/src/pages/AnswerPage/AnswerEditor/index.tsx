@@ -23,9 +23,9 @@ import {
 } from "./styles"
 import { AnswersContext } from "../providers/AnswersProvider/answersContext"
 
-import { StatusMessageContext } from "@providers/StatusMessageProvider/statusMessageContext"
-import { useWallet } from "@providers/wallet-connect-context"
 import { shortenAddress } from "@utils/shortenAddress"
+import { useWallet } from "@hooks/useWallet"
+import { useStatusMessage } from "@hooks/useStatusMessage"
 
 // Import dynamic components for markdown rendering
 const ReactMarkdown = await import("react-markdown").then((mod) => mod.default || mod)
@@ -62,7 +62,7 @@ export function AnswerEditor() {
   const { isConnected, address } = useAccount()
   const { openConnectModal } = useWallet()
   const { answers, setAnswers } = useContext(AnswersContext)
-  const { setStatusMessage } = useContext(StatusMessageContext)
+  const { setStatusMessage } = useStatusMessage()
 
   // Handle tab switching
   const handleTabChange = (tab: "write" | "preview") => {

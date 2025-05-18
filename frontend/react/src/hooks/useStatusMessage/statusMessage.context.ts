@@ -1,5 +1,6 @@
-import { createContext } from "react";
-import { StatusMessage } from "./types";
+import { createContext } from "react"
+
+import type { StatusMessage } from "./types"
 
 interface StatusMessageContextProps {
   statusMessage: StatusMessage | null

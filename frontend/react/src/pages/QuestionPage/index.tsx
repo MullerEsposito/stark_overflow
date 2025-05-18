@@ -6,9 +6,9 @@ import { PaperPlaneRight, Link as LinkIcon, Tag, CurrencyDollar } from "phosphor
 import { Container, Form, Button, TransactionStatus } from "./style"
 import { NavLink, useNavigate } from "react-router-dom"
 import { useAccount } from "@starknet-react/core"
-import { useWallet } from "../../providers/wallet-connect-context"
 import { InputForm } from "./InputForm"
 import { EditorForm } from "./EditorForm"
+import { useWallet } from "@hooks/useWallet"
 
 export function QuestionPage() {
   const [title, setTitle] = useState("")

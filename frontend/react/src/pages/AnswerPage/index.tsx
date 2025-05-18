@@ -1,22 +1,22 @@
 "use client"
 
-import { useState, useEffect, useContext } from "react"
+import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { AnswerEditor } from "./AnswerEditor"
 import { StakeModal } from "./StakeModal"
 import { Question } from "./Question"
 import { Answers } from "./Answers"
 
-import { StatusMessageContext } from "@providers/StatusMessageProvider/statusMessageContext"
 import { AnswersProvider } from "./providers/AnswersProvider"
 import { StakingProvider } from "./providers/StakingProvider"
 
 import { QuestionDetailContainer, StatusMessage } from "./styles"
 import { mockQuestion } from "./mocks"
+import { useStatusMessage } from "@hooks/useStatusMessage"
 
 export function AnswerPage() {
   const { questionId } = useParams<{ questionId: string }>()
-  const { statusMessage } = useContext(StatusMessageContext)
+  const { statusMessage } = useStatusMessage()
 
   const [question, setQuestion] = useState(mockQuestion)
 

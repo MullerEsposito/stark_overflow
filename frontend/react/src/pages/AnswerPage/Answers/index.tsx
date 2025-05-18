@@ -1,15 +1,15 @@
-import { CheckCircle, ThumbsDown, ThumbsUp } from "phosphor-react";
-import { UserAvatar } from "../styles";
-import { AnswerContent, AnswerDivider, AnswerFooter, AnswerHeader, AnswerItem, AnswersContainer, AnswersList, CorrectAnswerBadge, MarkCorrectButton, PaginationButton, PaginationContainer, SortingOptions, SortOption, VoteButton, VoteContainer, VoteCount } from "./styles";
-import { useContext, useState } from "react";
-import { useAccount } from "@starknet-react/core";
-import { shortenAddress } from "@utils/shortenAddress";
+import { CheckCircle, ThumbsDown, ThumbsUp } from "phosphor-react"
+import { UserAvatar } from "../styles"
+import { AnswerContent, AnswerDivider, AnswerFooter, AnswerHeader, AnswerItem, AnswersContainer, AnswersList, CorrectAnswerBadge, MarkCorrectButton, PaginationButton, PaginationContainer, SortingOptions, SortOption, VoteButton, VoteContainer, VoteCount } from "./styles"
+import { useContext, useState } from "react"
+import { useAccount } from "@starknet-react/core"
+import { shortenAddress } from "@utils/shortenAddress"
 
-import { AnswersContext } from "../providers/AnswersProvider/answersContext";
-import { useWallet } from "@providers/wallet-connect-context";
-import { StatusMessageContext } from "@providers/StatusMessageProvider/statusMessageContext";
+import { AnswersContext } from "../providers/AnswersProvider/answersContext"
 
-import type { Question } from "../types";
+import type { Question } from "../types"
+import { useWallet } from "@hooks/useWallet"
+import { useStatusMessage } from "@hooks/useStatusMessage"
 
 const ReactMarkdown = await import("react-markdown").then((mod) => mod.default || mod)
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
@@ -26,7 +26,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
   const { isConnected, address } = useAccount()
   const { openConnectModal } = useWallet()
   const { answers, setIsLoading, setAnswers } = useContext(AnswersContext)
-  const { setStatusMessage } = useContext(StatusMessageContext)
+  const { setStatusMessage } = useStatusMessage()
 
   // Sort answers based on selected option
   const sortedAnswers = [...answers].sort((a, b) => {

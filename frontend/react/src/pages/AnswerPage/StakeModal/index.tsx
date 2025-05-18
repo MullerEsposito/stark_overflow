@@ -21,10 +21,9 @@ import {
 } from "./styles"
 import { StakingContext } from "../providers/StakingProvider/StakingContext"
 
-import { StatusMessageContext } from "@providers/StatusMessageProvider/statusMessageContext"
-import { useWallet } from "@providers/wallet-connect-context"
-
 import type { Question } from "../types"
+import { useStatusMessage } from "@hooks/useStatusMessage"
+import { useWallet } from "@hooks/useWallet"
 
 interface StakeModalProps {
   question: Question
@@ -38,7 +37,7 @@ export function StakeModal({ question, setQuestion }: StakeModalProps) {
 
   const { isConnected } = useAccount()
   const { openConnectModal } = useWallet()
-  const { setStatusMessage } = useContext(StatusMessageContext)
+  const { setStatusMessage } = useStatusMessage()
   const { 
     isStakeModalOpen,
     isLoading,
