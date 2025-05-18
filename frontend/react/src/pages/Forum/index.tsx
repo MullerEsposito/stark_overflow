@@ -75,7 +75,7 @@ export function Forum() {
     <ForumContainer>
       <Header>
         <SearchInput onSearch={handleSearch} />
-        <NavLink to={`/forum/${name}/new-question`}>
+        <NavLink to={`/forum/${name}/question`}>
           <Button>New Question</Button>
         </NavLink>
       </Header>

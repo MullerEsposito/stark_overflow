@@ -10,7 +10,7 @@ import { useWallet } from "../../providers/wallet-connect-context"
 import { InputForm } from "./InputForm"
 import { EditorForm } from "./EditorForm"
 
-export function NewQuestion() {
+export function QuestionPage() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [amount, setAmount] = useState("")
