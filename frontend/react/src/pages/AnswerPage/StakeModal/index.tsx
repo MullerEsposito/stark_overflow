@@ -2,10 +2,9 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useContext, useState } from "react"
 import { CurrencyDollar, X } from "phosphor-react"
 import { useAccount } from "@starknet-react/core"
-import { useWallet } from "../../../providers/wallet-connect-context"
 import {
   ModalOverlay,
   ModalContent,
@@ -18,22 +17,77 @@ import {
   StakeButton,
   ErrorMessage,
   CurrentStakeInfo,
+  LoadingSpinner,
 } from "./styles"
+import { StakingContext } from "../providers/StakingProvider/StakingContext"
+
+import { StatusMessageContext } from "@providers/StatusMessageProvider/statusMessageContext"
+import { useWallet } from "@providers/wallet-connect-context"
+
+import type { Question } from "../types"
 
 interface StakeModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onStake: (amount: string) => void
-  currentStake: string
+  question: Question
+  setQuestion: (question: Question) => void
 }
 
-export function StakeModal({ isOpen, onClose, onStake, currentStake }: StakeModalProps) {
+export function StakeModal({ question, setQuestion }: StakeModalProps) {
   const [amount, setAmount] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const { isConnected } = useAccount()
   const { openConnectModal } = useWallet()
+  const { setStatusMessage } = useContext(StatusMessageContext)
+  const { 
+    isStakeModalOpen,
+    isLoading,
+    setIsStakeModalOpen,
+    setIsLoading,
+  } = useContext(StakingContext)
+
+  // Handle adding stake to the question
+  const onStake = async (amount: string) => {
+    if (!isConnected) {
+      openConnectModal()
+      return
+    }
+
+    setIsLoading(true)
+    setStatusMessage({ type: "info", message: "Processing stake transaction..." })
+
+    try {
+      // Simulate blockchain transaction
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+
+      // Update question with new stake amount
+      const currentAmount = Number.parseFloat(question.stakeAmount.replace(",", ""))
+      const newAmount = currentAmount + Number.parseFloat(amount)
+
+      setQuestion({
+        ...question,
+        stakeAmount: newAmount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","),
+      })
+
+      setStatusMessage({
+        type: "success",
+        message: `Successfully added ${amount} to the question reward!`,
+      })
+    } catch (error) {
+      console.error("Stake transaction error:", error)
+      setStatusMessage({
+        type: "error",
+        message: "Failed to add stake. Please try again.",
+      })
+    } finally {
+      setIsLoading(false)
+      setIsStakeModalOpen(false)
+      // Clear status message after 5 seconds
+      setTimeout(() => {
+        setStatusMessage({ type: null, message: "" })
+      }, 5000)
+    }
+  }
 
   // Handle amount change
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,13 +134,14 @@ export function StakeModal({ isOpen, onClose, onStake, currentStake }: StakeModa
   const handleClose = () => {
     setAmount("")
     setError(null)
-    onClose()
+    setIsStakeModalOpen(false)
   }
 
-  if (!isOpen) return null
+  if (!isStakeModalOpen) return null
 
   return (
     <ModalOverlay onClick={handleClose}>
+      {isLoading && <LoadingSpinner />}
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <ModalTitle>Add Stake to Question</ModalTitle>
@@ -100,7 +155,7 @@ export function StakeModal({ isOpen, onClose, onStake, currentStake }: StakeModa
             <span>Current Stake:</span>
             <div>
               <CurrencyDollar size={20} color="#25c028" weight="fill" />
-              {currentStake}
+              {question.stakeAmount}
             </div>
           </CurrentStakeInfo>
 

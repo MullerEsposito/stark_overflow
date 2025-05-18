@@ -27,6 +27,8 @@
     "paths": {
       "@logos/*": ["assets/logos/*"],
       "@components/*": ["components/*"],
+      "@providers/*": ["providers/*"],
+      "@utils/*": ["utils/*"],
     }
   },
   "include": ["src"]

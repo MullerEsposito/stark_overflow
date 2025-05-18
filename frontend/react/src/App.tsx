@@ -5,6 +5,7 @@ import { Router } from "./router";
 import { Header } from "./components/Header";
 import { darkTheme, lightTheme } from "./styles/themes";
 import { WalletProvider } from "./providers/wallet-connect-context";
+import { StatusMessageProvider } from "./providers/StatusMessageProvider";
 import { WalletDetector } from "./components/wallet-detector";
 import { useState, useEffect } from "react";
 
@@ -29,14 +30,16 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-    <WalletProvider>
-      <BrowserRouter>
-        <Header toggleTheme={toggleTheme}/>
-        <Router />
-        <WalletDetector />
-      </BrowserRouter>
-      <GlobalStyle />
-    </WalletProvider>
+    <StatusMessageProvider>
+      <WalletProvider>
+        <BrowserRouter>
+          <Header toggleTheme={toggleTheme}/>
+          <Router />
+          <WalletDetector />
+        </BrowserRouter>
+        <GlobalStyle />
+      </WalletProvider>
+    </StatusMessageProvider>
   </ThemeProvider>
   )
 }

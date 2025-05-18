@@ -1,4 +1,4 @@
-import styled from "styled-components"
+import styled, { keyframes } from "styled-components"
 
 export const ModalOverlay = styled.div`
   position: fixed;
@@ -154,4 +154,23 @@ export const ErrorMessage = styled.div`
   background: rgba(239, 68, 68, 0.1);
   border-radius: 4px;
   margin-bottom: 16px;
+`
+
+const spin = keyframes`
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+`
+
+export const LoadingSpinner = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(124, 58, 237, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #7c3aed;
+  animation: ${spin} 1s linear infinite;
+  z-index: 1000;
 `

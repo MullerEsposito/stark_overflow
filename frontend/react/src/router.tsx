@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom"
 import { Home } from "./pages/Home"
 import { Forum } from "./pages/Forum"
 import { NewQuestion } from "./pages/NewQuestion"
-import { QuestionDetail } from "./pages/QuestionDetail"
+import { AnswerPage } from "./pages/AnswerPage"
 
 export function Router() {
   return (
@@ -10,7 +10,7 @@ export function Router() {
       <Route path="/" element={<Home />} />
       <Route path="/forum/:name" element={<Forum />} />
       <Route path="/forum/:name/new-question" element={<NewQuestion />} />
-      <Route path="/forum/:name/question/:questionId" element={<QuestionDetail />} />
+      <Route path="/forum/:name/question/:questionId" element={<AnswerPage />} />
     </Routes>
   )
 }

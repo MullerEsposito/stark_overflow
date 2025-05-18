@@ -2,10 +2,9 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useContext } from "react"
 import { useAccount } from "@starknet-react/core"
 import { Code, FileArrowUp, Image, Link as LinkIcon, TextBolder, TextItalic, X } from "phosphor-react"
-import { useWallet } from "../../../providers/wallet-connect-context"
 import {
   EditorContainer,
   EditorToolbar,
@@ -22,15 +21,15 @@ import {
   UploadedImage,
   RemoveFileButton,
 } from "./styles"
+import { AnswersContext } from "../providers/AnswersProvider/answersContext"
+
+import { StatusMessageContext } from "@providers/StatusMessageProvider/statusMessageContext"
+import { useWallet } from "@providers/wallet-connect-context"
+import { shortenAddress } from "@utils/shortenAddress"
 
 // Import dynamic components for markdown rendering
 const ReactMarkdown = await import("react-markdown").then((mod) => mod.default || mod)
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
-
-interface AnswerEditorProps {
-  questionId: string
-  onAnswerSubmitted: (content: string) => void
-}
 
 // Mock file upload service
 const uploadFile = async (file: File): Promise<{ id: string; url: string; name: string }> => {
@@ -47,7 +46,7 @@ const uploadFile = async (file: File): Promise<{ id: string; url: string; name: 
   })
 }
 
-export function AnswerEditor({ questionId, onAnswerSubmitted }: AnswerEditorProps) {
+export function AnswerEditor() {
   const [content, setContent] = useState("")
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -60,8 +59,10 @@ export function AnswerEditor({ questionId, onAnswerSubmitted }: AnswerEditorProp
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadedFiles, setUploadedFiles] = useState<Array<{ id: string; url: string; name: string }>>([])
 
-  const { isConnected } = useAccount()
+  const { isConnected, address } = useAccount()
   const { openConnectModal } = useWallet()
+  const { answers, setAnswers } = useContext(AnswersContext)
+  const { setStatusMessage } = useContext(StatusMessageContext)
 
   // Handle tab switching
   const handleTabChange = (tab: "write" | "preview") => {
@@ -158,11 +159,37 @@ export function AnswerEditor({ questionId, onAnswerSubmitted }: AnswerEditorProp
     setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId))
 
     // Remove from content - find the markdown for this image and remove it
-    const regex = new RegExp(`!\\[.*?\\]\$$${fileUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\$$\\n?`, "g")
+    const regex = new RegExp(`!\\[.*?\\]$${fileUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$\\n?`, "g")
     setContent(content.replace(regex, ""))
 
     // Revoke object URL to prevent memory leaks
     URL.revokeObjectURL(fileUrl)
+  }
+
+  const onAnswerSubmitted = (newAnswer: string) => {
+    // Add the new answer to the list
+    setAnswers([
+      ...answers,
+      {
+        id: `a${answers.length + 1}`,
+        authorAddress: address || "0x0",
+        authorName: shortenAddress(address || "0x0") || "Anonymous",
+        content: newAnswer,
+        timestamp: "Just now",
+        isCorrect: false,
+        votes: 0,
+      },
+    ])
+
+    setStatusMessage({
+      type: "success",
+      message: "Your answer has been submitted successfully!",
+    })
+
+    // Clear status message after 5 seconds
+    setTimeout(() => {
+      setStatusMessage({ type: null, message: "" })
+    }, 5000)
   }
 
   // Handle answer submission
@@ -203,7 +230,7 @@ export function AnswerEditor({ questionId, onAnswerSubmitted }: AnswerEditorProp
 
   // Custom components for ReactMarkdown
   const components = {
-    img: ({ node, ...props }: any) => (
+    img: ({ ...props }) => (
       <img
         src={props.src || "/placeholder.svg"}
         alt={props.alt || ""}
@@ -214,6 +241,8 @@ export function AnswerEditor({ questionId, onAnswerSubmitted }: AnswerEditorProp
 
   return (
     <EditorContainer>
+      <h2>Answer this question</h2>
+
       <EditorTabs>
         <EditorTab type="button" active={activeTab === "write"} onClick={() => handleTabChange("write")}>
           Write
