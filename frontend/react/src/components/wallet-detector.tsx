@@ -1,6 +1,6 @@
-import React from "react";
-import styled from "styled-components";
-import { useWallet } from "../providers/wallet-connect-context";
+import { useWallet } from "@hooks/useWallet";
+import React from "react"
+import styled from "styled-components"
 
 const WalletDetectorContainer = styled.div`
   position: fixed;

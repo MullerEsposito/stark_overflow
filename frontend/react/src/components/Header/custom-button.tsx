@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from "react";
 import { useAccount, useConnect, useDisconnect, Connector } from "@starknet-react/core";
 import { WALLET_LOGOS } from "./constant";
 import { AddressButton, ChevronIcon, CloseButton, ConnectButtonContainer, Dropdown, DropdownItem, InstallButton, InstallButtonsContainer, InstallRedirect, ModalContent, ModalHeader, ModalOverlay, ModalTitle, NoWalletsMessage, StyledButton, WalletButton, WalletIcon, WalletInfo, WalletList, WalletLogo, WalletName, WalletStatus } from "./style";
-import { useWallet } from "../../providers/wallet-connect-context";
+import { useWallet } from "@hooks/useWallet";
 
 // Function to truncate address for display
 const truncateAddress = (address: string) => {

@@ -1,13 +1,13 @@
 import { ThemeProvider } from "styled-components"
 import { GlobalStyle } from "./styles/global"
-import { BrowserRouter } from "react-router-dom";
-import { Router } from "./router";
-import { Header } from "./components/Header";
-import { darkTheme, lightTheme } from "./styles/themes";
-import { WalletProvider } from "./providers/wallet-connect-context";
-import { StatusMessageProvider } from "./providers/StatusMessageProvider";
-import { WalletDetector } from "./components/wallet-detector";
-import { useState, useEffect } from "react";
+import { BrowserRouter } from "react-router-dom"
+import { Router } from "./router"
+import { Header } from "./components/Header"
+import { darkTheme, lightTheme } from "./styles/themes"
+import { WalletDetector } from "./components/wallet-detector"
+import { useState, useEffect } from "react"
+import { StatusMessageProvider } from "@hooks/useStatusMessage/statusMessage.provider"
+import { WalletProvider } from "@hooks/useWallet/wallet.provider"
 
 function App() {
   const [theme, setTheme] = useState(darkTheme);  
