@@ -1,10 +1,8 @@
-import type React from "react"
-import { GithubLogo } from "@phosphor-icons/react"
+import { GithubLogo, RocketLaunch } from "@phosphor-icons/react"
 import { HeroContainer, HeroContent, Title, Subtitle, ButtonsContainer, SecondaryButton, Card, CardsContainer } from "./styles"
+import { HTMLAttributes } from "react"
 
-interface HeroProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function Hero({ ...props }: HeroProps) {
+export function Hero({ ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <HeroContainer {...props}>
       <HeroContent>
@@ -15,9 +13,13 @@ export function Hero({ ...props }: HeroProps) {
           knowledge. Deposit funds into questions and encourage high-quality
           answers.</Subtitle>
         <ButtonsContainer>
-          <SecondaryButton href="https://github.com" target="_blank" rel="noopener noreferrer">
+          <SecondaryButton href="https://github.com/MullerEsposito/stark_overflow" target="_blank" rel="noopener noreferrer">
             <GithubLogo size={20} weight="fill" />
             Github Repository
+          </SecondaryButton>
+          <SecondaryButton href="https://app.starkoverflow.com.br/" target="_blank" rel="noopener noreferrer">
+            <RocketLaunch size={20} weight="fill" />
+            Launch App
           </SecondaryButton>
         </ButtonsContainer>
       </HeroContent>
