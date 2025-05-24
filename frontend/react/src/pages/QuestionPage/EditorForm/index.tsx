@@ -1,12 +1,12 @@
 import { FileArrowUp, X } from "phosphor-react";
 import { DescriptionFormContainer, EditorContainer, ErrorMessage, FileUploadArea, PreviewContainer, RemoveFileButton, Tab, TabContainer, UploadedFilePreview, UploadedImage, UploadProgress } from "./style";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { uploadFile, UploadedFile, deleteFile } from "../../../services/file-upload";
 import { Label } from "@components/Label";
 import { Toolbar } from "./Toolbar";
 
 // Import dynamic components for markdown rendering
-const ReactMarkdown = await import("react-markdown").then((mod) => mod.default || mod)
+const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
 
 interface EditorFormProps {

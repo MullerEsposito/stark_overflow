@@ -5,6 +5,9 @@ import { fileURLToPath } from 'url';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    target: "esnext",
+  },
   resolve: {
     alias: {
       "@logos": fileURLToPath(new URL("src/assets/logos", import.meta.url)),

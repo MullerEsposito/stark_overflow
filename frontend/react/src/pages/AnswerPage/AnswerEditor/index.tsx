@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 
 import { useState, useRef, useContext } from "react"
 import { useAccount } from "@starknet-react/core"
@@ -28,7 +28,7 @@ import { useWallet } from "@hooks/useWallet"
 import { useStatusMessage } from "@hooks/useStatusMessage"
 
 // Import dynamic components for markdown rendering
-const ReactMarkdown = await import("react-markdown").then((mod) => mod.default || mod)
+const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
 
 // Mock file upload service

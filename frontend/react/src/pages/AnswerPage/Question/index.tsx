@@ -3,10 +3,10 @@ import { ActionButton, QuestionContainer, QuestionContent, QuestionFooter, Quest
 import { UserAvatar } from "../styles";
 
 import type { Question } from "../types";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { StakingContext } from "../providers/StakingProvider/StakingContext";
 // Add this near the top of the file with other imports
-const ReactMarkdown = await import("react-markdown").then((mod) => mod.default || mod)
+const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
 
 

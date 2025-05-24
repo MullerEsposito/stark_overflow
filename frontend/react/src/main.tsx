@@ -1,12 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
+import { App } from './App.tsx'
 import StarknetProvider from './providers/StarknetProvider.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <StarknetProvider>
-    <App />
+      <App />
     </StarknetProvider>
   </StrictMode>,
 )

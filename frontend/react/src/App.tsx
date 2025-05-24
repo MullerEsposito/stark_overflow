@@ -9,7 +9,7 @@ import { useState, useEffect } from "react"
 import { StatusMessageProvider } from "@hooks/useStatusMessage/statusMessage.provider"
 import { WalletProvider } from "@hooks/useWallet/wallet.provider"
 
-function App() {
+export function App() {
   const [theme, setTheme] = useState(darkTheme);  
   
   // Try to load preferred theme from localStorage
@@ -34,8 +34,8 @@ function App() {
       <WalletProvider>
         <BrowserRouter>
           <Header toggleTheme={toggleTheme}/>
-          <Router />
           <WalletDetector />
+          <Router />
         </BrowserRouter>
         <GlobalStyle />
       </WalletProvider>
@@ -43,5 +43,3 @@ function App() {
   </ThemeProvider>
   )
 }
-
-export default App
