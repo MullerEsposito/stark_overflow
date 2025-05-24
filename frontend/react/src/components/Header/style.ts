@@ -82,7 +82,7 @@ export const DropdownItem = styled.button`
   font-size: 14px;
   
   &:hover {
-    background: ${(props) => props.theme.ho || "rgba(0, 0, 0, 0.05)"};
+    background: ${(props) => props.theme.hover || "rgba(0, 0, 0, 0.05)"};
   }
   
   &:not(:last-child) {
