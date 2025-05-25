@@ -45,7 +45,7 @@ pub fn deploy_mock_stark_token() -> (IStarkOverflowTokenDispatcher, ContractAddr
     let NAME: ByteArray = "STARKOVERFLOW TOKEN";
     let SYMBOL: ByteArray = "STARK";
     let INITIAL_SUPPLY: u256 = 100_000_000_000_000_000_000; // 100_STARK
-    let MAX_SUPPLY: u256 = 1_000_000_000_000_000_000; // 1M STARK
+    let MAX_SUPPLY: u256 = 1_000_000_000_000_000_000_000; // 1M STARK
     let mut calldata = array![];
     calldata.append_serde(NAME);
     calldata.append_serde(SYMBOL);
