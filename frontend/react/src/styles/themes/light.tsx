@@ -6,6 +6,9 @@ export const lightTheme = {
   connectBg: "#121212",
   connectText: "#e4e4e4",
   textSecondary: "#6c757d",
+  hover: "#e2e6ea",
+  warning: "#dc3545",
+  secondary: "#f8f9fa",
   forum: {
     topicCard: {
       background: "#e3e0e0",

@@ -31,6 +31,7 @@ export const CollaboratorItem = styled.div`
 
     & > div {
       bottom: -30px;
+      opacity: 1;
     }
   }
   
@@ -41,9 +42,10 @@ export const CollaboratorItem = styled.div`
 
   & > div {
     position: absolute;
+    opacity: 0;
     bottom: 50%;
     z-index: 0;
-    transition: bottom 0.3s;
+    transition: all 0.3s;
   }
 `
 

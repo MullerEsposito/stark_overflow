@@ -21,7 +21,6 @@ interface FlowCardsProps {
 }
 
 export const FlowCards: React.FC<FlowCardsProps> = ({
-  activeStep = 1,
   onStepClick,
 }) => {
   const steps: Step[] = [
@@ -68,8 +67,6 @@ export const FlowCards: React.FC<FlowCardsProps> = ({
       {steps.map((step) => (
         <StepContainer
           key={step.id}
-          active={step.id === activeStep}
-          completed={step.id < activeStep}
           onClick={() => handleStepClick(step.id)}
         >
           <IconWrapper>{step.icon}</IconWrapper>

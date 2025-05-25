@@ -11,8 +11,10 @@ pub fn deployStarkOverflowContract() -> (IStarkOverflowDispatcher, ContractAddre
     let (stark_token_dispatcher, stark_token_address) = deploy_mock_stark_token();
     let starkoverflow_class_hash = declare("StarkOverflow").unwrap().contract_class();
 
+
     let mut constructor_calldata: Array<felt252> = array![];
     constructor_calldata.append_serde(stark_token_address);
+
 
     let (starkoverflow_contract_address, _) = starkoverflow_class_hash.deploy(@constructor_calldata).unwrap();
     let starkoverflow_dispatcher = IStarkOverflowDispatcher { contract_address: starkoverflow_contract_address };
@@ -69,3 +71,4 @@ pub fn approve_as_spender(owner: ContractAddress, spender: ContractAddress, star
     let allowance = starkoverflow_token_dispatcher.allowance(owner, spender);
     assert!(allowance == value, "Allowance mismatch: expected {}, got {}", value, allowance);
 }
+

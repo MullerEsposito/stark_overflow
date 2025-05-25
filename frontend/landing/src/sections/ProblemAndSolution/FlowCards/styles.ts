@@ -1,10 +1,5 @@
 import styled from 'styled-components';
 
-interface StepProps {
-  active?: boolean;
-  completed?: boolean;
-}
-
 export const FlowCardContainer = styled.div`
   display: flex;
   width: 100%;
@@ -16,7 +11,7 @@ export const FlowCardContainer = styled.div`
   }
 `;
 
-export const StepContainer = styled.div<StepProps>`
+export const StepContainer = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;

@@ -16,20 +16,43 @@
 ```
 /stark_overflow
 │
-├── frontend/              # User interface in React
-│   └── README.md          # Specific frontend instructions
+├── frontend/                                 # User interfaces
+│   |── landing/                              # Landing page of the app
+|   |
+│   └── react/                                # The frontend of the app made in React
+│       |── src/
+│       |   |── @types
+│       |   |── assets/                       # Images and icons
+│       |   |── components/                   # Reusable components
+│       |   |── hooks/                        # Custom hooks
+│       |   |   |── useStatusMessage.ts       # Hook for managing status messages
+│       |   |   └── useWallet.ts              # Hook for managing wallet connection
+│       |   |── pages/                        # Main pages of the app
+│       |   |   |── Home/                     # Main page of the app
+│       |   |   |── Forum/                    # Page for viewing app's forums
+│       |   |   |── QuestionPage/             # Page for asking a question
+|       |   |   └── AnswerPage/               # Page for viewing answers to a question and give a new answer
+│       |   |── providers/                    # General context providers for state management
+│       |   |── services/                     # API services
+│       |   |── styles/                       # Global styles and themes
+│       |   └── utils/                        # Utility functions
+│       |── App.tsx                           # Main application component
+│       |── main.tsx                          # Entry point of the React app
+|       └── router.tsx                        # Routes of the app
+|
+├── smartcontract/                            # Smart contracts written in Cairo
+│   ├── src/                                  # Contract source code
+│   │   ├── events.cairo                      # Event definitions
+│   │   ├── lib.cairo                         # Entrypoint of the smart contract
+│   │   ├── StarkOverflow.cairo               # Main contract logic
+│   │   ├── structs.cairo                     # Struct definitions
+│   │   |── types.cairo                       # Type definitions
+│   |   └── tests/                            # Contract tests
+│   │       ├── common.cairo                  # Common test functions
+|   |       └── StarkOverflowTest.cairo       # Test cases for the main contract
+│   └── Scarb.toml                            # Scarb project configuration
 │
-├── smartcontract/         # Smart contracts written in Cairo
-│   ├── src/               # Contract source code
-│   │   ├── events.cairo
-│   │   ├── lib.cairo
-│   │   ├── StarkOverflow.cairo
-│   │   ├── structs.cairo
-│   │   └── utils.cairo
-│   ├── tests/             # Contract tests
-│   └── Scarb.toml         # Scarb project configuration
-│
-└── README.md              # General project documentation
+└── README.md                                 # General project documentation
 ```
 
 ## ⚙️ Installation
