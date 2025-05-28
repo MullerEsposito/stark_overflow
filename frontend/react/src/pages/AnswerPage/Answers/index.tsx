@@ -49,8 +49,9 @@ export function Answers({ question, setQuestion }: AnswersProps) {
     setStatusMessage({ type: "info", message: "Processing transaction..." })
 
     try {
-      // Simulate blockchain transaction
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      // Call the smart contract to mark answer as correct
+      const result = await contract.mark_answer_as_correct(question.id, answerId)
+      await result.wait()
 
       // Update answers state
       setAnswers(
@@ -62,7 +63,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
 
       setStatusMessage({
         type: "success",
-        message: "Answer marked as correct! Funds have been transferred to the responder.",
+        message: "Answer marked as correct! Rewards have been distributed to the responder.",
       })
 
       // Update question status
@@ -71,19 +72,14 @@ export function Answers({ question, setQuestion }: AnswersProps) {
         isOpen: false,
       })
     } catch (error) {
-      console.error("Transaction error:", error)
       setStatusMessage({
         type: "error",
         message: "Failed to mark answer as correct. Please try again.",
       })
     } finally {
       setIsLoading(false)
-      // Clear status message after 5 seconds
-      setTimeout(() => {
-        setStatusMessage(null)
-      }, 5000)
     }
-  }
+}
 
   // Handle voting on an answer
   const handleVote = async (answerId: string, direction: "up" | "down") => {
