@@ -72,21 +72,18 @@ mod StarkOverflowToken {
   #[constructor]
   fn constructor(
     ref self: ContractState,
-    name: ByteArray,
-    symbol: ByteArray,
     decimals: u8,
     initial_supply: u256,
     recipient: ContractAddress,
     owner: ContractAddress,
     max_supply: u256
   ) {
-    self.erc20.initializer(name, symbol);
+    self.erc20.initializer("STARKOVERFLOW", "STK");
 
     // Mint initial supply if needed
     if initial_supply > 0 {
       self.erc20.mint(recipient, initial_supply);
     }
-
     self.ownable.initializer(owner);
     self.max_supply.write(max_supply);
   }
