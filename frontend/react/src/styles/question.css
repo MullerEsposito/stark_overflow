@@ -1,0 +1,115 @@
+.form-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  font-family: Arial, sans-serif;
+}
+
+.form-heading {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: 600;
+}
+
+textarea,
+input[type="number"] {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+  font-size: 1rem;
+}
+
+small {
+  display: block;
+  margin-top: 0.25rem;
+  color: #666;
+}
+
+.btn-primary {
+  margin-top: 1.5rem;
+  width: 100%;
+  background-color: #3182ce;
+  color: white;
+  font-size: 1.1rem;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-primary:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.alert {
+  position: relative;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.alert.warning {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #facc15;
+}
+
+.alert.error {
+  background-color: #fed7d7;
+  color: #9b2c2c;
+  border: 1px solid #f56565;
+}
+
+.btn-small {
+  margin-left: 1rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  background-color: #3182ce;
+  border: none;
+  border-radius: 4px;
+  color: white;
+}
+
+.btn-small:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.close-btn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+}
+
+.transaction-info {
+  margin-top: 1.5rem;
+  background-color: #f7fafc;
+  padding: 1rem;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.transaction-info a {
+  color: #3182ce;
+  text-decoration: underline;
+}
