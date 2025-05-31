@@ -10,7 +10,7 @@ pub trait IStarkOverflow<T> {
   fn add_funds_to_question(ref self: T, question_id: u256, value: u256);
   fn submit_answer(ref self: T, question_id: u256, description: ByteArray) -> AnswerId;
   fn get_answer(self: @T, answer_id: u256) -> Answer;
-  fn get_answers(self: @T, question_id: u256) -> Array<Answer>;
+  fn get_answers_by_question_id(self: @T, question_id: u256) -> Array<Answer>;
   fn mark_answer_as_correct(ref self: T, question_id: u256, answer_id: u256);
   fn get_correct_answer(self: @T, question_id: u256) -> AnswerId;
 
@@ -120,7 +120,7 @@ pub mod StarkOverflow {
       found_question
     }
 
-    fn get_answers(self: @ContractState, question_id: u256) -> Array<Answer> {
+    fn get_answers_by_question_id(self: @ContractState, question_id: u256) -> Array<Answer> {
       let mut answers = array![];
       let answers_ids = self.question_id_answers_ids.entry(question_id);
 
