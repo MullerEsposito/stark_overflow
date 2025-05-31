@@ -198,8 +198,8 @@ pub mod StarkOverflow {
     }
 
     fn get_correct_answer(self: @ContractState, question_id: u256) -> AnswerId {
-      let found_corret_answer_id = self.question_id_chosen_answer_id.entry(question_id).read();
-      found_corret_answer_id
+      let found_correct_answer_id = self.question_id_chosen_answer_id.entry(question_id).read();
+      found_correct_answer_id
     }
       
     fn stake_on_question(ref self: ContractState, question_id: u256, amount: u256) {
