@@ -24,7 +24,8 @@ pub fn deployStarkOverflowContract() -> (IStarkOverflowDispatcher, ContractAddre
 #[derive(Copy, Clone, Drop)]
 pub enum ADDRESSES {
   ASKER,
-  RESPONDER,
+  RESPONDER1,
+  RESPONDER2,
   SPONSOR,
   INTRUDER,
 }
@@ -34,7 +35,8 @@ pub impl ADDRESSESImpl of ADDRESSESTrait {
   fn get(self: @ADDRESSES) -> ContractAddress {
     match self {
       ADDRESSES::ASKER => contract_address_const::<'ASKER-ADDRESS'>(),
-      ADDRESSES::RESPONDER => contract_address_const::<'RESPONDER-ADDRESS'>(),
+      ADDRESSES::RESPONDER1 => contract_address_const::<'RESPONDER-ADDRESS-ONE'>(),
+      ADDRESSES::RESPONDER2 => contract_address_const::<'RESPONDER-ADDRESS-TWO'>(),
       ADDRESSES::SPONSOR => contract_address_const::<'SPONSOR-ADDRESS'>(),
       ADDRESSES::INTRUDER => contract_address_const::<'INTRUDER-ADDRESS'>(),
     }
