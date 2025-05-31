@@ -3,7 +3,7 @@ import { ActionButton, QuestionContainer, QuestionContent, QuestionFooter, Quest
 import { UserAvatar } from "../styles";
 
 import type { Question } from "../types";
-import React, { useContext } from "react";
+import React, { useContext, Suspense } from "react";
 import { StakingContext } from "../providers/StakingProvider/StakingContext";
 // Add this near the top of the file with other imports
 const ReactMarkdown = React.lazy(() => import("react-markdown"))
@@ -46,20 +46,22 @@ export function Question({ question }: QuestionProps) {
       </QuestionHeader>
 
       <QuestionContent>
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            img: ({ ...props }) => (
-              <img
-                src={props.src || "/placeholder.svg"}
-                alt={props.alt || ""}
-                style={{ maxWidth: "100%", borderRadius: "4px", margin: "8px 0" }}
-              />
-            ),
-          }}
-        >
-          {question.content}
-        </ReactMarkdown>
+      <Suspense fallback={<p>Carregando visualização...</p>}>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              img: ({ ...props }) => (
+                <img
+                  src={props.src || "/placeholder.svg"}
+                  alt={props.alt || ""}
+                  style={{ maxWidth: "100%", borderRadius: "4px", margin: "8px 0" }}
+                />
+              ),
+            }}
+          >
+            {question.content}
+          </ReactMarkdown>
+        </Suspense>
       </QuestionContent>
 
       <QuestionFooter>

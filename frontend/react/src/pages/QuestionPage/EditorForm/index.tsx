@@ -1,6 +1,6 @@
 import { FileArrowUp, X } from "phosphor-react";
 import { DescriptionFormContainer, EditorContainer, ErrorMessage, FileUploadArea, PreviewContainer, RemoveFileButton, Tab, TabContainer, UploadedFilePreview, UploadedImage, UploadProgress } from "./style";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, Suspense } from "react";
 import { uploadFile, UploadedFile, deleteFile } from "../../../services/file-upload";
 import { Label } from "@components/Label";
 import { Toolbar } from "./Toolbar";
@@ -270,15 +270,17 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
               )}
 
               {/* Render markdown content */}
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  code: CodeBlock,
-                  img: ImageRenderer,
-                }}
-              >
-                {value}
-              </ReactMarkdown>
+              <Suspense fallback={<p>Carregando visualização...</p>}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    code: CodeBlock,
+                    img: ImageRenderer,
+                  }}
+                >
+                  {value}
+                </ReactMarkdown>
+              </Suspense>
             </div>
           ) : (
             <p className="empty-preview">Your preview will appear here...</p>

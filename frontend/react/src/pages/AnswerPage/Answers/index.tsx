@@ -1,7 +1,7 @@
 import { CheckCircle, ThumbsDown, ThumbsUp } from "phosphor-react"
 import { UserAvatar } from "../styles"
 import { AnswerContent, AnswerDivider, AnswerFooter, AnswerHeader, AnswerItem, AnswersContainer, AnswersList, CorrectAnswerBadge, MarkCorrectButton, PaginationButton, PaginationContainer, SortingOptions, SortOption, VoteButton, VoteContainer, VoteCount } from "./styles"
-import React, { useContext, useState } from "react"
+import React, { useContext, useState, Suspense } from "react"
 import { useAccount } from "@starknet-react/core"
 import { shortenAddress } from "@utils/shortenAddress"
 
@@ -145,20 +145,22 @@ export function Answers({ question, setQuestion }: AnswersProps) {
               </AnswerHeader>
 
               <AnswerContent>
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    img: ({ ...props }) => (
-                      <img
-                        src={props.src || "/placeholder.svg"}
-                        alt={props.alt || ""}
-                        style={{ maxWidth: "100%", borderRadius: "4px", margin: "8px 0" }}
-                      />
-                    ),
-                  }}
-                >
-                  {answer.content}
-                </ReactMarkdown>
+              <Suspense fallback={<p>Carregando visualização...</p>}>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      img: ({ ...props }) => (
+                        <img
+                          src={props.src || "/placeholder.svg"}
+                          alt={props.alt || ""}
+                          style={{ maxWidth: "100%", borderRadius: "4px", margin: "8px 0" }}
+                        />
+                      ),
+                    }}
+                  >
+                    {answer.content}
+                  </ReactMarkdown>
+                </Suspense>
               </AnswerContent>
 
               <AnswerFooter>
