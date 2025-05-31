@@ -43,13 +43,9 @@ pub impl ADDRESSESImpl of ADDRESSESTrait {
 
 pub fn deploy_mock_stark_token() -> (IStarkOverflowTokenDispatcher, ContractAddress) {
   let stark_token_class_hash = declare("StarkOverflowToken").unwrap().contract_class();
-  let NAME: ByteArray = "STARKOVERFLOW TOKEN";
-  let SYMBOL: ByteArray = "STARK";
   let INITIAL_SUPPLY: u256 = 100_000_000_000_000_000_000; // 100_STARK
   let MAX_SUPPLY: u256 = 1_000_000_000_000_000_000_000; // 1M STARK
   let mut calldata = array![];
-  calldata.append_serde(NAME);
-  calldata.append_serde(SYMBOL);
   calldata.append_serde(18);
   calldata.append_serde(INITIAL_SUPPLY);
   calldata.append_serde(ADDRESSES::ASKER.get());
@@ -70,4 +66,3 @@ pub fn approve_as_spender(owner: ContractAddress, spender: ContractAddress, star
   let allowance = starkoverflow_token_dispatcher.allowance(owner, spender);
   assert!(allowance == value, "Allowance mismatch: expected {}, got {}", value, allowance);
 }
-

@@ -15,7 +15,7 @@ openzeppelin_access = "0.20.0"
 openzeppelin_upgrades = "0.20.0"
 
 [dev-dependencies]
-snforge_std = "0.39.0"
+snforge_std = "0.43.1"
 assert_macros = "2.9.2"
 
 [profile.dev.cairo]
