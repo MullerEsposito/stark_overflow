@@ -1,11 +1,20 @@
-import { StatusEnum } from "services/contract";
-
+import { QuestionStatus, Uint256 } from "../types/contract-types";
+import { CairoCustomEnum } from "starknet";
 
 export const formatters = {
-  // Convert BigInt to hex address format
-  bigIntToAddress: (bigInt: bigint) => {
-    if (!bigInt) return '';
-    const hex = bigInt.toString(16);
+  // Convert bigint to hex address format
+  bigIntToAddress: (str: bigint) => {
+    if (!str) return '';
+    
+    // Remove any 0x prefix if present
+    const hex = str.toString().replace(/^0x/, '');
+    
+    // Validate that it's a valid hex string
+    if (!/^[0-9a-f]+$/.test(hex)) {
+      throw new Error('Invalid hex string');
+    }
+    
+    // Pad to 64 characters and add 0x prefix
     return `0x${hex.padStart(64, '0')}`;
   },
 
@@ -16,13 +25,13 @@ export const formatters = {
   },
 
   // Format BigInt as regular number (if it's meant to be a number)
-  bigIntToNumber: (bigInt: bigint) => {
+  bigIntToNumber: (bigInt: bigint | number | Uint256) => {
     if (!bigInt) return 0;
     return Number(bigInt);
   },
 
   // Keep BigInt as string for very large numbers
-  bigIntToString: (bigInt: bigint) => {
+  bigIntToString: (bigInt: bigint | number | Uint256) => {
     if (!bigInt) return '0';
     return bigInt.toString();
   },
@@ -31,12 +40,10 @@ export const formatters = {
     return BigInt(number);
   },
 
-  formatStatus: (statusEnum: StatusEnum): string => {
-    if (!statusEnum || !statusEnum.variant) {
-      return 'Unknown';
-    }
-
-    const statusName = Object.keys(statusEnum.variant)[0];
-    return statusName;
+  formatStatus: (statusEnum: CairoCustomEnum): QuestionStatus => {
+    const variant = statusEnum.activeVariant();
+    if (variant === 'Open') return 'Open';
+    if (variant === 'Resolved') return 'Resolved';
+    throw new Error(`Unknown status value: ${variant}`);
   }
 };

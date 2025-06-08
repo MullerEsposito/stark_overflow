@@ -1,6 +1,6 @@
-import { ContractQuestion, ContractAnswer } from "../services/contract"
-import { Question, Answer } from "../pages/AnswerPage/types"
 import { formatters } from "./formatters"
+import { Question, Answer } from "@app-types/index"
+import { Question as ContractQuestion, Answer as ContractAnswer } from "../types/contract-types"
 
 // Mock data generators for missing fields
 const generateMockTags = (): string[] => {
@@ -47,7 +47,6 @@ const generateMockAuthorName = (address: string): string => {
 
 // Convert contract Question to frontend Question
 export const contractQuestionToFrontend = (contractQuestion: ContractQuestion): Question => {
-
   // convert author and value to hex address and number
   const authorAddress = formatters.bigIntToAddress(contractQuestion.author)
   const value = formatters.bigIntToNumber(contractQuestion.value)
