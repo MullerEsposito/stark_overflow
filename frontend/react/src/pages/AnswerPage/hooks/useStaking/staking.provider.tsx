@@ -1,11 +1,11 @@
 import { ReactNode, useState } from "react"
-import { StakingContext } from "./StakingContext"
+import { StakingContext } from "./staking.context"
 
 interface StakingProviderProps {
   children: ReactNode
 }
 
-export function StakingProvider({ children}: StakingProviderProps) {
+export function StakingProvider({ children }: StakingProviderProps) {
   const [isStakeModalOpen, setIsStakeModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 

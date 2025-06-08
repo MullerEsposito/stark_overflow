@@ -1,3 +1,13 @@
+import { QuestionStatus } from "./contract-types"
+
+export interface ContractQuestion {
+  id: bigint
+  author: bigint
+  description: string
+  value: bigint
+  status: QuestionStatus
+}
+
 export type Question = {
   id: string;
   title: string;
@@ -9,14 +19,4 @@ export type Question = {
   tags: string[];
   repositoryUrl: string;
   isOpen: boolean;
-}
-
-export type Answer = {
-  id: string
-  authorAddress: string
-  authorName: string
-  content: string
-  timestamp: string
-  isCorrect: boolean
-  votes: number
 }

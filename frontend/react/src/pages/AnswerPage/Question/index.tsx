@@ -2,9 +2,9 @@ import { CheckCircle, CurrencyDollar, GithubLogo } from "phosphor-react";
 import { ActionButton, QuestionContainer, QuestionContent, QuestionFooter, QuestionHeader, QuestionMeta, QuestionTag, QuestionTitle, RepositoryLink, StakeInfo, TagsContainer } from "./styles";
 import { UserAvatar } from "../styles";
 
-import type { Question } from "../types";
-import React, { useContext, Suspense } from "react";
-import { StakingContext } from "../providers/StakingProvider/StakingContext";
+import type { Question } from "@app-types/index";
+import React, { Suspense } from "react";
+import { useStaking } from "../hooks/useStaking";
 // Add this near the top of the file with other imports
 const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
@@ -15,7 +15,7 @@ interface QuestionProps {
 }
 
 export function Question({ question }: QuestionProps) {
-  const { setIsStakeModalOpen } = useContext(StakingContext)
+  const { setIsStakeModalOpen } = useStaking()
 
   return (
     <QuestionContainer>
@@ -46,7 +46,7 @@ export function Question({ question }: QuestionProps) {
       </QuestionHeader>
 
       <QuestionContent>
-      <Suspense fallback={<p>Carregando visualização...</p>}>
+        <Suspense fallback={<p>Carregando visualização...</p>}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{

@@ -35,16 +35,16 @@ export const AnswersList = styled.div`
   gap: 24px;
 `
 
-export const AnswerItem = styled.article<{ isCorrect: boolean }>`
-  background: ${({ theme, isCorrect }) =>
-    isCorrect ? `linear-gradient(to right, ${theme.cardBackground}, rgba(46, 139, 87, 0.1))` : theme.cardBackground};
-  border: 1px solid ${({ theme, isCorrect }) => (isCorrect ? "rgba(46, 139, 87, 0.3)" : theme.borderColor)};
+export const AnswerItem = styled.article<{ $isCorrect: boolean }>`
+  background: ${({ theme, $isCorrect }) =>
+    $isCorrect ? `linear-gradient(to right, ${theme.cardBackground}, rgba(46, 139, 87, 0.1))` : theme.cardBackground};
+  border: 1px solid ${({ theme, $isCorrect }) => ($isCorrect ? "rgba(46, 139, 87, 0.3)" : theme.borderColor)};
   border-radius: 8px;
   padding: 16px;
   position: relative;
   
-  ${({ isCorrect }) =>
-    isCorrect &&
+  ${({ $isCorrect }) =>
+    $isCorrect &&
     `
     box-shadow: 0 0 10px rgba(46, 139, 87, 0.2);
   `}

@@ -1,8 +1,6 @@
 "use client"
 
-import type React from "react"
-
-import { useContext, useState } from "react"
+import { useState } from "react"
 import { CurrencyDollar, X } from "phosphor-react"
 import { useAccount } from "@starknet-react/core"
 import {
@@ -19,9 +17,9 @@ import {
   CurrentStakeInfo,
   LoadingSpinner,
 } from "./styles"
-import { StakingContext } from "../providers/StakingProvider/StakingContext"
+import { useStaking } from "../hooks/useStaking"
 
-import type { Question } from "../types"
+import type { Question } from "@app-types/index"
 import { useStatusMessage } from "@hooks/useStatusMessage"
 import { useWallet } from "@hooks/useWallet"
 
@@ -38,12 +36,12 @@ export function StakeModal({ question, setQuestion }: StakeModalProps) {
   const { isConnected } = useAccount()
   const { openConnectModal } = useWallet()
   const { setStatusMessage } = useStatusMessage()
-  const { 
+  const {
     isStakeModalOpen,
     isLoading,
     setIsStakeModalOpen,
     setIsLoading,
-  } = useContext(StakingContext)
+  } = useStaking()
 
   // Handle adding stake to the question
   const onStake = async (amount: string) => {

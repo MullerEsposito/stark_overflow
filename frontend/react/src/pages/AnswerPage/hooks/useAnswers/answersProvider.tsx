@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 
 import { AnswersContext } from "./answersContext";
-import { Answer } from "pages/AnswerPage/types";
+import { Answer } from "@app-types/index";
 import { useContract } from "@hooks/useContract";
 
 interface AnswersProviderProps {
   children: React.ReactNode;
-  questionId: string;
+  questionId: number;
 }
 
 export function AnswersProvider({ children, questionId }: AnswersProviderProps) {
   const [answers, setAnswers] = useState<Answer[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  
+
   const { fetchAnswers, answersLoading, answersError } = useContract()
 
   // Fetch answers when questionId changes
@@ -25,10 +25,10 @@ export function AnswersProvider({ children, questionId }: AnswersProviderProps) 
         setAnswers(contractAnswers)
         setIsLoading(false)
       }
-      
+
       loadAnswers()
     }
-  }, [questionId])
+  }, [questionId, fetchAnswers])
 
   // Update loading state when contract is fetching
   useEffect(() => {
