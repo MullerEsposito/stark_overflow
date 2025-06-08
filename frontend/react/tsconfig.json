@@ -30,6 +30,7 @@
       "@providers/*": ["providers/*"],
       "@utils/*": ["utils/*"],
       "@hooks/*": ["hooks/*"],
+      "@app-types/*": ["types/*"],
     }
   },
   "include": ["src"]

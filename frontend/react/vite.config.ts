@@ -15,6 +15,7 @@ export default defineConfig({
       "@providers": fileURLToPath(new URL("src/providers", import.meta.url)),
       "@utils": fileURLToPath(new URL("src/utils", import.meta.url)),
       "@hooks": fileURLToPath(new URL("src/hooks", import.meta.url)),
+      "@app-types": fileURLToPath(new URL("src/types", import.meta.url)),
     },
   },
 });
