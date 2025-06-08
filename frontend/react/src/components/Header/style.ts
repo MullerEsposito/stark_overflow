@@ -54,7 +54,7 @@ export const AddressButton = styled(StyledButton)`
   gap: 6px;
 `;
 
-export const Dropdown = styled.div<{ isOpen: boolean }>`
+export const Dropdown = styled.div<{ $isOpen: boolean }>`
   position: absolute;
   top: 100%;
   right: 0;
@@ -65,9 +65,9 @@ export const Dropdown = styled.div<{ isOpen: boolean }>`
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   z-index: 10;
   min-width: 180px;
-  opacity: ${(props) => (props.isOpen ? 1 : 0)};
-  visibility: ${(props) => (props.isOpen ? "visible" : "hidden")};
-  transform: ${(props) => (props.isOpen ? "translateY(0)" : "translateY(-10px)")};
+  opacity: ${(props) => (props.$isOpen ? 1 : 0)};
+  visibility: ${(props) => (props.$isOpen ? "visible" : "hidden")};
+  transform: ${(props) => (props.$isOpen ? "translateY(0)" : "translateY(-10px)")};
   transition: all 0.2s ease-in-out;
 `;
 
@@ -90,24 +90,24 @@ export const DropdownItem = styled.button`
   }
 `;
 
-export const ChevronIcon = styled.span<{ isOpen: boolean }>`
+export const ChevronIcon = styled.span<{ $isOpen: boolean }>`
   border: solid ${(props) => props.theme.connectText};
   border-width: 0 2px 2px 0;
   display: inline-block;
   padding: 3px;
-  transform: ${(props) => (props.isOpen ? "rotate(-135deg)" : "rotate(45deg)")};
-  margin-bottom: ${(props) => (props.isOpen ? "3px" : "0")};
+  transform: ${(props) => (props.$isOpen ? "rotate(-135deg)" : "rotate(45deg)")};
+  margin-bottom: ${(props) => (props.$isOpen ? "3px" : "0")};
   transition: transform 0.2s;
 `;
 
-export const ModalOverlay = styled.div<{ isOpen: boolean }>`
+export const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  display: ${(props) => (props.isOpen ? "flex" : "none")};
+  display: ${(props) => (props.$isOpen ? "flex" : "none")};
   justify-content: center;
   align-items: center;
   z-index: 100;

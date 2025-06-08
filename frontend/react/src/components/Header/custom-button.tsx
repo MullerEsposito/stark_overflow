@@ -59,10 +59,10 @@ export function ConnectButton() {
             <>
               <AddressButton onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
                 {truncateAddress(address)}
-                <ChevronIcon isOpen={isDropdownOpen} />
+                <ChevronIcon $isOpen={isDropdownOpen} />
               </AddressButton>
               
-              <Dropdown isOpen={isDropdownOpen}>
+              <Dropdown $isOpen={isDropdownOpen}>
                 <DropdownItem onClick={handleDisconnect}>
                   Disconnect Wallet
                 </DropdownItem>
@@ -76,7 +76,7 @@ export function ConnectButton() {
         </ConnectButtonContainer>
         
         {/* Connect Wallet Modal */}
-        <ModalOverlay isOpen={isModalOpen} onClick={(e) => {
+        <ModalOverlay $isOpen={isModalOpen} onClick={(e) => {
           if (e.target === e.currentTarget) closeConnectModal();
         }}>
           <ModalContent onClick={(e) => e.stopPropagation()}>
