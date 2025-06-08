@@ -7,7 +7,7 @@ import {
   braavos,
   useInjectedConnectors,
   starkscan,
-  publicProvider,
+  cartridgeProvider,
 } from "@starknet-react/core";
 
 
@@ -17,11 +17,12 @@ export function StarknetProvider({ children }: { children: React.ReactNode }) {
     includeRecommended: "onlyIfNoConnectors",
     order: "alphabetical",
   });
+  const provider = cartridgeProvider();
 
   return (
     <StarknetConfig
       chains={[mainnet, sepolia]}
-      provider={publicProvider()}
+      provider={provider}
       connectors={connectors}
       explorer={starkscan}
       autoConnect={true} // Enable auto-connect
