@@ -11,8 +11,8 @@ export function Cards({ forums }: CardsProps) {
   return (
     <CardsContainer>
         {forums.map((forum, index) => (
-          <NavLink to={`/forum/${forum.path}`}>
-            <Card key={index}>
+          <NavLink to={`/forum/${forum.path}`} key={index}>
+            <Card>
               <img src={forum.icon} alt={forum.name} />
               <section>
                 <small>FÓRUM</small>
