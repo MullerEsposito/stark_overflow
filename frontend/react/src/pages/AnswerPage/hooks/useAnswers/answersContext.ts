@@ -1,4 +1,4 @@
-import { Answer } from "pages/AnswerPage/types";
+import { Answer } from "@app-types/answer";
 import { createContext } from "react";
 
 export interface AnswersContextProps {
