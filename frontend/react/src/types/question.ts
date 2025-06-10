@@ -1,13 +1,3 @@
-import { QuestionStatus } from "./contract-types"
-
-export interface ContractQuestion {
-  id: bigint
-  author: bigint
-  description: string
-  value: bigint
-  status: QuestionStatus
-}
-
 export type Question = {
   id: string;
   title: string;

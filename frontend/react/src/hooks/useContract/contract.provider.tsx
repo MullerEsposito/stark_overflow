@@ -5,12 +5,11 @@ import { formatters } from '@utils/formatters'
 import { contractAnswerToFrontend, contractQuestionToFrontend } from '@utils/contractTypeMapping'
 import { ERROR_MESSAGES } from './errors'
 import { ContractState, Question, Answer, StarkOverflowABI } from '@app-types/index'
+import { Question as ContractQuestion, Answer as ContractAnswer } from '@app-types/contract-types'
 
 interface ContractProviderProps {
   children: ReactNode
 }
-
-import { StarknetTypedContract } from "@starknet-react/core"
 
 export function ContractProvider({ children }: ContractProviderProps) {
   const { isConnected, address } = useAccount()
@@ -27,7 +26,7 @@ export function ContractProvider({ children }: ContractProviderProps) {
     transactionHash: null
   })
 
-  const { contract } = useContract<typeof StarkOverflowABI>({ abi: StarkOverflowABI, address: import.meta.env.VITE_CONTRACT_ADDRESS }) as { contract: StarknetTypedContract<typeof StarkOverflowABI> | undefined }
+  const { contract } = useContract<typeof StarkOverflowABI>({ abi: StarkOverflowABI, address: import.meta.env.VITE_CONTRACT_ADDRESS })
 
   const fetchQuestion = useCallback(async (questionId: number): Promise<Question | null> => {
     if (!contract) {
@@ -38,7 +37,7 @@ export function ContractProvider({ children }: ContractProviderProps) {
     setQuestionState({ isLoading: true, error: null, transactionHash: null })
 
     try {
-      const contractQuestion = await contract.get_question(formatters.numberToBigInt(questionId))
+      const contractQuestion = (await contract.get_question(formatters.numberToBigInt(questionId))) as unknown as ContractQuestion
 
       if (!contractQuestion.description || !contractQuestion.id) {
         setQuestionState({ isLoading: false, error: ERROR_MESSAGES.QUESTION_NOT_FOUND, transactionHash: null })
@@ -46,7 +45,6 @@ export function ContractProvider({ children }: ContractProviderProps) {
       }
 
       const question = contractQuestionToFrontend(contractQuestion)
-      console.log(question)
       setQuestionState({ isLoading: false, error: null, transactionHash: null })
       return question
     } catch (error) {
@@ -66,7 +64,7 @@ export function ContractProvider({ children }: ContractProviderProps) {
 
     try {
       const [contractAnswers, correctAnswerId] = await Promise.all([
-        contract.get_answers(formatters.numberToBigInt(questionId)),
+        (await contract.get_answers(formatters.numberToBigInt(questionId))) as unknown as ContractAnswer[],
         contract.get_correct_answer(formatters.numberToBigInt(questionId)).catch(() => BigInt(0))
       ])
 
