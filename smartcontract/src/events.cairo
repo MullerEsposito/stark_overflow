@@ -37,6 +37,17 @@ pub struct ReputationAdded {
 }
 
 #[derive(Drop, starknet::Event)]
+pub struct AnswerVoted {
+  #[key]
+  pub voter: ContractAddress,
+  #[key]
+  pub answer_id: u256,
+  pub question_id: u256,
+  pub is_upvote: bool,
+  pub previous_vote: u8 // 0: no previous vote, 1: was upvote, 2: was downvote
+}
+
+#[derive(Drop, starknet::Event)]
 pub struct StakeStarted {
   #[key]
   pub staker: ContractAddress,

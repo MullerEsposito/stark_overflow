@@ -30,35 +30,35 @@ function AnswerPageContent() {
   const { statusMessage } = useStatusMessage()
   const { isConnected } = useAccount()
 
-  
+
   const [question, setQuestion] = useState<QuestionType | null>(null)
-  
-  const { 
-    fetchQuestion, 
-    questionLoading, 
-    questionError, 
+
+  const {
+    fetchQuestion,
+    questionLoading,
+    questionError,
     clearQuestionError,
-    contractReady 
+    contractReady
   } = useContract()
 
   // Fetch question data from contract
   useEffect(() => {
     if (questionId && contractReady) {
       console.log(`Fetching question with ID: ${questionId}`)
-      
+
       const loadQuestion = async () => {
         const contractQuestion = await fetchQuestion(questionId)
         if (contractQuestion) {
           setQuestion(contractQuestion)
         }
       }
-      
+
       loadQuestion()
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId, contractReady])
 
-  if(!isConnected && !contractReady) {
+  if (!isConnected && !contractReady) {
     return (
       <QuestionDetailContainer>
         <div style={{ padding: "20px", textAlign: "center" }}>
@@ -98,7 +98,7 @@ function AnswerPageContent() {
         <div style={{ padding: "20px", textAlign: "center" }}>
           <p>Question not found</p>
         </div>
-      </QuestionDetailContainer>  
+      </QuestionDetailContainer>
     )
   }
 
@@ -111,9 +111,7 @@ function AnswerPageContent() {
           <Answers question={question} setQuestion={setQuestion} />
 
           {question.isOpen && <AnswerEditor questionId={questionId || ""} />}
-        </AnswersProvider>
-
-        {statusMessage?.type && (
+        </AnswersProvider>        {statusMessage?.type && (
           <StatusMessage type={statusMessage.type}>
             {statusMessage.message}
           </StatusMessage>

@@ -29,6 +29,17 @@ export function useContract() {
     error: null,
     transactionHash: null
   })
+  const [markCorrectState, setMarkCorrectState] = useState<ContractState>({
+    isLoading: false,
+    error: null,
+    transactionHash: null
+  })
+
+  const [voteState, setVoteState] = useState<ContractState>({
+    isLoading: false,
+    error: null,
+    transactionHash: null
+  })
 
 
 
@@ -94,11 +105,134 @@ export function useContract() {
   }, [contract, abiError])
 
 
+  // Mark answer as correct
+  const markAnswerAsCorrect = useCallback(async (questionId: string, answerId: string): Promise<boolean> => {
+    if (!contract || abiError || !isConnected) {
+      setMarkCorrectState({
+        isLoading: false,
+        error: abiError || "Contract not initialized or wallet not connected",
+        transactionHash: null
+      })
+      return false
+    }
+
+    setMarkCorrectState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      const questionIdBigInt = formatters.numberToBigInt(Number(questionId))
+      const answerIdBigInt = formatters.numberToBigInt(Number(answerId))
+
+      // Call the contract function
+      const result = await contract.mark_answer_as_correct(questionIdBigInt, answerIdBigInt)
+
+      setMarkCorrectState({
+        isLoading: false,
+        error: null,
+        transactionHash: result?.transaction_hash || null
+      })
+
+      return true
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to mark answer as correct"
+      setMarkCorrectState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return false
+    }
+  }, [contract, abiError, isConnected])
+
+  // Check if an answer has already been marked as correct for a question
+  const getCorrectAnswer = useCallback(async (questionId: string): Promise<string | null> => {
+    if (!contract || abiError) {
+      return null
+    }
+
+    try {
+      const result = await contract.get_correct_answer(formatters.numberToBigInt(Number(questionId))) as bigint
+      return result && result !== BigInt(0) ? result.toString() : null
+    } catch (error) {
+      console.error("Error fetching correct answer:", error)
+      return null
+    }
+  }, [contract, abiError])
+
+  // Vote on answer
+  const voteAnswer = useCallback(async (questionId: string, answerId: string, isUpvote: boolean): Promise<boolean> => {
+    if (!contract || abiError || !isConnected) {
+      setVoteState({
+        isLoading: false,
+        error: abiError || "Contract not initialized or wallet not connected",
+        transactionHash: null
+      })
+      return false
+    }
+
+    setVoteState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      const questionIdBigInt = formatters.numberToBigInt(Number(questionId))
+      const answerIdBigInt = formatters.numberToBigInt(Number(answerId))
+
+      // Call the contract function
+      const result = await contract.vote_answer(questionIdBigInt, answerIdBigInt, isUpvote)
+
+      setVoteState({
+        isLoading: false,
+        error: null,
+        transactionHash: result?.transaction_hash || null
+      })
+
+      return true
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to vote on answer"
+      setVoteState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return false
+    }
+  }, [contract, abiError, isConnected])
+
+  // Get answer votes
+  const getAnswerVotes = useCallback(async (answerId: string): Promise<{ upvotes: number; downvotes: number } | null> => {
+    if (!contract || abiError) {
+      return null
+    }
+
+    try {
+      const answerIdBigInt = formatters.numberToBigInt(Number(answerId))
+      const [upvotes, downvotes] = await contract.get_answer_votes(answerIdBigInt) as [bigint, bigint]
+
+      return {
+        upvotes: Number(upvotes),
+        downvotes: Number(downvotes)
+      }
+    } catch (error) {
+      console.error("Error fetching answer votes:", error)
+      return null
+    }
+  }, [contract, abiError])
+
+  // Get user's vote on an answer
+  const getUserVote = useCallback(async (answerId: string): Promise<"up" | "down" | null> => {
+    if (!contract || abiError || !isConnected) {
+      return null
+    }
+
+    try {
+      const answerIdBigInt = formatters.numberToBigInt(Number(answerId))
+      const vote = await contract.get_user_vote(answerIdBigInt) as bigint
+
+      if (vote === BigInt(1)) return "up"
+      if (vote === BigInt(2)) return "down"
+      return null
+    } catch (error) {
+      console.error("Error fetching user vote:", error)
+      return null
+    }
+  }, [contract, abiError, isConnected])
+
 
   // Clear errors
   const clearQuestionError = useCallback(() => setQuestionState(prev => ({ ...prev, error: null })), [])
   const clearAnswersError = useCallback(() => setAnswersState(prev => ({ ...prev, error: null })), [])
-
+  const clearMarkCorrectError = useCallback(() => setMarkCorrectState(prev => ({ ...prev, error: null })), [])
+  const clearVoteError = useCallback(() => setVoteState(prev => ({ ...prev, error: null })), [])
   return {
     // Question fetching
     fetchQuestion,
@@ -112,12 +246,26 @@ export function useContract() {
     answersError: answersState.error,
     clearAnswersError,
 
+    // Mark answer as correct
+    markAnswerAsCorrect,
+    markCorrectLoading: markCorrectState.isLoading,
+    markCorrectError: markCorrectState.error,
+    markCorrectTransactionHash: markCorrectState.transactionHash,
+    clearMarkCorrectError,
+    getCorrectAnswer,
+
+    // Answer voting
+    voteAnswer,
+    voteLoading: voteState.isLoading,
+    voteError: voteState.error,
+    voteTransactionHash: voteState.transactionHash,
+    clearVoteError,
+    getAnswerVotes,
+    getUserVote,
 
     // General
     isConnected,
     contractReady,
-
     contract,
-
   }
-} 
+}
