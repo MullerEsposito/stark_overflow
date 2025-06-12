@@ -46,8 +46,6 @@ function AnswerPageContent() {
   // Fetch question data from contract
   useEffect(() => {
     if (questionId && contractReady) {
-      console.log(`Fetching question with ID: ${questionId}`)
-
       const loadQuestion = async () => {
         const contractQuestion = await fetchQuestion(questionId)
         if (contractQuestion) {

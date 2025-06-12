@@ -20,7 +20,6 @@ export function AnswersProvider({ children, questionId }: AnswersProviderProps) 
     if (questionId) {
       const loadAnswers = async () => {
         setIsLoading(true)
-        console.log("fetching answers", questionId, "___")
         const contractAnswers = await fetchAnswers(questionId)
         setAnswers(contractAnswers)
         setIsLoading(false)

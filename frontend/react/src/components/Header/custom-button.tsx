@@ -42,7 +42,6 @@ export function ConnectButton() {
     // Handle wallet connection
     const handleConnect = (connector: Connector) => {
       connect({ connector });
-      console.log(connector);
       closeConnectModal();
     };
     

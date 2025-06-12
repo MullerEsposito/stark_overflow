@@ -20,11 +20,7 @@ export function SubmitButton({ questionId }: { questionId: number }) {
   // send submit request
   const { sendAsync: submitAnswer, error: sendError } = useSendTransaction({
     calls: contract && address && content.trim() && questionId && isConnected
-      ? [{
-        contractAddress: contract.address,
-        entrypoint: "submit_answer",
-        calldata: [formatters.numberToBigInt(questionId), content]
-      }]
+      ? [contract.populate("submit_answer", [formatters.numberToBigInt(questionId), content])]
       : undefined,
   })
 
