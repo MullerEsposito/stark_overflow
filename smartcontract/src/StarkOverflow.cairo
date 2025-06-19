@@ -10,8 +10,7 @@ pub trait IStarkOverflow<T> {
   fn add_funds_to_question(ref self: T, question_id: u256, value: u256);
   fn submit_answer(ref self: T, question_id: u256, description: ByteArray) -> AnswerId;
   fn get_answer(self: @T, answer_id: u256) -> Answer;
-  fn get_answers(self: @T, question_id: u256) -> Array<Answer>;
-  fn mark_answer_as_correct(ref self: T, question_id: u256, answer_id: u256);
+  fn get_answers(self: @T, question_id: u256) -> Array<Answer>;  fn mark_answer_as_correct(ref self: T, question_id: u256, answer_id: u256);
   fn get_correct_answer(self: @T, question_id: u256) -> AnswerId;
 
   // Question staking functions
@@ -48,8 +47,7 @@ pub mod StarkOverflow {
   impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
   impl InternalImpl = OwnableComponent::InternalImpl<ContractState>;
   impl ERC20Impl = ERC20Component::ERC20Impl<ContractState>;   
-  
-  #[event]
+    #[event]
   #[derive(Drop, starknet::Event)]
   pub enum Event {
     QuestionAnswered: QuestionAnswered,
@@ -70,8 +68,7 @@ pub mod StarkOverflow {
     last_question_id: u256,
     answers: Map<u256, Answer>,
     last_answer_id: u256,
-    question_id_answers_ids: Map<u256, Vec<u256>>,
-    question_id_chosen_answer_id: Map<u256, u256>,
+    question_id_answers_ids: Map<u256, Vec<u256>>,    question_id_chosen_answer_id: Map<u256, u256>,
     governance_token_dispatcher: IStarkOverflowTokenDispatcher,
 
     // Question staking storage
@@ -319,15 +316,15 @@ pub mod StarkOverflow {
       let reward = (staked_amount * rate * duration_u256) / 1000000000000000000;
 
       reward
-    }
-
+    }    
+    
     fn get_stake_info(self: @ContractState, staker: ContractAddress) -> (u256, u64, u256) {
       let staked_amount = self.staked_balances.read(staker);
       let start_time = self.staking_start_time.read(staker);
       let rewards = self.get_claimable_rewards(staker);
 
       (staked_amount, start_time, rewards)
-    }   
+    }
   }
   
   #[generate_trait]

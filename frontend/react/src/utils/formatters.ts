@@ -3,18 +3,9 @@ import { CairoCustomEnum } from "starknet";
 
 export const formatters = {
   // Convert bigint to hex address format
-  bigIntToAddress: (str: bigint) => {
-    if (!str) return '';
-    
-    // Remove any 0x prefix if present
-    const hex = str.toString().replace(/^0x/, '');
-    
-    // Validate that it's a valid hex string
-    if (!/^[0-9a-f]+$/.test(hex)) {
-      throw new Error('Invalid hex string');
-    }
-    
-    // Pad to 64 characters and add 0x prefix
+  bigIntToAddress: (bigInt: bigint) => {
+    if (!bigInt) return '';
+    const hex = bigInt.toString(16);
     return `0x${hex.padStart(64, '0')}`;
   },
 
