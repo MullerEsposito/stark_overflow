@@ -1,15 +1,18 @@
 import styled from "styled-components";
 
 export const HeaderContainer = styled.header`
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: center;
   width: 100%;
   padding: 0 20px;
   border-bottom: 1px solid ${(props) => props.theme.borderColor};
 
   a {
-    margin: 0 auto;
-    transform: translateX(24px);
+    grid-column: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 `;
 
