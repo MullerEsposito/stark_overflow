@@ -5,10 +5,13 @@ import { useState } from "react"
 import { PaperPlaneRight, Link as LinkIcon, Tag, CurrencyDollar } from "phosphor-react"
 import { Container, Form, Button, TransactionStatus } from "./style"
 import { NavLink, useNavigate } from "react-router-dom"
-import { useAccount } from "@starknet-react/core"
+import { useAccount, useSendTransaction } from "@starknet-react/core"
 import { InputForm } from "./InputForm"
 import { EditorForm } from "./EditorForm"
 import { useWallet } from "@hooks/useWallet"
+import { useContract } from "@hooks/useContract"
+import { formatters } from "@utils/formatters"
+import { shortenAddress } from "@utils/shortenAddress"
 
 export function QuestionPage() {
   const [title, setTitle] = useState("")
@@ -18,11 +21,16 @@ export function QuestionPage() {
   const [tags, setTags] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
   
-  const [transactionStatus, setTransactionStatus] = useState<"idle" | "processing" | "success" | "error">("idle")
-  
   const navigate = useNavigate()
   const { isConnected } = useAccount()
   const { openConnectModal } = useWallet()
+  const { contract } = useContract();
+
+  const { sendAsync, data, isPending, error } = useSendTransaction({
+    calls: contract && description && amount
+        ? [contract.populate("ask_question", [description, formatters.numberToBigInt(Number(amount) * 10**18)])]
+        : undefined,
+  });
 
   
   // Form validation
@@ -65,21 +73,15 @@ export function QuestionPage() {
     }
 
     try {
-      setTransactionStatus("processing")
-
-      // Simulate blockchain transaction
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      // Success
-      setTransactionStatus("success")
-
-      // Redirect after successful submission
-      setTimeout(() => {
-        navigate("/forum/reactjs")
-      }, 1500)
-    } catch (error) {
-      console.error("Transaction error:", error)
-      setTransactionStatus("error")
+      const result = await sendAsync();
+      if (result.transaction_hash) {
+        // Redirect after successful submission
+        setTimeout(() => {
+          navigate("/forum/reactjs")
+        }, 2000)
+      }
+    } catch (err) {
+      console.error("Transaction error:", err)
     }
   }
 
@@ -147,17 +149,17 @@ export function QuestionPage() {
               Discard
             </Button>
           </NavLink>
-          <Button variant="publish" type="submit" disabled={transactionStatus === "processing"}>
-            {transactionStatus === "processing" ? "Publishing..." : "Publish"}
-            {transactionStatus !== "processing" && <PaperPlaneRight size={20} />}
+          <Button variant="publish" type="submit" disabled={isPending}>
+            {isPending ? "Publishing..." : "Publish"}
+            {!isPending && <PaperPlaneRight size={20} />}
           </Button>
         </div>
 
-        {transactionStatus !== "idle" && (
-          <TransactionStatus status={transactionStatus}>
-            {transactionStatus === "processing" && "Processing transaction..."}
-            {transactionStatus === "success" && "Question published successfully!"}
-            {transactionStatus === "error" && "Transaction failed. Please try again."}
+        {(isPending || data || error) && (
+          <TransactionStatus status={isPending ? "processing" : data ? "success" : "error"}>
+            {isPending && "Processing transaction..."}
+            {data && `Question published successfully! Tx: ${shortenAddress(data.transaction_hash)}`}
+            {error && `Transaction failed: ${error.message}`}
           </TransactionStatus>
         )}
       </Form>
