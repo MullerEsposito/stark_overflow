@@ -39,6 +39,7 @@ export function App() {
             <WalletDetector />
             <Router />
           </BrowserRouter>
+          <GlobalStyle />
         </ContractProvider>
       </WalletProvider>
     </StatusMessageProvider>
