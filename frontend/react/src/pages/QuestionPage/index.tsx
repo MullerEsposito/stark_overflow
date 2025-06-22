@@ -12,6 +12,7 @@ import { useWallet } from "@hooks/useWallet"
 import { useContract } from "@hooks/useContract"
 import { formatters } from "@utils/formatters"
 import { shortenAddress } from "@utils/shortenAddress"
+import { cairo } from "starknet"
 
 export function QuestionPage() {
   const [title, setTitle] = useState("")
@@ -26,14 +27,19 @@ export function QuestionPage() {
   const { openConnectModal } = useWallet()
   const { contract } = useContract();
 
-  const { sendAsync, data, isPending, error } = useSendTransaction({
+  const tokenAddress = "0x045fd9335f323ab646ee6fea36ec88ebb4a130a68289cb074f8221478fcb99b6"
+  const amountToApprove = cairo.uint256(Number(amount))
+
+  const { sendAsync: askQuestion, isPending: isTransactionPending, data: transactionData, error: transactionError } = useSendTransaction({
     calls: contract && description && amount
-        ? [contract.populate("ask_question", [description, formatters.numberToBigInt(Number(amount) * 10**18)])]
-        : undefined,
+      ? [{
+          contractAddress: tokenAddress,
+          entrypoint: "approve",
+          calldata: [contract.address, amountToApprove.low, amountToApprove.high],
+        }, contract.populate("ask_question", [description, formatters.numberToBigInt(Number(amount))])]
+      : undefined,
   });
 
-  
-  // Form validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
@@ -59,7 +65,6 @@ export function QuestionPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -73,15 +78,16 @@ export function QuestionPage() {
     }
 
     try {
-      const result = await sendAsync();
+      const result = await askQuestion()
       if (result.transaction_hash) {
         // Redirect after successful submission
         setTimeout(() => {
           navigate("/forum/reactjs")
         }, 2000)
       }
-    } catch (err) {
-      console.error("Transaction error:", err)
+    } catch (error) {
+      console.error("Transaction error:", error)
+      throw error
     }
   }
 
@@ -149,17 +155,17 @@ export function QuestionPage() {
               Discard
             </Button>
           </NavLink>
-          <Button variant="publish" type="submit" disabled={isPending}>
-            {isPending ? "Publishing..." : "Publish"}
-            {!isPending && <PaperPlaneRight size={20} />}
+          <Button variant="publish" type="submit" disabled={isTransactionPending}>
+            {isTransactionPending ? "Publishing..." : "Publish"}
+            {!isTransactionPending && <PaperPlaneRight size={20} />}
           </Button>
         </div>
 
-        {(isPending || data || error) && (
-          <TransactionStatus status={isPending ? "processing" : data ? "success" : "error"}>
-            {isPending && "Processing transaction..."}
-            {data && `Question published successfully! Tx: ${shortenAddress(data.transaction_hash)}`}
-            {error && `Transaction failed: ${error.message}`}
+        {(isTransactionPending || transactionData || transactionError) && (
+          <TransactionStatus status={(isTransactionPending) ? "processing" : (transactionData) ? "success" : "error"}>
+            {isTransactionPending && "Processing transaction..."}
+            {transactionData && `Transaction processed successfully! Tx: ${shortenAddress(String(transactionData?.transaction_hash))}`}
+            {transactionError && `Transaction failed: ${(transactionError)?.message}`}
           </TransactionStatus>
         )}
       </Form>
