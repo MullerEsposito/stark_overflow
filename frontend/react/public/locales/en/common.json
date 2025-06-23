@@ -1,0 +1,8 @@
+{
+  "connectWallet": "Connect Wallet",
+  "disconnectWallet": "Disconnect Wallet",
+  "walletRequired": "Wallet Required",
+  "walletNeeded": "To use StarkOverflow, you need to install a StarkNet wallet. We recommend one of the following:",
+  "loading": "Loading...",
+  "forums": "Forums"
+}

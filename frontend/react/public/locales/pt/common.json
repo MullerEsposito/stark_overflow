@@ -1,0 +1,8 @@
+{
+  "connectWallet": "Conectar Carteira",
+  "disconnectWallet": "Desconectar Carteira",
+  "walletRequired": "Carteira Necessária",
+  "walletNeeded": "Para usar o StarkOverflow, você precisa instalar uma carteira StarkNet. Recomendamos uma das seguintes:",
+  "loading": "Carregando...",
+  "forums": "Fóruns"
+}
