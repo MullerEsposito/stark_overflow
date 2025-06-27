@@ -4,5 +4,9 @@
   "walletRequired": "Wallet Required",
   "walletNeeded": "To use StarkOverflow, you need to install a StarkNet wallet. We recommend one of the following:",
   "loading": "Loading...",
-  "forums": "Forums"
+  "forums": "Forums",
+  "topics": "Topics",
+  "amount": "Amount",
+  "replies": "Replies",
+  "searchPlaceholder": "Enter a term to search..."
 }

@@ -1,0 +1,9 @@
+{
+    "title": "Ask a public question",
+    "formTitle": "Title",
+    "formTitlePlaceholder": "e.g. How to connect my wallet on Starknet?",
+    "formProblem": "Describe your problem",
+    "formTags": "Tags",
+    "formTagsPlaceholder": "e.g. (react starknet)",
+    "submit": "Submit your question"
+}

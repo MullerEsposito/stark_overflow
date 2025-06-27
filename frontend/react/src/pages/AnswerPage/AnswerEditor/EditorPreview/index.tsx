@@ -1,12 +1,14 @@
-import { EditorPreviewContainer } from "./styles";
 import { Suspense } from "react";
+import { useTranslation } from "react-i18next";
 import { useAnswerEditor } from "../useAnswerEditor";
-import remarkGfm from "remark-gfm";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { EditorPreviewContainer } from "./styles";
 
 export function EditorPreview() {
-  const { content } = useAnswerEditor()
-  // Custom components for ReactMarkdown
+  const { t } = useTranslation(['answer', 'question']);
+  const { content } = useAnswerEditor();
+  
   const components = {
     img: ({ ...props }) => (
       <img
@@ -15,19 +17,19 @@ export function EditorPreview() {
         style={{ maxWidth: "100%", borderRadius: "4px", margin: "8px 0" }}
       />
     ),
-  } 
-  
+  };
+
   return (
     <EditorPreviewContainer>
       {content ? (
-        <Suspense fallback={<p>Carregando visualização...</p>}>
+        <Suspense fallback={<p>{t('answer:loadingPreview')}</p>}>
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
             {content}
           </ReactMarkdown>
         </Suspense>
       ) : (
-        <p className="empty-preview">Your preview will appear here...</p>
+        <p className="empty-preview">{t('question:emptyPreview')}</p>
       )}
     </EditorPreviewContainer>
-  )
+  );
 }

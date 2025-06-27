@@ -1,7 +1,7 @@
 import { CheckCircle, CurrencyDollar, GithubLogo } from "phosphor-react";
 import { ActionButton, QuestionContainer, QuestionContent, QuestionFooter, QuestionHeader, QuestionMeta, QuestionTag, QuestionTitle, RepositoryLink, StakeInfo, TagsContainer } from "./styles";
 import { UserAvatar } from "../styles";
-
+import { useTranslation } from "react-i18next";
 import type { Question } from "@app-types/index";
 import React, { Suspense } from "react";
 import { useStaking } from "../hooks/useStaking";
@@ -15,7 +15,8 @@ interface QuestionProps {
 }
 
 export function Question({ question }: QuestionProps) {
-  const { setIsStakeModalOpen } = useStaking()
+  const { t } = useTranslation('answer');
+  const { setIsStakeModalOpen } = useStaking();
 
   return (
     <QuestionContainer>
@@ -46,7 +47,7 @@ export function Question({ question }: QuestionProps) {
       </QuestionHeader>
 
       <QuestionContent>
-        <Suspense fallback={<p>Carregando visualização...</p>}>
+        <Suspense fallback={<p>{t('loadingPreview')}</p>}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -72,7 +73,7 @@ export function Question({ question }: QuestionProps) {
             rel="noopener noreferrer"
           >
             <GithubLogo size={20} />
-            Link to repository
+            {t('repositoryLink')}
           </RepositoryLink>
         )}
         <StakeInfo>
@@ -80,7 +81,7 @@ export function Question({ question }: QuestionProps) {
           <span>{question.stakeAmount}</span>
           {question.isOpen && (
             <ActionButton onClick={() => setIsStakeModalOpen(true)}>
-              Add Stake
+              {t('addStake')}
             </ActionButton>
           )}
         </StakeInfo>

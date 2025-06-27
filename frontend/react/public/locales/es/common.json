@@ -4,5 +4,9 @@
   "walletRequired": "Cartera Requerida",
   "walletNeeded": "Para usar StarkOverflow, necesita instalar una cartera de StarkNet. Recomendamos una de las siguientes:",
   "loading": "Cargando...",
-  "forums": "Foros"
+  "forums": "Foros",
+  "topics": "Temas",
+  "amount": "Cantidad",
+  "replies": "Respuestas",
+  "searchPlaceholder": "Ingrese un término para buscar..."
 }

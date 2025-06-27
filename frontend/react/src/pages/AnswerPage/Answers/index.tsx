@@ -4,7 +4,7 @@ import { AnswerContent, AnswerDivider, AnswerFooter, AnswerHeader, AnswerItem, A
 import React, { useContext, useState, Suspense } from "react"
 import { useAccount } from "@starknet-react/core"
 import { shortenAddress } from "@utils/shortenAddress"
-
+import { useTranslation } from "react-i18next";
 import { AnswersContext } from "../hooks/useAnswers/answersContext"
 
 import type { Question } from "@app-types/index"
@@ -20,6 +20,7 @@ interface AnswersProps {
 }
 
 export function Answers({ question, setQuestion }: AnswersProps) {
+  const { t } = useTranslation('answer');
   const [sortBy, setSortBy] = useState<"votes" | "date">("votes")
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -46,7 +47,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
     }
 
     setIsLoading(true)
-    setStatusMessage({ type: "info", message: "Processing transaction..." })
+    setStatusMessage({ type: "info", message: t('statusMarkingCorrect') });
 
     try {
       // Simulate blockchain transaction
@@ -62,7 +63,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
 
       setStatusMessage({
         type: "success",
-        message: "Answer marked as correct! Funds have been transferred to the responder.",
+        message: t('statusMarkCorrectSuccess')
       })
 
       // Update question status
@@ -74,7 +75,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
       console.error("Transaction error:", error)
       setStatusMessage({
         type: "error",
-        message: "Failed to mark answer as correct. Please try again.",
+        message: t('statusMarkCorrectError')
       })
     } finally {
       setIsLoading(false)
@@ -108,29 +109,25 @@ export function Answers({ question, setQuestion }: AnswersProps) {
   // Check if current user is the question author
   const isQuestionAuthor = address && address.toLowerCase() === question.authorAddress.toLowerCase()
 
-  return (
+ return (
     <AnswersContainer>
-      <h2>Answers</h2>
+      <h2>{t('answersTitle')}</h2>
       <SortingOptions>
         <SortOption active={sortBy === "votes"} onClick={() => setSortBy("votes")}>
-          Votes
+          {t('sortVotes')}
         </SortOption>
         <SortOption active={sortBy === "date"} onClick={() => setSortBy("date")}>
-          Date
+          {t('sortDate')}
         </SortOption>
       </SortingOptions>
-
       <AnswersList>
         {sortedAnswers.length === 0 ? (
-          <p>No answers yet. Be the first to answer!</p>
+          <p>{t('noAnswers')}</p>
         ) : (
           sortedAnswers.map((answer) => (
             <AnswerItem key={answer.id} $isCorrect={answer.isCorrect}>
               <AnswerHeader>
-                <UserAvatar
-                  src={`https://avatars.dicebear.com/api/identicon/${answer.authorAddress}.svg`}
-                  alt={answer.authorName}
-                />
+                <UserAvatar src={`https://avatars.dicebear.com/api/identicon/${answer.authorAddress}.svg`} alt={answer.authorName} />
                 <div>
                   <span>{answer.authorName}</span>
                   <small>{shortenAddress(answer.authorAddress)}</small>
@@ -139,43 +136,25 @@ export function Answers({ question, setQuestion }: AnswersProps) {
                 {answer.isCorrect && (
                   <CorrectAnswerBadge>
                     <CheckCircle size={16} weight="fill" />
-                    Correct Answer
+                    {t('correctAnswer')}
                   </CorrectAnswerBadge>
                 )}
               </AnswerHeader>
-
               <AnswerContent>
-                <Suspense fallback={<p>Carregando visualização...</p>}>
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      img: ({ ...props }) => (
-                        <img
-                          src={props.src || "/placeholder.svg"}
-                          alt={props.alt || ""}
-                          style={{ maxWidth: "100%", borderRadius: "4px", margin: "8px 0" }}
-                        />
-                      ),
-                    }}
-                  >
+                <Suspense fallback={<p>{t('loadingPreview')}</p>}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ img: ({ ...props }) => (<img src={props.src || "/placeholder.svg"} alt={props.alt || ""} style={{ maxWidth: "100%", borderRadius: "4px", margin: "8px 0" }} />) }}>
                     {answer.content}
                   </ReactMarkdown>
                 </Suspense>
               </AnswerContent>
-
               <AnswerFooter>
                 <VoteContainer>
-                  <VoteButton onClick={() => handleVote(answer.id, "up")}>
-                    <ThumbsUp size={16} />
-                  </VoteButton>
+                  <VoteButton onClick={() => handleVote(answer.id, "up")}><ThumbsUp size={16} /></VoteButton>
                   <VoteCount>{answer.votes}</VoteCount>
-                  <VoteButton onClick={() => handleVote(answer.id, "down")}>
-                    <ThumbsDown size={16} />
-                  </VoteButton>
+                  <VoteButton onClick={() => handleVote(answer.id, "down")}><ThumbsDown size={16} /></VoteButton>
                 </VoteContainer>
-
                 {isQuestionAuthor && question.isOpen && !answer.isCorrect && (
-                  <MarkCorrectButton onClick={() => handleMarkCorrect(answer.id)}>Mark as Correct</MarkCorrectButton>
+                  <MarkCorrectButton onClick={() => handleMarkCorrect(answer.id)}>{t('markAsCorrect')}</MarkCorrectButton>
                 )}
               </AnswerFooter>
               <AnswerDivider />
@@ -183,23 +162,17 @@ export function Answers({ question, setQuestion }: AnswersProps) {
           ))
         )}
       </AnswersList>
-
       {answers.length > 5 && (
         <PaginationContainer>
           <PaginationButton disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
-            Previous
+            {t('paginationPrevious')}
           </PaginationButton>
-          <span>
-            Page {currentPage} of {Math.ceil(answers.length / 5)}
-          </span>
-          <PaginationButton
-            disabled={currentPage === Math.ceil(answers.length / 5)}
-            onClick={() => setCurrentPage(currentPage + 1)}
-          >
-            Next
+          <span>{t('paginationPage', { currentPage, totalPages: Math.ceil(answers.length / 5) })}</span>
+          <PaginationButton disabled={currentPage === Math.ceil(answers.length / 5)} onClick={() => setCurrentPage(currentPage + 1)}>
+            {t('paginationNext')}
           </PaginationButton>
         </PaginationContainer>
       )}
     </AnswersContainer>
-  )
+  );
 }
