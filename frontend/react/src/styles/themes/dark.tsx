@@ -12,6 +12,7 @@ export const darkTheme = {
   forum: {
     topicCard: {
       background: "#1e1e1e",
+      border: "1px solid #333333",
       text: "#e4e4e4",
       meta: "#b3b3b3",
     },

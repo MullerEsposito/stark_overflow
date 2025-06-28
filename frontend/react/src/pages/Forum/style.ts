@@ -37,6 +37,7 @@ export const TopicCard = styled.div`
   background: ${({ theme }) => theme.forum.topicCard.background};
   padding: 15px;
   border-radius: 8px;
+  border: ${({ theme }) => theme.forum.topicCard.border};
   margin-bottom: 10px;
   display: flex;
   justify-content: space-between;

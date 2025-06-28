@@ -1,9 +1,9 @@
 export const lightTheme = {
-  background: "#f8f9fa",
+  background: "#fefeff",
   text: "#212529",
-  cardBackground: "#ffffff",
+  cardBackground: "#f8f8f8",
   borderColor: "#dee2e6",
-  connectBg: "#121212",
+  connectBg: "#040457eb",
   connectText: "#e4e4e4",
   textSecondary: "#6c757d",
   hover: "#e2e6ea",
@@ -11,7 +11,8 @@ export const lightTheme = {
   secondary: "#f8f9fa",
   forum: {
     topicCard: {
-      background: "#e3e0e0",
+      background: "#f8f8f8",
+      border: "1px solid #dee2e6",
       text: "#212529",
       meta: "#949393",
     },
