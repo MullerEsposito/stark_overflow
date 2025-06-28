@@ -1,0 +1,9 @@
+{
+    "title": "Haz una pregunta pública",
+    "formTitle": "Título",
+    "formTitlePlaceholder": "ej. ¿Cómo conectar mi cartera en Starknet?",
+    "formProblem": "Describe tu problema",
+    "formTags": "Etiquetas",
+    "formTagsPlaceholder": "ej. (react starknet)",
+    "submit": "Envia tu pregunta"
+}

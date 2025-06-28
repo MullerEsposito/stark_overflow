@@ -1,7 +1,10 @@
 "use client"
 
-import { NavLink } from "react-router-dom"
-import { SearchInput } from "../../components/SearchInput"
+import { NavLink, useParams } from "react-router-dom";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { CheckCircle, CurrencyDollar, Question } from "phosphor-react";
+import { SearchInput } from "../../components/SearchInput";
 import {
   Button,
   ForumContainer,
@@ -13,15 +16,14 @@ import {
   TopicInfo,
   TopicMeta,
   TopicTitle,
-} from "./style"
-import { CheckCircle, CurrencyDollar, Question } from "phosphor-react"
-import { useState } from "react"
-import { useParams } from "react-router-dom"
+} from "./style";
 
 export function Forum() {
-  const { name } = useParams<{ name: string }>()
+  const { name } = useParams<{ name: string }>();
+  const { t } = useTranslation(['forum', 'common']);
 
   const initialTopics = [
+    // Your initial topics data here
     {
       id: "1",
       avatar: "https://avatars.githubusercontent.com/u/62848833?v=4",
@@ -58,25 +60,27 @@ export function Forum() {
       amount: "2500,00",
       state: "open",
     },
-  ]
-  const [topics, setTopics] = useState(initialTopics)
+  ];
+
+  const [topics, setTopics] = useState(initialTopics);
 
   const handleSearch = (searchTerm: string) => {
     if (searchTerm === "") {
-      setTopics(initialTopics)
-      return
+      setTopics(initialTopics);
+      return;
     }
-
-    const filteredTopics = initialTopics.filter((topic) => topic.title.toLowerCase().includes(searchTerm.toLowerCase()))
-    setTopics(filteredTopics)
-  }
+    const filteredTopics = initialTopics.filter((topic) =>
+      topic.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setTopics(filteredTopics);
+  };
 
   return (
     <ForumContainer>
       <Header>
         <SearchInput onSearch={handleSearch} />
         <NavLink to={`/forum/${name}/question`}>
-          <Button>New Question</Button>
+          <Button>{t('newQuestion')}</Button>
         </NavLink>
       </Header>
       <ForumList>
@@ -109,5 +113,5 @@ export function Forum() {
         ))}
       </ForumList>
     </ForumContainer>
-  )
+  );
 }

@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { MagnifyingGlass } from "phosphor-react";
+import { useTranslation } from 'react-i18next';
 import { Input, SearchInputContainer } from "./style";
-
 
 interface SearchInputProps {
   onSearch: (searchTerm: string) => void;
 }
 
-export function  SearchInput({ onSearch }: SearchInputProps){
+export function SearchInput({ onSearch }: SearchInputProps) {
+  const { t } = useTranslation('common');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -31,12 +32,12 @@ export function  SearchInput({ onSearch }: SearchInputProps){
   return (
     <SearchInputContainer>
       <MagnifyingGlass size={24} color="#b3b3b3" weight="fill" />
-      <Input 
-      placeholder="Enter a term to search..."
-      value={searchTerm}
-      onChange={handleInputChange}
-      ref={inputRef}
-       />
+      <Input
+        placeholder={t('searchPlaceholder')}
+        value={searchTerm}
+        onChange={handleInputChange}
+        ref={inputRef}
+      />
     </SearchInputContainer>
   );
 }

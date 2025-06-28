@@ -1,0 +1,20 @@
+{
+    "asked": "perguntou",
+    "ago": "atrás",
+    "repositoryLink": "Link para o repositório",
+    "addStake": "Adicionar stake",
+    "answersTitle": "Respostas",
+    "noAnswers": "Ainda não há respostas. Seja o primeiro a responder!",
+    "correctAnswer": "Resposta Correta",
+    "loadingPreview": "Carregando visualização...",
+    "markAsCorrect": "Marcar como Correta",
+    "yourAnswer": "Sua Resposta",
+    "submitAnswer": "Postar Sua Resposta",
+    "statusMarkingCorrect": "Processando transação...",
+    "statusMarkCorrectSuccess": "Resposta marcada como correta! Os fundos foram transferidos para o respondente.",
+    "statusMarkCorrectError": "Falha ao marcar a resposta como correta. Por favor, tente novamente.",
+    "errorNotAuthor": "Apenas o autor da pergunta pode marcar uma resposta como correta.",
+    "errorQuestionResolved": "Esta pergunta já foi resolvida.",
+    "errorAnswerAlreadyMarked": "Uma resposta já foi marcada como correta para esta pergunta.",
+    "errorInvalidAnswer": "A resposta selecionada não é válida para esta pergunta."
+}
