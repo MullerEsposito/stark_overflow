@@ -24,7 +24,7 @@ export function InputForm({ label, tooltipText, error, value, id, placeholder, s
         tooltipText={tooltipText}
         error={error}
       />
-      <InputContainer hasError={!!error}>
+      <InputContainer $hasError={!!error}>
         {children}
         <input
           id={id}

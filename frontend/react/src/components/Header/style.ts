@@ -2,11 +2,12 @@ import styled from "styled-components";
 
 export const HeaderContainer = styled.header`
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: 100%;
   padding: 0 20px;
   border-bottom: 1px solid ${(props) => props.theme.borderColor};
+  min-height: 60px;
 
   a {
     grid-column: 2;
@@ -14,10 +15,36 @@ export const HeaderContainer = styled.header`
     justify-content: center;
     align-items: center;
   }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr auto 1fr;
+    padding: 0 16px;
+    min-height: 56px;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr auto 1fr;
+    padding: 0 12px;
+    min-height: 52px;
+  }
 `;
 
 export const Logo = styled.img`
   width: 10rem;
+  height: auto;
+  max-width: 100%;
+
+  @media (max-width: 768px) {
+    width: 8rem;
+  }
+
+  @media (max-width: 480px) {
+    width: 6rem;
+  }
+
+  @media (max-width: 320px) {
+    width: 5rem;
+  }
 `;
 
 export const ToggleThemeButton = styled.button`
@@ -25,8 +52,26 @@ export const ToggleThemeButton = styled.button`
   border: none;
   cursor: pointer;
   color: ${(props) => props.theme.text};
-`;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
 
+  &:hover {
+    background-color: ${(props) => props.theme.secondary || "rgba(0, 0, 0, 0.05)"};
+  }
+
+  @media (max-width: 480px) {
+    padding: 6px;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+`;
 
 export const ConnectButtonContainer = styled.div`
   position: relative;

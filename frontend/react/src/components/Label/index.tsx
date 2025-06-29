@@ -17,7 +17,7 @@ export function Label({ labelText, inputValue, inputId, tooltipText, error }: La
         <Info size={16} />
         {tooltipText && <TooltipText>{tooltipText}</TooltipText>}
       </Tooltip>
-      <ValidationIndicator valid={!error && inputValue.length > 0} />
+      <ValidationIndicator $valid={!error && inputValue.length > 0} />
     </LabelContainer>
   )
 }

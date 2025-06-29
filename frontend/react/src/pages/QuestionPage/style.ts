@@ -13,11 +13,51 @@ export const Container = styled.div`
   h2 {
     margin-bottom: 24px;
     font-size: 1.5rem;
+    font-weight: 700;
   }
 
   @media (max-width: 850px) {
     width: 90%;
     padding: 16px;
+    margin: 16px auto;
+    
+    h2 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    width: 95%;
+    padding: 12px;
+    margin: 12px auto;
+    
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    width: 98%;
+    padding: 8px;
+    margin: 8px auto;
+    
+    h2 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+    }
+  }
+
+  @media (max-width: 320px) {
+    width: 100%;
+    padding: 6px;
+    margin: 6px auto;
+    
+    h2 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
   }
 `
 
@@ -31,6 +71,26 @@ export const Form = styled.form`
     justify-content: flex-end;
     gap: 12px;
     margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 768px) {
+    gap: 16px;
+
+    .buttons {
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    gap: 12px;
+
+    .buttons {
+      gap: 6px;
+      margin-top: 6px;
+    }
   }
 `
 
@@ -45,6 +105,7 @@ export const Button = styled.button<{ variant: "cancel" | "publish" }>`
   border: none;
   cursor: pointer;
   transition: 0.2s;
+  white-space: nowrap;
   
   ${({ variant, theme }) =>
     variant === "publish"
@@ -70,6 +131,25 @@ export const Button = styled.button<{ variant: "cancel" | "publish" }>`
             color: ${theme.background};
           }
         `}
+
+  @media (max-width: 768px) {
+    padding: 12px 16px;
+    font-size: 1rem;
+    justify-content: center;
+    width: 100%;
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    gap: 6px;
+  }
+
+  @media (max-width: 320px) {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    gap: 4px;
+  }
 `
 
 const statusAnimation = keyframes`
@@ -89,6 +169,7 @@ export const TransactionStatus = styled.div<{ status: "idle" | "processing" | "s
   margin-top: 16px;
   text-align: center;
   animation: ${statusAnimation} 0.3s ease-out;
+  word-break: break-word;
   
   ${({ status }) => {
     switch (status) {
@@ -114,4 +195,16 @@ export const TransactionStatus = styled.div<{ status: "idle" | "processing" | "s
         return ""
     }
   }}
+
+  @media (max-width: 768px) {
+    padding: 10px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px;
+    margin-top: 8px;
+    font-size: 0.85rem;
+  }
 `
