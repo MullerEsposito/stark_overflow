@@ -20,6 +20,7 @@ export const ModalContent = styled.div`
   max-width: 400px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
   animation: modalFadeIn 0.3s ease-out;
+  position: relative;
   
   @keyframes modalFadeIn {
     from {
@@ -164,13 +165,12 @@ const spin = keyframes`
 export const LoadingSpinner = styled.div`
   position: fixed;
   top: 50%;
-  left: 50%;
   transform: translate(-50%, -50%);
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(124, 58, 237, 0.1);
+  border: 4px solid rgba(7, 2, 16, 0.5);
   border-radius: 50%;
   border-top: 4px solid #7c3aed;
   animation: ${spin} 1s linear infinite;
-  z-index: 1000;
+  z-index: 1200;
 `

@@ -99,5 +99,5 @@ export const TopicFooter = styled.footer`
   justify-content: space-between;
   gap: 0.5rem;
   margin-left: auto;
-  min-width: 100px;
+  min-width: 30px;
 `;

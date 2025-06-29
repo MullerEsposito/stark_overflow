@@ -58,7 +58,7 @@ function AnswerPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [questionId, contractReady])
 
-  if (!isConnected && !contractReady) {
+  if (!isConnected || !contractReady) {
     return (
       <QuestionDetailContainer>
         <div style={{ padding: "20px", textAlign: "center" }}>
@@ -116,7 +116,7 @@ function AnswerPageContent() {
             </AnswerEditorProvider>
           )}
         </AnswersProvider>
-        
+
         {statusMessage?.type && (
           <StatusMessage type={statusMessage.type}>
             {statusMessage.message}

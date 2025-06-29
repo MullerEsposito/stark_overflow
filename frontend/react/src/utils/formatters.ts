@@ -27,10 +27,6 @@ export const formatters = {
     return bigInt.toString();
   },
 
-  numberToBigInt: (number: number) => {
-    return BigInt(number);
-  },
-
   formatStatus: (statusEnum: CairoCustomEnum): QuestionStatus => {
     const variant = statusEnum.activeVariant();
     if (variant === 'Open') return 'Open';

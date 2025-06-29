@@ -7,7 +7,7 @@ import { shortenAddress } from "@utils/shortenAddress";
 import { useAccount, useSendTransaction } from "@starknet-react/core";
 import { useAnswerEditor } from "../useAnswerEditor";
 import { useContract } from "@hooks/useContract";
-import { formatters } from "@utils/formatters";
+
 
 export function SubmitButton({ questionId }: { questionId: number }) {
   const { openConnectModal } = useWallet()
@@ -20,7 +20,7 @@ export function SubmitButton({ questionId }: { questionId: number }) {
   // send submit request
   const { sendAsync: submitAnswer, error: sendError } = useSendTransaction({
     calls: contract && address && content.trim() && questionId && isConnected
-      ? [contract.populate("submit_answer", [formatters.numberToBigInt(questionId), content])]
+      ? [contract.populate("submit_answer", [BigInt(questionId), content])]
       : undefined,
   })
 

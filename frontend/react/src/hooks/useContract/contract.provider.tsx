@@ -1,11 +1,12 @@
-import { useState, ReactNode, useCallback } from 'react'
+import { useState, ReactNode, useCallback, useMemo } from 'react'
 import { useAccount, useContract, useSendTransaction } from "@starknet-react/core"
+import { Contract, RpcProvider } from 'starknet'
 import { ContractContext } from './contract.context'
 import { formatters } from '@utils/formatters'
 import { contractAnswerToFrontend, contractQuestionToFrontend } from '@utils/contractTypeMapping'
 import { ERROR_MESSAGES } from './errors'
 import { ContractState, Question, Answer, StarkOverflowABI } from '@app-types/index'
-import { Question as ContractQuestion, Answer as ContractAnswer } from '@app-types/contract-types'
+import { Question as ContractQuestion, Answer as ContractAnswer, Uint256 } from '@app-types/contract-types'
 
 interface ContractProviderProps {
   children: ReactNode
@@ -32,10 +33,37 @@ export function ContractProvider({ children }: ContractProviderProps) {
     transactionHash: null
   })
 
+  const [stakingState, setStakingState] = useState<ContractState>({
+    isLoading: false,
+    error: null,
+    transactionHash: null
+  })
+
   const { contract } = useContract<typeof StarkOverflowABI>({ abi: StarkOverflowABI, address: import.meta.env.VITE_CONTRACT_ADDRESS })
 
+  // Create a read-only contract instance that works without wallet connection
+  const readOnlyContract = useMemo(() => {
+    if (!import.meta.env.VITE_CONTRACT_ADDRESS) return null
+
+    try {
+      const provider = new RpcProvider({
+        nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
+      })
+      return new Contract(StarkOverflowABI, import.meta.env.VITE_CONTRACT_ADDRESS, provider)
+    } catch (error) {
+      console.error('Error creating read-only contract:', error)
+      return null
+    }
+  }, [])
+
+  // Use the appropriate contract instance based on the operation type
+  const getContractForReading = useCallback(() => readOnlyContract || contract, [readOnlyContract, contract])
+  const getContractForWriting = useCallback(() => contract, [contract])
+
+
   const fetchQuestion = useCallback(async (questionId: number): Promise<Question | null> => {
-    if (!contract) {
+    const contractInstance = await getContractForReading()
+    if (!contractInstance) {
       setQuestionState({ isLoading: false, error: ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED, transactionHash: null })
       return null
     }
@@ -43,7 +71,12 @@ export function ContractProvider({ children }: ContractProviderProps) {
     setQuestionState({ isLoading: true, error: null, transactionHash: null })
 
     try {
-      const contractQuestion = (await contract.get_question(formatters.numberToBigInt(questionId))) as unknown as ContractQuestion
+      /* const contractQuestion = await (contractInstance.get_question(BigInt(questionId))) as unknown as ContractQuestion */
+
+      const [contractQuestion, totalStaked] = await Promise.all([
+        (await contractInstance.get_question(BigInt(questionId))) as unknown as ContractQuestion,
+        (await contractInstance.get_total_staked_on_question(BigInt(questionId)) as Promise<bigint>)
+      ])
 
       if (!contractQuestion.description || !contractQuestion.id) {
         setQuestionState({ isLoading: false, error: ERROR_MESSAGES.QUESTION_NOT_FOUND, transactionHash: null })
@@ -51,6 +84,7 @@ export function ContractProvider({ children }: ContractProviderProps) {
       }
 
       const question = contractQuestionToFrontend(contractQuestion)
+      question.stakeAmount = formatters.convertWeiToDecimal(Number(totalStaked))
       setQuestionState({ isLoading: false, error: null, transactionHash: null })
       return question
     } catch (error) {
@@ -58,10 +92,11 @@ export function ContractProvider({ children }: ContractProviderProps) {
       setQuestionState({ isLoading: false, error: errorMessage, transactionHash: null })
       return null
     }
-  }, [contract])
+  }, [getContractForReading])
 
   const fetchAnswers = useCallback(async (questionId: number): Promise<Answer[]> => {
-    if (!contract) {
+    const contractInstance = getContractForReading()
+    if (!contractInstance) {
       setAnswersState({ isLoading: false, error: ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED, transactionHash: null })
       return []
     }
@@ -70,8 +105,8 @@ export function ContractProvider({ children }: ContractProviderProps) {
 
     try {
       const [contractAnswers, correctAnswerId] = await Promise.all([
-        (await contract.get_answers(formatters.numberToBigInt(questionId))) as unknown as ContractAnswer[],
-        contract.get_correct_answer(formatters.numberToBigInt(questionId)).catch(() => BigInt(0))
+        (await contractInstance.get_answers(BigInt(questionId))) as unknown as ContractAnswer[],
+        contractInstance.get_correct_answer(BigInt(questionId)).catch(() => BigInt(0))
       ])
 
       const answers = contractAnswers.map((contractAnswer) =>
@@ -88,17 +123,19 @@ export function ContractProvider({ children }: ContractProviderProps) {
       setAnswersState({ isLoading: false, error: errorMessage, transactionHash: null })
       return []
     }
-  }, [contract])
-
-  const clearQuestionError = () => setQuestionState(prev => ({ ...prev, error: null }))
-  const clearAnswersError = () => setAnswersState(prev => ({ ...prev, error: null }))
+  }, [getContractForReading])
 
   const { sendAsync: markAnswerAsCorrectSendAsync } = useSendTransaction({
     calls: undefined,
   })
 
+  const { sendAsync: addFundsToQuestionSendAsync } = useSendTransaction({
+    calls: undefined,
+  })
+
   const markAnswerAsCorrect = useCallback(async (questionId: string, answerId: string): Promise<boolean> => {
-    if (!contract || !isConnected) {
+    const contractInstance = getContractForWriting()
+    if (!contractInstance || !isConnected) {
       setMarkCorrectState({
         isLoading: false,
         error: "Contract not initialized or wallet not connected",
@@ -107,8 +144,8 @@ export function ContractProvider({ children }: ContractProviderProps) {
       return false
     }
 
-    const transaction = contract && questionId && answerId
-      ? [contract.populate("mark_answer_as_correct", [formatters.numberToBigInt(Number(questionId)), formatters.numberToBigInt(Number(answerId))])]
+    const transaction = contractInstance && questionId && answerId
+      ? [contractInstance.populate("mark_answer_as_correct", [BigInt(Number(questionId)), BigInt(Number(answerId))])]
       : undefined
 
     setMarkCorrectState({ isLoading: true, error: null, transactionHash: null })
@@ -136,27 +173,98 @@ export function ContractProvider({ children }: ContractProviderProps) {
       setMarkCorrectState({ isLoading: false, error: errorMessage, transactionHash: null })
       return false
     }
-  }, [contract, isConnected, markAnswerAsCorrectSendAsync])
+  }, [getContractForWriting, isConnected, markAnswerAsCorrectSendAsync])
+
+  // Add funds to question
+  const addFundsToQuestion = useCallback(async (questionId: number, amount: Uint256): Promise<boolean> => {
+    const contractInstance = await getContractForWriting()
+    if (!contractInstance || !isConnected) {
+      setStakingState({
+        isLoading: false,
+        error: "Contract not initialized or wallet not connected",
+        transactionHash: null
+      })
+      return false
+    }
+
+    setStakingState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      // first approve the amount , then add funds to question
+      const transaction = [
+        {
+          contractAddress: import.meta.env.VITE_TOKEN_ADDRESS,
+          entrypoint: "approve",
+          calldata: [contractInstance.address, amount.low, amount.high],
+        },
+        contractInstance.populate("add_funds_to_question", [
+          BigInt(questionId),
+          amount
+        ])]
+
+      const response = await addFundsToQuestionSendAsync(transaction)
+
+      if (response) {
+        setStakingState({
+          isLoading: false,
+          error: null,
+          transactionHash: response.transaction_hash || null
+        })
+        return true
+      }
+
+      return false
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to add funds to question"
+      setStakingState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return false
+    }
+  }, [getContractForWriting, isConnected, addFundsToQuestionSendAsync])
+
+  // Get total staked amount on question
+  const getTotalStakedOnQuestion = useCallback(async (questionId: number): Promise<number> => {
+    const contractInstance = await getContractForReading()
+    if (!contractInstance) {
+      return 0
+    }
+
+    try {
+      const result = await contractInstance.get_total_staked_on_question(BigInt(questionId)) as bigint
+      console.log("getTotalStakedOnQuestion", formatters.convertWeiToDecimal(Number(result)))
+      return formatters.convertWeiToDecimal(Number(result))
+      // return formatters.bigIntToNumber(Number(result))
+    } catch (error) {
+      console.error("Error fetching total staked amount:", error)
+      return 0
+    }
+  }, [getContractForReading])
 
   // Check if an answer has already been marked as correct for a question
   const getCorrectAnswer = useCallback(async (questionId: string): Promise<string | null> => {
-    if (!contract) {
+    const contractInstance = getContractForReading()
+    if (!contractInstance) {
       return null
     }
 
     try {
-      const result = await contract.get_correct_answer(formatters.numberToBigInt(Number(questionId))) as bigint
+      const result = await contractInstance.get_correct_answer(BigInt(Number(questionId))) as bigint
       return result && result !== BigInt(0) ? result.toString() : null
     } catch (error) {
       console.error("Error fetching correct answer:", error)
       return null
     }
-  }, [contract])
+  }, [getContractForReading])
+
+
+
+  const clearQuestionError = () => setQuestionState(prev => ({ ...prev, error: null }))
+  const clearAnswersError = () => setAnswersState(prev => ({ ...prev, error: null }))
+  const clearStakingError = () => setStakingState(prev => ({ ...prev, error: null }))
 
   return (
     <ContractContext.Provider value={{
       contract,
-      contractReady: !!contract,
+      contractReady: !!(readOnlyContract || contract),
       isConnected,
       address,
       questionLoading: questionState.isLoading,
@@ -165,12 +273,17 @@ export function ContractProvider({ children }: ContractProviderProps) {
       answersError: answersState.error,
       markCorrectLoading: markCorrectState.isLoading,
       markCorrectError: markCorrectState.error,
+      stakingLoading: stakingState.isLoading,
+      stakingError: stakingState.error,
       fetchQuestion,
       fetchAnswers,
       clearQuestionError,
       clearAnswersError,
       markAnswerAsCorrect,
-      getCorrectAnswer
+      getCorrectAnswer,
+      addFundsToQuestion,
+      getTotalStakedOnQuestion,
+      clearStakingError
     }}>
       {children}
     </ContractContext.Provider>

@@ -5,7 +5,7 @@ export type Question = {
   authorAddress: string;
   authorName: string;
   timestamp: string;
-  stakeAmount: string;
+  stakeAmount: number;
   tags: string[];
   repositoryUrl: string;
   isOpen: boolean;
