@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import { PaperPlaneRight, Link as LinkIcon, Tag, CurrencyDollar } from "phosphor-react"
 import { Container, Form, Button, TransactionStatus } from "./style"
 import { NavLink, useNavigate } from "react-router-dom"
@@ -10,9 +10,9 @@ import { InputForm } from "./InputForm"
 import { EditorForm } from "./EditorForm"
 import { useWallet } from "@hooks/useWallet"
 import { useContract } from "@hooks/useContract"
-import { formatters } from "@utils/formatters"
 import { shortenAddress } from "@utils/shortenAddress"
 import { cairo } from "starknet"
+import { formatters } from "@utils/formatters"
 
 export function QuestionPage() {
   const [title, setTitle] = useState("")
@@ -21,46 +21,23 @@ export function QuestionPage() {
   const [repository, setRepository] = useState("")
   const [tags, setTags] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
-  
+
   const navigate = useNavigate()
   const { isConnected } = useAccount()
   const { openConnectModal } = useWallet()
   const { contract } = useContract();
 
-  const tokenAddress = "0x045fd9335f323ab646ee6fea36ec88ebb4a130a68289cb074f8221478fcb99b6"
-
- 
-  const scaledAmount = useMemo(() => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      return cairo.uint256(0);
-    }
-    
-    // Use string manipulation to avoid floating point errors and scientific notation
-    const [integerPart, fractionalPart = ''] = amount.toString().split('.');
-    
-    // Ensure fractional part isn't too long
-    if (fractionalPart.length > 18) {
-      console.error("Amount has too many decimal places.");
-      return cairo.uint256(0);
-    }
-
-    const integerWei = BigInt(integerPart) * (10n ** 18n);
-    const fractionalWei = BigInt(fractionalPart.padEnd(18, '0'));
-
-    const amountInWei = integerWei + fractionalWei;
-    return cairo.uint256(amountInWei);
-  }, [amount]);
-
-
+  const amountInWei = formatters.convertStringDecimalToWei(amount);
+  const scaledAmount = cairo.uint256(amountInWei);
 
   const { sendAsync: askQuestion, isPending: isTransactionPending, data: transactionData, error: transactionError } = useSendTransaction({
-    calls: contract && description && amount && scaledAmount.low > 0
+    calls: contract && description && amount && Number(scaledAmount.low) > 0
       ? [{
-          contractAddress: tokenAddress,
-          entrypoint: "approve",
-          calldata: [contract.address, scaledAmount.low, scaledAmount.high],
-        }, 
-        contract.populate("ask_question", [description, scaledAmount])]
+        contractAddress: import.meta.env.VITE_TOKEN_ADDRESS,
+        entrypoint: "approve",
+        calldata: [contract.address, scaledAmount.low, scaledAmount.high],
+      },
+      contract.populate("ask_question", [description, scaledAmount])]
       : undefined,
   });
 
@@ -99,7 +76,7 @@ export function QuestionPage() {
     <Container>
       <h2>Create Question</h2>
       <Form onSubmit={handleSubmit}>
-        <InputForm 
+        <InputForm
           id="title"
           label="Title"
           tooltipText="Be specific and imagine you're asking a question to another person"

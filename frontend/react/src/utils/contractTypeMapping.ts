@@ -33,7 +33,6 @@ const generateMockRepository = (): string => {
   return repos[Math.floor(Math.random() * repos.length)]
 }
 
-// Generate mock author name from address
 const generateMockAuthorName = (address: string): string => {
   const names = ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry"]
   const surnames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis"]
@@ -45,14 +44,12 @@ const generateMockAuthorName = (address: string): string => {
   return `${names[nameIndex]} ${surnames[surnameIndex]}`
 }
 
-// Convert contract Question to frontend Question
 export const contractQuestionToFrontend = (contractQuestion: ContractQuestion): Question => {
-  // convert author and value to hex address and number
   const authorAddress = formatters.bigIntToAddress(contractQuestion.author)
-  const value = formatters.bigIntToNumber(contractQuestion.value)
   const status = formatters.formatStatus(contractQuestion.status)
-  const authorName = generateMockAuthorName(authorAddress)
-
+  const authorName = generateMockAuthorName(authorAddress)  
+  const weiValue = formatters.bigIntToNumber(contractQuestion.value)
+  const decimalValue = formatters.convertWeiToDecimal(weiValue)
 
   return {
     id: contractQuestion.id.toString(),
@@ -63,14 +60,13 @@ export const contractQuestionToFrontend = (contractQuestion: ContractQuestion): 
     authorAddress: authorAddress,
     authorName,
     timestamp: generateMockTimestamp(),
-    stakeAmount: (Number(value)).toFixed(2),
+    stakeAmount: decimalValue.toFixed(2),
     tags: generateMockTags(),
     repositoryUrl: generateMockRepository(),
     isOpen: status === "Open"
   }
 }
 
-// Convert contract Answer to frontend Answer
 export const contractAnswerToFrontend = (contractAnswer: ContractAnswer, isCorrect = false): Answer => {
   const authorAddress = formatters.bigIntToAddress(contractAnswer.author)
   const authorName = generateMockAuthorName(authorAddress)
