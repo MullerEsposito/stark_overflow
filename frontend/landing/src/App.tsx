@@ -14,9 +14,21 @@ import { Collaborators } from "./sections/Collaborators";
 const Container = styled.main`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 16px;
   position: relative;
   z-index: 1;
+  
+  @media (min-width: 480px) {
+    padding: 0 20px;
+  }
+  
+  @media (min-width: 768px) {
+    padding: 0 24px;
+  }
+  
+  @media (min-width: 1024px) {
+    padding: 0 32px;
+  }
 `;
 
 export function App() {

@@ -30,9 +30,12 @@ export function Navbar({ toggleTheme }: NavbarProps) {
     setIsMenuOpen(!isMenuOpen)
   }
 
+  const handleNavLinkClick = () => {
+    setIsMenuOpen(false)
+  }
+
   useEffect(() => {
     const handleScroll = debounce(() => {
-
       const scrollPosition = window.scrollY;
       if (scrollPosition > 100 && !isScrolled) {        
         setIsScrolled(true);
@@ -46,24 +49,35 @@ export function Navbar({ toggleTheme }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isScrolled]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 767) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <NavbarContainer $isScrolled={isScrolled}>
       <Logo href="#hero">
-        <img src={logoStarkOverflow} style={{ height: "100%"}} />
+        <img src={logoStarkOverflow} style={{ height: "100%"}} alt="Stark Overflow Logo" />
         <span>Stark Overflow</span>
       </Logo>
 
-      <MobileMenuButton onClick={handleToggleMenu}>
+      <MobileMenuButton onClick={handleToggleMenu} aria-label="Toggle mobile menu">
         <List size={20} />
       </MobileMenuButton>
       <NavLinks $isOpen={isMenuOpen}>
-        <NavLink href="#how-it-works">How it Works</NavLink>
-        <NavLink href="#team">Our Team</NavLink>
-        <NavLink href="#collaborators">Collaborators</NavLink>
+        <NavLink href="#how-it-works" onClick={handleNavLinkClick}>How it Works</NavLink>
+        <NavLink href="#team" onClick={handleNavLinkClick}>Our Team</NavLink>
+        <NavLink href="#collaborators" onClick={handleNavLinkClick}>Collaborators</NavLink>
       </NavLinks>
 
       <ButtonsContainer>
-        <ThemeToggle onClick={handleToggleTheme}>
+        <ThemeToggle onClick={handleToggleTheme} aria-label="Toggle theme">
           {isDark ? <Sun size={20} weight="fill" /> : <Moon size={20} weight="fill" />}
         </ThemeToggle>
       </ButtonsContainer>

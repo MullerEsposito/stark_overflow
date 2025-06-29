@@ -6,7 +6,7 @@ export const NavbarContainer = styled.header<{$isScrolled: boolean}>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 16px;
   background-color: ${({ theme }) => theme.navBackground};
   backdrop-filter: blur(10px);
   border-bottom: 1px solid ${({ theme }) => theme.border};
@@ -14,6 +14,14 @@ export const NavbarContainer = styled.header<{$isScrolled: boolean}>`
   top: 0;
   z-index: 100;
   transition: all 0.3s ease-in-out;
+  
+  @media (min-width: 480px) {
+    padding: 0 20px;
+  }
+  
+  @media (min-width: 768px) {
+    padding: 0 24px;
+  }
 
   & > a { 
     img {
@@ -36,6 +44,10 @@ export const NavbarContainer = styled.header<{$isScrolled: boolean}>`
         left: 100;
         font-size: 0;
       `}
+      
+      @media (max-width: 480px) {
+        display: none;
+      }
     }
   }
 
@@ -67,7 +79,13 @@ export const Logo = styled.a`
   height: 100%;
 
   img {
-    z-index: 1;        
+    z-index: 1;
+    height: 40px;
+    width: auto;
+    
+    @media (max-width: 480px) {
+      height: 32px;
+    }
   }
 `
 
@@ -83,8 +101,9 @@ export const NavLinks = styled.nav<{$isOpen: boolean}>`
   @media (min-width: 768px) {
     display: flex;
   }
+  
   // Mobile Menu
-  @media (max-width: 768px) {
+  @media (max-width: 767px) {
     flex-direction: column;
     position: fixed;
     right: 0;
@@ -108,9 +127,13 @@ export const NavLinks = styled.nav<{$isOpen: boolean}>`
 
     & > a {
       display: ${({ $isOpen }) => $isOpen ? 'block' : 'none'};
-      font-size: 24px;
+      font-size: 20px;
       margin: 10px 0;
       text-align: center;
+      
+      @media (max-width: 480px) {
+        font-size: 18px;
+      }
     }
   }
 `
@@ -123,6 +146,10 @@ export const NavLink = styled.a`
   &:hover {
     opacity: 0.8;
   }
+  
+  @media (max-width: 480px) {
+    font-size: 1.25rem;
+  }
 `
 
 export const MobileMenuButton = styled.button`
@@ -132,7 +159,7 @@ export const MobileMenuButton = styled.button`
   
   position: fixed;
   top: 16px;
-  right: 24px;
+  right: 16px;
   width: 40px;
   height: 40px;
   z-index: 10;
@@ -151,12 +178,23 @@ export const MobileMenuButton = styled.button`
   @media (min-width: 768px) {
     display: none;
   }
+  
+  @media (max-width: 480px) {
+    top: 12px;
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
 `
 
 export const ButtonsContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  
+  @media (max-width: 480px) {
+    gap: 8px;
+  }
 `
 
 export const ThemeToggle = styled.button`
@@ -172,5 +210,10 @@ export const ThemeToggle = styled.button`
   
   &:hover {
     background-color: ${({ theme }) => theme.secondary};
+  }
+  
+  @media (max-width: 480px) {
+    width: 36px;
+    height: 36px;
   }
 `
