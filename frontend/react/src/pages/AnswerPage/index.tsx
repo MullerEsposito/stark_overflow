@@ -116,7 +116,7 @@ function AnswerPageContent() {
             </AnswerEditorProvider>
           )}
         </AnswersProvider>
-
+        
         {statusMessage?.type && (
           <StatusMessage type={statusMessage.type}>
             {statusMessage.message}

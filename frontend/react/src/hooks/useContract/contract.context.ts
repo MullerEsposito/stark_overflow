@@ -11,10 +11,14 @@ interface ContractContextType {
   answersLoading: boolean
   questionError: string | null
   answersError: string | null
+  markCorrectLoading: boolean
+  markCorrectError: string | null
   fetchQuestion: (questionId: number) => Promise<Question | null>
   fetchAnswers: (questionId: number) => Promise<Answer[]>
   clearQuestionError: () => void
   clearAnswersError: () => void
+  markAnswerAsCorrect: (questionId: string, answerId: string) => Promise<boolean>
+  getCorrectAnswer: (questionId: string) => Promise<string | null>
 }
 
 export const ContractContext = createContext<ContractContextType | undefined>(undefined)

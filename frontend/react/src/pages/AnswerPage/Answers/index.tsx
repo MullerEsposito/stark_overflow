@@ -1,7 +1,8 @@
 import { CheckCircle, ThumbsDown, ThumbsUp } from "phosphor-react"
 import { UserAvatar } from "../styles"
 import { AnswerContent, AnswerDivider, AnswerFooter, AnswerHeader, AnswerItem, AnswersContainer, AnswersList, CorrectAnswerBadge, MarkCorrectButton, PaginationButton, PaginationContainer, SortingOptions, SortOption, VoteButton, VoteContainer, VoteCount } from "./styles"
-import React, { useContext, useState, Suspense } from "react"
+import * as React from "react"
+import { useContext, useState, Suspense } from "react"
 import { useAccount } from "@starknet-react/core"
 import { shortenAddress } from "@utils/shortenAddress"
 
@@ -10,6 +11,7 @@ import { AnswersContext } from "../hooks/useAnswers/answersContext"
 import type { Question } from "@app-types/index"
 import { useWallet } from "@hooks/useWallet"
 import { useStatusMessage } from "@hooks/useStatusMessage"
+import { useContract } from "@hooks/useContract"
 
 const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
@@ -22,11 +24,11 @@ interface AnswersProps {
 export function Answers({ question, setQuestion }: AnswersProps) {
   const [sortBy, setSortBy] = useState<"votes" | "date">("votes")
   const [currentPage, setCurrentPage] = useState(1)
-
   const { isConnected, address } = useAccount()
   const { openConnectModal } = useWallet()
-  const { answers, setIsLoading, setAnswers } = useContext(AnswersContext)
+  const { answers, setAnswers } = useContext(AnswersContext)
   const { setStatusMessage } = useStatusMessage()
+  const { markAnswerAsCorrect } = useContract()
 
   // Sort answers based on selected option
   const sortedAnswers = [...answers].sort((a, b) => {
@@ -38,54 +40,96 @@ export function Answers({ question, setQuestion }: AnswersProps) {
     }
   })
 
-  // Handle marking an answer as correct
+  
+
   const handleMarkCorrect = async (answerId: string) => {
     if (!isConnected) {
       openConnectModal()
       return
     }
 
-    setIsLoading(true)
+    // Check if user is the question author
+    const isQuestionAuthor = address && address.toLowerCase() === question.authorAddress.toLowerCase()
+    if (!isQuestionAuthor) {
+      setStatusMessage({
+        type: "error",
+        message: "Only the question author can mark an answer as correct.",
+      })
+      return
+    }
+
+    // Check if question is still open
+    if (!question.isOpen) {
+      setStatusMessage({
+        type: "error",
+        message: "This question has already been resolved.",
+      })
+      return
+    }
+
+    // Check if any answer is already marked as correct
+    const hasCorrectAnswer = answers.some((answer) => answer.isCorrect)
+    if (hasCorrectAnswer) {
+      setStatusMessage({
+        type: "error",
+        message: "An answer has already been marked as correct for this question.",
+      })
+      return
+    }
+
     setStatusMessage({ type: "info", message: "Processing transaction..." })
 
     try {
-      // Simulate blockchain transaction
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const response = await markAnswerAsCorrect(question.id, answerId)
 
-      // Update answers state
-      setAnswers(
-        answers.map((answer) => ({
-          ...answer,
-          isCorrect: answer.id === answerId,
-        })),
-      )
+      if (response) {
+        // Update answers state to mark the correct answer
+        setAnswers(
+          answers.map((answer) => ({
+            ...answer,
+            isCorrect: answer.id === answerId,
+          })),
+        )
 
-      setStatusMessage({
-        type: "success",
-        message: "Answer marked as correct! Funds have been transferred to the responder.",
-      })
+        setStatusMessage({
+          type: "success",
+          message: "Answer marked as correct! Funds have been transferred to the responder.",
+        })
 
-      // Update question status
-      setQuestion({
-        ...question,
-        isOpen: false,
-      })
+        // Update question status
+        setQuestion({
+          ...question,
+          isOpen: false,
+        })
+      }
     } catch (error) {
       console.error("Transaction error:", error)
+
+      let errorMessage = "Failed to mark answer as correct. Please try again."
+
+      // Handle specific contract errors
+      if (error instanceof Error) {
+        if (error.message.includes("Only the author of the question can mark the answer as correct")) {
+          errorMessage = "Only the question author can mark an answer as correct."
+        } else if (error.message.includes("The question is already resolved")) {
+          errorMessage = "This question has already been resolved."
+        } else if (error.message.includes("The specified answer does not exist for this question")) {
+          errorMessage = "The selected answer is not valid for this question."
+        }
+      }
+
       setStatusMessage({
         type: "error",
-        message: "Failed to mark answer as correct. Please try again.",
+        message: errorMessage,
       })
     } finally {
-      setIsLoading(false)
       // Clear status message after 5 seconds
       setTimeout(() => {
-        setStatusMessage(null)
+        setStatusMessage({ type: null, message: "" })
       }, 5000)
     }
   }
 
-  // Handle voting on an answer
   const handleVote = async (answerId: string, direction: "up" | "down") => {
     if (!isConnected) {
       openConnectModal()
@@ -105,7 +149,6 @@ export function Answers({ question, setQuestion }: AnswersProps) {
     )
   }
 
-  // Check if current user is the question author
   const isQuestionAuthor = address && address.toLowerCase() === question.authorAddress.toLowerCase()
 
   return (
@@ -135,8 +178,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
                   <span>{answer.authorName}</span>
                   <small>{shortenAddress(answer.authorAddress)}</small>
                   <time>{answer.timestamp}</time>
-                </div>
-                {answer.isCorrect && (
+                </div>                {answer.isCorrect && (
                   <CorrectAnswerBadge>
                     <CheckCircle size={16} weight="fill" />
                     Correct Answer
@@ -162,7 +204,6 @@ export function Answers({ question, setQuestion }: AnswersProps) {
                   </ReactMarkdown>
                 </Suspense>
               </AnswerContent>
-
               <AnswerFooter>
                 <VoteContainer>
                   <VoteButton onClick={() => handleVote(answer.id, "up")}>
