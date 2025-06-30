@@ -310,6 +310,7 @@ export const StakeInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-left: auto;
   
   span {
     font-weight: 700;
