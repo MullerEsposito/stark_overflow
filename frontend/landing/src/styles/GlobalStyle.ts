@@ -9,7 +9,6 @@ export const GlobalStyles = createGlobalStyle`
 
   html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
   }
 
   body {
@@ -17,8 +16,6 @@ export const GlobalStyles = createGlobalStyle`
     background-color: ${({ theme }) => theme.background};
     color: ${({ theme }) => theme.text};
     transition: all 0.2s ease-in-out;
-    overflow-x: hidden;
-    min-width: 320px;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -37,11 +34,6 @@ export const GlobalStyles = createGlobalStyle`
     outline: none;
   }
 
-  img {
-    max-width: 100%;
-    height: auto;
-  }
-
   .cards-container {
     display: grid;
     grid-template-columns: 1fr;
@@ -56,24 +48,5 @@ export const GlobalStyles = createGlobalStyle`
   .testimonials-features {
     display: grid;
     gap: 24px;
-  }
-
-  /* Responsive breakpoints */
-  @media (max-width: 480px) {
-    html {
-      font-size: 14px;
-    }
-  }
-
-  @media (min-width: 481px) and (max-width: 768px) {
-    html {
-      font-size: 15px;
-    }
-  }
-
-  @media (min-width: 769px) {
-    html {
-      font-size: 16px;
-    }
   }
 `

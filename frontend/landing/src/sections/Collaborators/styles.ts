@@ -1,62 +1,21 @@
 import styled from "styled-components"
 
 export const CollaboratorsContainer = styled.div`
-  margin-top: 60px;
-  margin-bottom: 40px;
+  margin-top: 100px;
+  margin-bottom: 60px;
   text-align: center;
-  padding: 0 16px;
-  
-  @media (min-width: 480px) {
-    margin-top: 80px;
-    margin-bottom: 60px;
-    padding: 0 20px;
-  }
-  
-  @media (min-width: 768px) {
-    padding: 0 24px;
-  }
 
   h2 {
     color: ${({ theme }) => theme.primary};
-    margin-bottom: 30px;
-    font-size: 1.5rem;
-    
-    @media (min-width: 480px) {
-      font-size: 1.75rem;
-      margin-bottom: 40px;
-    }
-    
-    @media (min-width: 768px) {
-      font-size: 2rem;
-    }
+    margin-bottom: 40px;
   }
 `
 
 export const CollaboratorsItens = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  display: flex;
   justify-content: center;
-  max-width: 800px;
-  margin: 0 auto;
-  
-  @media (min-width: 480px) {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-  
-  @media (min-width: 640px) {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 24px;
-  }
-  
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(5, 1fr);
-  }
-  
-  @media (min-width: 1024px) {
-    grid-template-columns: repeat(6, 1fr);
-  }
+  gap: 24px;
+  flex-wrap: wrap;
 `
 
 export const CollaboratorItem = styled.div`
@@ -66,10 +25,9 @@ export const CollaboratorItem = styled.div`
   align-items: center;
   gap: 8px;
   transition: transform 0.3s;
-  padding: 12px;
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(130%);
 
     & > div {
       bottom: -30px;
@@ -78,14 +36,8 @@ export const CollaboratorItem = styled.div`
   }
   
   span {
-    font-size: 12px;
+    font-size: 14px;
     color: ${({ theme }) => theme.textSecondary};
-    text-align: center;
-    line-height: 1.3;
-    
-    @media (min-width: 480px) {
-      font-size: 14px;
-    }
   }
 
   & > div {
@@ -98,19 +50,10 @@ export const CollaboratorItem = styled.div`
 `
 
 export const CollaboratorImage = styled.img`
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   z-index: 10;
-  
-  @media (min-width: 480px) {
-    width: 56px;
-    height: 56px;
-  }
-  
-  @media (min-width: 640px) {
-    width: 64px;
-    height: 64px;
-  }
+
 `
 
