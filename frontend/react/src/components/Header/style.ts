@@ -17,15 +17,36 @@ export const HeaderContainer = styled.header`
   }
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr auto 1fr;
+    grid-template-columns: 2fr 1fr;
     padding: 0 16px;
     min-height: 56px;
+    
+    a {
+      grid-column: 1;
+      justify-content: start;
+    }
   }
 
   @media (max-width: 480px) {
-    grid-template-columns: 1fr auto 1fr;
     padding: 0 12px;
     min-height: 52px;
+  }
+`;
+
+export const HeaderActionsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+`;
+
+export const LogoContainer = styled.div`
+  grid-column: 2;
+
+  @media (max-width: 768px) {
+    display: flex;
+    grid-column: 1;
+    
   }
 `;
 
