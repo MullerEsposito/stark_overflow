@@ -167,7 +167,6 @@ export const TopicTitle = styled.div`
   }
 
   @media (max-width: 768px) {
-    flex-direction: column;
     align-items: flex-start;
     gap: 8px;
 
