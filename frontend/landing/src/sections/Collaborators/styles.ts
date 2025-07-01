@@ -14,7 +14,7 @@ export const CollaboratorsContainer = styled.div`
 export const CollaboratorsItens = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 32px;
+  row-gap: 55px;
   justify-items: center;
   align-items: start;
   max-width: 800px;
@@ -27,7 +27,6 @@ export const CollaboratorItem = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin: 16px;
   transition: transform 0.3s;
 
   &:hover {
