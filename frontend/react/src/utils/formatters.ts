@@ -1,5 +1,6 @@
 import { QuestionStatus, Uint256 } from "../types/contract-types";
 import { CairoCustomEnum } from "starknet";
+import moment from "moment";
 
 export const formatters = {
   // Convert bigint to hex address format
@@ -38,3 +39,13 @@ export const formatters = {
     throw new Error(`Unknown status value: ${variant}`);
   }
 };
+
+/**
+ * Formats a given date into a relative time string (e.g., "an hour ago").
+ * The output is automatically localized based on the current i18next language.
+ * @param date - The date to format (can be a Date object or an ISO string).
+ * @returns A localized, relative time string.
+ */
+export function getFormattedDate(date: string | Date): string {
+  return moment(date).fromNow();
+}

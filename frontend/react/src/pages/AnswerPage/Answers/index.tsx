@@ -28,6 +28,7 @@ import type { Question } from "@app-types/index";
 import { useWallet } from "@hooks/useWallet";
 import { useStatusMessage } from "@hooks/useStatusMessage";
 import { useContract } from "@hooks/useContract";
+import { getFormattedDate } from "@utils/formatters";
 
 const ReactMarkdown = React.lazy(() => import("react-markdown"));
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod);
@@ -52,9 +53,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
     if (sortBy === "votes") {
       return b.votes - a.votes;
     } else {
-      return a.timestamp.includes("Today") && !b.timestamp.includes("Today")
-        ? -1
-        : 1;
+      return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
     }
   });
 
@@ -177,7 +176,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
                 <div>
                   <span>{answer.authorName}</span>
                   <small>{shortenAddress(answer.authorAddress)}</small>
-                  <time>{answer.timestamp}</time>
+                  <time>{getFormattedDate(answer.timestamp)}</time>
                 </div>{" "}
                 {answer.isCorrect && (
                   <CorrectAnswerBadge>

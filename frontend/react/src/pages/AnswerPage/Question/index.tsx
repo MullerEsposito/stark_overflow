@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { Question } from "@app-types/index";
 import React, { Suspense } from "react";
 import { useStaking } from "../hooks/useStaking";
+import { getFormattedDate } from "@utils/formatters";
 // Add this near the top of the file with other imports
 const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
@@ -28,7 +29,7 @@ export function Question({ question }: QuestionProps) {
         <div>
           <QuestionMeta>
             <span>{question.authorName}</span>
-            <time>{question.timestamp}</time>
+            <time>{t('asked')} {getFormattedDate(question.timestamp)}</time>
           </QuestionMeta>
           <QuestionTitle>
             {question.isOpen ? (
