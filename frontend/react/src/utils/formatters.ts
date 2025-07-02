@@ -37,6 +37,20 @@ export const formatters = {
     if (variant === 'Open') return 'Open';
     if (variant === 'Resolved') return 'Resolved';
     throw new Error(`Unknown status value: ${variant}`);
+  },
+
+  convertWeiToDecimal: (wei: number) => {
+    const integerPart = wei / 10 ** 18;
+    const fractionalPart = wei % 10 ** 18;
+    return Number(integerPart) + Number(fractionalPart) / 10 ** 18;
+  },
+
+  convertStringDecimalToWei: (decimal: string) => {
+    const [integerPart, fractionalPart = ''] = decimal.toString().split('.');
+
+    const integerWei = BigInt(integerPart) * (10n ** 18n);
+    const fractionalWei = BigInt(fractionalPart.padEnd(18, '0'));
+    return integerWei + fractionalWei;
   }
 };
 

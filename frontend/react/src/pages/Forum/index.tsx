@@ -113,5 +113,5 @@ export function Forum() {
         ))}
       </ForumList>
     </ForumContainer>
-  );
+  )
 }

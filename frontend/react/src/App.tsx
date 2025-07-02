@@ -8,6 +8,7 @@ import { WalletDetector } from "./components/wallet-detector"
 import { useState, useEffect } from "react"
 import { StatusMessageProvider } from "@hooks/useStatusMessage/statusMessage.provider"
 import { WalletProvider } from "@hooks/useWallet/wallet.provider"
+import { ContractProvider } from "@hooks/useContract/contract.provider"
 
 export function App() {
   const [theme, setTheme] = useState(darkTheme);  
@@ -32,12 +33,14 @@ export function App() {
     <ThemeProvider theme={theme}>
     <StatusMessageProvider>
       <WalletProvider>
-        <BrowserRouter>
-          <Header toggleTheme={toggleTheme}/>
-          <WalletDetector />
-          <Router />
-        </BrowserRouter>
-        <GlobalStyle />
+        <ContractProvider>
+          <BrowserRouter>
+            <Header toggleTheme={toggleTheme}/>
+            <WalletDetector />
+            <Router />
+          </BrowserRouter>
+          <GlobalStyle />
+        </ContractProvider>
       </WalletProvider>
     </StatusMessageProvider>
   </ThemeProvider>

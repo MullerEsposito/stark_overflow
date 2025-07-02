@@ -1,12 +1,5 @@
 import { Moon, Sun } from "phosphor-react";
-import {
-  HeaderContainer,
-  Logo,
-  ToggleThemeButton,
-  HeaderActionsContainer,
-  LanguageSwitcher,
-  GlobeIcon,
-} from "./style";
+import { HeaderContainer, Logo, ToggleThemeButton, HeaderActionsContainer, LogoContainer, LanguageSwitcher, GlobeIcon } from "./style";
 import { lightTheme } from "../../styles/themes/light";
 import { useTheme } from "styled-components";
 import starkoverflowLogo from "../../assets/logos/starkoverflow.svg";
@@ -31,9 +24,11 @@ export function Header({ toggleTheme }: HeaderProps) {
 
   return (
     <HeaderContainer>
-      <NavLink to={"/"}>
-        <Logo src={starkoverflowLogo} alt="Stark Overflow logo" />
-      </NavLink>
+      <LogoContainer>
+        <NavLink to={"/"}>
+          <Logo src={starkoverflowLogo} alt="Stark Overflow logo" />
+        </NavLink>
+      </LogoContainer>
 
       <HeaderActionsContainer>
         <LanguageSwitcher>

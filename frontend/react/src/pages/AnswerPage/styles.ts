@@ -6,6 +6,19 @@ export const QuestionDetailContainer = styled.div`
   padding: 20px;
   color: ${({ theme }) => theme.text};
   position: relative;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px;
+  }
+
+  @media (max-width: 320px) {
+    padding: 8px;
+  }
 `
 
 export const UserAvatar = styled.img`
@@ -13,6 +26,22 @@ export const UserAvatar = styled.img`
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 36px;
+    height: 36px;
+  }
+
+  @media (max-width: 480px) {
+    width: 32px;
+    height: 32px;
+  }
+
+  @media (max-width: 320px) {
+    width: 28px;
+    height: 28px;
+  }
 `
 
 export const StatusMessage = styled.div<{ type: "success" | "error" | "info" | null }>`
@@ -24,6 +53,8 @@ export const StatusMessage = styled.div<{ type: "success" | "error" | "info" | n
   font-weight: 500;
   z-index: 1000;
   animation: fadeIn 0.3s ease-out;
+  max-width: 300px;
+  word-break: break-word;
   
   ${({ type }) => {
     switch (type) {
@@ -49,6 +80,31 @@ export const StatusMessage = styled.div<{ type: "success" | "error" | "info" | n
         return ""
     }
   }}
+
+  @media (max-width: 768px) {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    max-width: none;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 480px) {
+    bottom: 12px;
+    right: 12px;
+    left: 12px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 320px) {
+    bottom: 8px;
+    right: 8px;
+    left: 8px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
   
   @keyframes fadeIn {
     from {
