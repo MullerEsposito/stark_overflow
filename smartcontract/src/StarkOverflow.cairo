@@ -7,7 +7,7 @@ use starknet::ContractAddress;
 pub trait IStarkOverflow<T> {
   fn ask_question(ref self: T, description: ByteArray, value: u256) -> QuestionId;
   fn get_question(self: @T, question_id: u256) -> Question;
-  fn get_active_questions(self: @T, page_size: u256, page: u256) -> (Array<Question>, u256, bool);
+  fn get_questions(self: @T, page_size: u256, page: u256) -> (Array<Question>, u256, bool); // (questions, total, has_next)
   fn add_funds_to_question(ref self: T, question_id: u256, value: u256);
   fn submit_answer(ref self: T, question_id: u256, description: ByteArray) -> AnswerId;
   fn get_answer(self: @T, answer_id: u256) -> Answer;
@@ -69,16 +69,14 @@ pub mod StarkOverflow {
     last_question_id: u256,
     answers: Map<u256, Answer>,
     last_answer_id: u256,
-    question_id_answers_ids: Map<u256, Vec<u256>>,    question_id_chosen_answer_id: Map<u256, u256>,
+    question_id_answers_ids: Map<u256, Vec<u256>>,
+    question_id_chosen_answer_id: Map<u256, u256>,
     governance_token_dispatcher: IStarkOverflowTokenDispatcher,
 
     // Question staking storage
     question_stakes: Map<(ContractAddress, u256), u256>, // (user, question_id) -> amount
     total_question_stakes: Map<u256, u256>, // question_id -> total staked
     reputation: Map<ContractAddress, u256>,
-    active_questions_count: u256,
-    active_question_ids: Map<u256, u256>,
-    question_id_to_active_index: Map<u256, u256>,
 
     // Staking related storage
     staked_balances: Map<ContractAddress, u256>,
@@ -111,20 +109,47 @@ pub mod StarkOverflow {
       self.questions.entry(question_id).write(_question);
       self.last_question_id.write(question_id);
       
-      let active_index = self.active_questions_count.read();
-      
-      self.active_question_ids.write(active_index, question_id);
-      
-      self.question_id_to_active_index.write(question_id, active_index);
-      
-      self.active_questions_count.write(active_index + 1);
-
       question_id
     }
 
     fn get_question(self: @ContractState, question_id: u256) -> Question {
       let found_question = self.questions.entry(question_id).read();
       found_question
+    }
+
+    fn get_questions(self: @ContractState, page_size: u256, page: u256) -> (Array<Question>, u256, bool) {
+      assert(page_size > 0, 'PageSize must be greater than 0');
+      assert(page > 0, 'Page must be greater than 0');
+      
+      let total_questions = self.last_question_id.read();
+      
+      if total_questions == 0 {
+        return (array![], 0, false);
+      }
+
+      let page_first_question_idx = page_size * (page - 1) + 1; //2 * (3-1) + 1 = 5
+
+      if page_first_question_idx > total_questions {
+          return (array![], total_questions, false);
+      }
+
+      let mut page_last_question_idx = page_first_question_idx + page_size - 1;
+      if page_last_question_idx > total_questions {
+          page_last_question_idx = total_questions;
+      }
+
+      let mut questions_for_page = array![];
+      let mut current_index = page_first_question_idx;
+
+      while current_index <= page_last_question_idx {
+        let question = self.questions.read(current_index);
+        questions_for_page.append(question);
+        current_index += 1;
+      };
+
+      let has_next_page = page_last_question_idx < total_questions;
+
+      (questions_for_page, total_questions, has_next_page)
     }
 
     fn get_answers(self: @ContractState, question_id: u256) -> Array<Answer> {
@@ -194,23 +219,6 @@ pub mod StarkOverflow {
       let found_question = self.questions.entry(question_id).read();
       assert!(found_question.status == QuestionStatus::Open, "Question is not open");
 
-      let old_status = found_question.status;
-      
-      if old_status == QuestionStatus::Open {
-        let index_to_remove = self.question_id_to_active_index.read(question_id);
-          
-        let last_active_index = self.active_questions_count.read() - 1;
-                 
-        if index_to_remove != last_active_index {
-          let last_question_id = self.active_question_ids.read(last_active_index);        
-          self.active_question_ids.write(index_to_remove, last_question_id);                      
-          self.question_id_to_active_index.write(last_question_id, index_to_remove);
-        }
-          
-          self.question_id_to_active_index.write(question_id, 0);          
-          self.active_questions_count.write(last_active_index);
-      }
-    
       self.questions.entry(question_id).write(Question { status: QuestionStatus::Resolved, ..found_question });
       self.question_id_chosen_answer_id.entry(question_id).write(answer_id);
       
@@ -351,43 +359,6 @@ pub mod StarkOverflow {
       let rewards = self.get_claimable_rewards(staker);
 
       (staked_amount, start_time, rewards)
-    }
-    
-    fn get_active_questions(self: @ContractState, page_size: u256, page: u256) -> (Array<Question>, u256, bool) {
-      assert(page_size > 0, 'PageSize must be greater than 0');
-      assert(page > 0, 'Page must be greater than 0');
-
-      let total_active_questions = self.active_questions_count.read();
-      
-      if total_active_questions == 0 {
-          return (array![], 0, false);
-      }
-
-      let mut questions_for_page = array![];
-      let start_index = (page - 1) * page_size; //2-1 = 1 * 10 = 10
-
-      
-      if start_index >= total_active_questions {
-          return (questions_for_page, total_active_questions, false);
-      }
-      
-      let mut end_index = start_index + page_size;
-      if end_index > total_active_questions {
-          end_index = total_active_questions;
-      }
-
-      let mut current_index = start_index;
-      
-      while current_index < end_index {
-        let question_id = self.active_question_ids.read(current_index);
-        let question = self.questions.read(question_id);
-        questions_for_page.append(question);
-          current_index += 1;
-      };
-
-      let has_next_page = end_index < total_active_questions;
-
-      (questions_for_page, total_active_questions, has_next_page)
     }
   }
   
