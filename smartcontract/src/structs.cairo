@@ -5,7 +5,7 @@ pub enum QuestionStatus {
   #[default]
   Open,
   Resolved,
-  Deleted
+  Deleted,
 }
 
 #[derive(Drop, Serde, starknet::Store)]
