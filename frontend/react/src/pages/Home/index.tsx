@@ -6,6 +6,7 @@ import { Cards } from "./Cards";
 import { HomeContainer } from "./style";
 import { useState } from "react";
 import { SearchInput } from "../../components/SearchInput";
+import { useTranslation } from "react-i18next";
 
 const initialForumsList = [
   { name: "ReactJS", icon: reactjsLogo, topics: 15, amount: "2500,00", path: "reactjs" },
@@ -18,6 +19,7 @@ export type ForumsList = typeof initialForumsList;
 
 export function Home() {
   const [forumsList, setForumsList] = useState<ForumsList>(initialForumsList);
+  const { t } = useTranslation(['common', 'home']);
   
   const handleSearch = (searchTerm: string) => {
     if (searchTerm === '') {
@@ -33,7 +35,7 @@ export function Home() {
 
   return (
     <HomeContainer>
-      <h1>Fóruns</h1>
+      <h1>{t('common:forums')}</h1>
       {forumsList.length > 6 && <SearchInput onSearch={handleSearch} /> }
       <Cards forums={forumsList} />
     </HomeContainer>

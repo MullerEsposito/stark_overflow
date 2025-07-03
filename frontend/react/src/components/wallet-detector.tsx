@@ -1,6 +1,7 @@
 import { useWallet } from "@hooks/useWallet";
 import React from "react"
 import styled from "styled-components"
+import { useTranslation } from "react-i18next";
 
 const WalletDetectorContainer = styled.div`
   position: fixed;
@@ -56,6 +57,7 @@ const CloseButton = styled.button`
 export function WalletDetector() {
   const { isWalletDetected, isConnected } = useWallet();
   const [dismissed, setDismissed] = React.useState(false);
+  const { t } = useTranslation('common');
   
   if (isWalletDetected || isConnected || dismissed) {
     return null;
@@ -64,10 +66,9 @@ export function WalletDetector() {
   return (
     <WalletDetectorContainer>
       <CloseButton onClick={() => setDismissed(true)}>×</CloseButton>
-      <WalletTitle>Wallet Required</WalletTitle>
+      <WalletTitle>{t('walletRequired')}</WalletTitle>
       <WalletText>
-        To use StarkOverflow, you need to install a StarkNet wallet. 
-        We recommend one of the following:
+        {t('walletNeeded')}
       </WalletText>
       <WalletLink href="https://www.argent.xyz/argent-x/" target="_blank" rel="noopener noreferrer">
         ArgentX

@@ -1,10 +1,11 @@
 import { CheckCircle, CurrencyDollar, GithubLogo } from "phosphor-react";
 import { ActionButton, QuestionContainer, QuestionContent, QuestionFooter, QuestionHeader, QuestionMeta, QuestionTag, QuestionTitle, RepositoryLink, StakeInfo, TagsContainer } from "./styles";
 import { UserAvatar } from "../styles";
-
+import { useTranslation } from "react-i18next";
 import type { Question } from "@app-types/index";
 import React, { Suspense } from "react";
 import { useStaking } from "../hooks/useStaking";
+import { getFormattedDate } from "@utils/formatters";
 // Add this near the top of the file with other imports
 const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
@@ -15,7 +16,8 @@ interface QuestionProps {
 }
 
 export function Question({ question }: QuestionProps) {
-  const { setIsStakeModalOpen } = useStaking()
+  const { t } = useTranslation('answer');
+  const { setIsStakeModalOpen } = useStaking();
 
   return (
     <QuestionContainer>
@@ -27,7 +29,7 @@ export function Question({ question }: QuestionProps) {
         <div>
           <QuestionMeta>
             <span>{question.authorName}</span>
-            <time>{question.timestamp}</time>
+            <time>{t('asked')} {getFormattedDate(question.timestamp)}</time>
           </QuestionMeta>
           <QuestionTitle>
             {question.isOpen ? (
@@ -46,7 +48,7 @@ export function Question({ question }: QuestionProps) {
       </QuestionHeader>
 
       <QuestionContent>
-        <Suspense fallback={<p>Carregando visualização...</p>}>
+        <Suspense fallback={<p>{t('loadingPreview')}</p>}>
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             components={{
@@ -72,7 +74,7 @@ export function Question({ question }: QuestionProps) {
             rel="noopener noreferrer"
           >
             <GithubLogo size={20} />
-            Link to repository
+            {t('repositoryLink')}
           </RepositoryLink>
         )}
         <StakeInfo>
@@ -80,7 +82,7 @@ export function Question({ question }: QuestionProps) {
           <span>{question.stakeAmount}</span>
           {question.isOpen && (
             <ActionButton onClick={() => setIsStakeModalOpen(true)}>
-              Add Stake
+              {t('addStake')}
             </ActionButton>
           )}
         </StakeInfo>

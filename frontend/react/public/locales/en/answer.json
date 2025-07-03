@@ -1,0 +1,20 @@
+{
+    "asked": "asked",
+    "ago": "ago",
+    "repositoryLink": "Link to repository",
+    "addStake": "Add stake",
+    "answersTitle": "Answers",
+    "noAnswers": "No answers yet. Be the first to answer!",
+    "correctAnswer": "Correct Answer",
+    "loadingPreview": "Loading preview...",
+    "markAsCorrect": "Mark as Correct",
+    "yourAnswer": "Your Answer",
+    "submitAnswer": "Post Your Answer",
+    "statusMarkingCorrect": "Processing transaction...",
+    "statusMarkCorrectSuccess": "Answer marked as correct! Funds have been transferred to the responder.",
+    "statusMarkCorrectError": "Failed to mark answer as correct. Please try again.",
+    "errorNotAuthor": "Only the question author can mark an answer as correct.",
+    "errorQuestionResolved": "This question has already been resolved.",
+    "errorAnswerAlreadyMarked": "An answer has already been marked as correct for this question.",
+    "errorInvalidAnswer": "The selected answer is not valid for this question."
+}

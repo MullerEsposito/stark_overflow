@@ -1,14 +1,25 @@
-import { FileArrowUp, X } from "phosphor-react";
-import { DescriptionFormContainer, EditorContainer, ErrorMessage, FileUploadArea, PreviewContainer, RemoveFileButton, Tab, TabContainer, UploadedFilePreview, UploadedImage, UploadProgress } from "./style";
 import React, { useRef, useState, Suspense } from "react";
+import { useTranslation } from "react-i18next";
+import { FileArrowUp, X } from "phosphor-react";
+import {
+  DescriptionFormContainer,
+  EditorContainer,
+  ErrorMessage,
+  FileUploadArea,
+  PreviewContainer,
+  RemoveFileButton,
+  Tab,
+  TabContainer,
+  UploadedFilePreview,
+  UploadedImage,
+  UploadProgress,
+} from "./style";
 import { uploadFile, UploadedFile, deleteFile } from "../../../services/file-upload";
 import { Label } from "@components/Label";
 import { Toolbar } from "./Toolbar";
 
-// Import dynamic components for markdown rendering
-const ReactMarkdown = React.lazy(() => import("react-markdown"))
-const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
-
+const ReactMarkdown = React.lazy(() => import("react-markdown"));
+const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod);
 interface EditorFormProps {
   id: string
   value: string
@@ -17,7 +28,8 @@ interface EditorFormProps {
   validateForm: () => void;
 }
 
-export function EditorForm({ value, error, id, setValue, validateForm}: EditorFormProps) {
+export function EditorForm({ value, error, id, setValue, validateForm }: EditorFormProps) {
+  const { t } = useTranslation('question');
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write")
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -31,7 +43,7 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
   const handleTabChange = (tab: "write" | "preview") => {
     setActiveTab(tab)
   }
-  
+
   // Handle markdown toolbar actions
   const insertMarkdown = (markdownSyntax: string, placeholder = "") => {
     if (!textAreaRef.current) return
@@ -92,7 +104,7 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
 
           // Add image markdown to description
           const imageMarkdown = `![${file.name}](${uploadedFile.url})\n`
-            setValue(value + imageMarkdown)
+          setValue(value + imageMarkdown)
 
           // Update the image map for preview
           setImageMap((prev) => ({
@@ -182,21 +194,21 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
   }
 
   return (
-    <DescriptionFormContainer>      
+    <DescriptionFormContainer>
       <Label
         inputId={id}
         inputValue={value}
-        labelText="Description"
-        tooltipText="Be specific and imagine you're asking a question to another person"
+        labelText={t('formDescription')}
+        tooltipText={t('formDescriptionTooltip')}
         error={error}
       />
 
       <TabContainer>
         <Tab type="button" $active={activeTab === "write"} onClick={() => handleTabChange("write")}>
-          Write
+          {t('tabWrite')}
         </Tab>
         <Tab type="button" $active={activeTab === "preview"} onClick={() => handleTabChange("preview")}>
-          Preview
+          {t('tabPreview')}
         </Tab>
       </TabContainer>
 
@@ -226,17 +238,17 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
             onChange={handleFileUpload}
           />
 
-          {isUploading 
+          {isUploading
             ? (
               <UploadProgress value={uploadProgress}>
                 <div style={{ width: `${uploadProgress}%` }}></div>
-                <span>{Math.round(uploadProgress)}% Uploading...</span>
-              </UploadProgress>) 
-            : uploadedFiles.length === 0 
+                <span>{Math.round(uploadProgress)}% {t('uploading')}</span>
+              </UploadProgress>)
+            : uploadedFiles.length === 0
               ? (
                 <FileUploadArea onClick={() => fileInputRef.current?.click()}>
                   <FileArrowUp size={24} />
-                  <p>Click to upload images or drag and drop</p>
+                  <p>{t('uploadArea')}</p>
                 </FileUploadArea>)
               : (
                 <UploadedFilePreview>
@@ -249,7 +261,7 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
                     </div>
                   ))}
                 </UploadedFilePreview>)
-            }
+          }
         </>
       ) : (
         <PreviewContainer>
@@ -270,7 +282,7 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
               )}
 
               {/* Render markdown content */}
-              <Suspense fallback={<p>Carregando visualização...</p>}>
+              <Suspense fallback={<p>{t('loadingPreview')}</p>}>
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
@@ -283,7 +295,7 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
               </Suspense>
             </div>
           ) : (
-            <p className="empty-preview">Your preview will appear here...</p>
+            <p className="empty-preview">{t('emptyPreview')}</p>
           )}
         </PreviewContainer>
       )}

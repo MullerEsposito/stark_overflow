@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { Globe } from "phosphor-react";
 
 export const HeaderContainer = styled.header`
   display: grid;
@@ -79,9 +80,30 @@ export const ToggleThemeButton = styled.button`
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+`;
 
-  &:hover {
-    background-color: ${(props) => props.theme.secondary || "rgba(0, 0, 0, 0.05)"};
+export const LanguageSwitcher = styled.div`
+  position: relative;
+
+  select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: ${({ theme }) => theme.text};
+    padding: 8px 24px 8px 8px;
+    font-size: 14px;
+    cursor: pointer;
+
+    option {
+      background: ${({ theme }) => theme.body};
+      color: #000000;
+    }
+    
+    &:hover {
+      background-color: ${(props) => props.theme.secondary || "rgba(0, 0, 0, 0.05)"};
+    }
   }
 
   @media (max-width: 480px) {
@@ -92,6 +114,15 @@ export const ToggleThemeButton = styled.button`
       height: 20px;
     }
   }
+`;
+
+export const GlobeIcon = styled(Globe)`
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: ${({ theme }) => theme.text};
 `;
 
 export const ConnectButtonContainer = styled.div`

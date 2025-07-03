@@ -8,20 +8,22 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { useAccount, useSendTransaction } from "@starknet-react/core"
 import { InputForm } from "./InputForm"
 import { EditorForm } from "./EditorForm"
+import { useTranslation } from "react-i18next";
 import { useWallet } from "@hooks/useWallet"
 import { useContract } from "@hooks/useContract"
-import { shortenAddress } from "@utils/shortenAddress"
 import { cairo } from "starknet"
 import { formatters } from "@utils/formatters"
 
 export function QuestionPage() {
+  const { t } = useTranslation('question');
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [amount, setAmount] = useState("")
   const [repository, setRepository] = useState("")
   const [tags, setTags] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
-
+  const [transactionStatus, setTransactionStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
+  
   const navigate = useNavigate()
   const { isConnected } = useAccount()
   const { openConnectModal } = useWallet()
@@ -30,7 +32,7 @@ export function QuestionPage() {
   const amountInWei = formatters.convertStringDecimalToWei(amount);
   const scaledAmount = cairo.uint256(amountInWei);
 
-  const { sendAsync: askQuestion, isPending: isTransactionPending, data: transactionData, error: transactionError } = useSendTransaction({
+  const { sendAsync: askQuestion } = useSendTransaction({
     calls: contract && description && amount && Number(scaledAmount.low) > 0
       ? [{
         contractAddress: import.meta.env.VITE_TOKEN_ADDRESS,
@@ -42,26 +44,31 @@ export function QuestionPage() {
   });
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {}
-    if (!title.trim()) newErrors.title = "Title is required"
-    else if (title.length < 10) newErrors.title = "Title should be at least 10 characters"
-    if (!description.trim()) newErrors.description = "Description is required"
-    else if (description.length < 30) newErrors.description = "Description should be at least 30 characters"
-    if (!amount.trim()) newErrors.amount = "Amount is required"
-    else if (isNaN(Number(amount)) || Number(amount) <= 0) newErrors.amount = "Amount must be a positive number"
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    const newErrors: Record<string, string> = {};
+    if (!title.trim()) newErrors.title = t('errorTitleRequired');
+    else if (title.length < 10) newErrors.title = t('errorTitleLength');
+    if (!description.trim()) newErrors.description = t('errorDescriptionRequired');
+    else if (description.length < 30) newErrors.description = t('errorDescriptionLength');
+    if (!amount.trim()) newErrors.amount = t('errorAmountRequired');
+    else if (isNaN(Number(amount)) || Number(amount) <= 0) newErrors.amount = t('errorAmountPositive');
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validateForm()) return
     if (!isConnected) {
-      openConnectModal()
-      return
+      openConnectModal();
+      return;
     }
     try {
+      setTransactionStatus("processing");
+
       const result = await askQuestion()
+
+      setTransactionStatus("success")
+      
       if (result.transaction_hash) {
         setTimeout(() => {
           navigate("/forum/reactjs")
@@ -72,23 +79,24 @@ export function QuestionPage() {
     }
   }
 
-  return (
+   return (
     <Container>
-      <h2>Create Question</h2>
+      <h2>{t('title')}</h2>
       <Form onSubmit={handleSubmit}>
         <InputForm
           id="title"
-          label="Title"
-          tooltipText="Be specific and imagine you're asking a question to another person"
+          label={t('formTitle')}
+          tooltipText={t('formTitleTooltip')}
           error={errors.title}
           value={title}
-          validateForm={validateForm}
           setValue={setTitle}
+          validateForm={validateForm}
         />
-        <InputForm id="amount"
-          label="Amout to Stake"
-          tooltipText="The amount you're willing to pay for a solution"
-          placeholder="Amount"
+        <InputForm
+          id="amount"
+          label={t('formAmount')}
+          tooltipText={t('formAmountTooltip')}
+          placeholder={t('formAmountPlaceholder')}
           error={errors.amount}
           value={amount}
           setValue={setAmount}
@@ -103,10 +111,11 @@ export function QuestionPage() {
           setValue={setDescription}
           validateForm={validateForm}
         />
-        <InputForm id="repository"
-          label="Repository Link (Optional)"
-          tooltipText="Link to a GitHub repository or code sample"
-          placeholder="http://github.com/username/repo"
+        <InputForm
+          id="repository"
+          label={t('formRepo')}
+          tooltipText={t('formRepoTooltip')}
+          placeholder={t('formRepoPlaceholder')}
           error={errors.repository}
           value={repository}
           setValue={setRepository}
@@ -114,10 +123,11 @@ export function QuestionPage() {
         >
           <LinkIcon size={20} />
         </InputForm>
-        <InputForm id="tags"
-          label="Tags (Optional)"
-          tooltipText="Add up to 5 tags to describe what your question is about"
-          placeholder="e.g. react hooks typescript"
+        <InputForm
+          id="tags"
+          label={t('formTags')}
+          tooltipText={t('formTagsTooltip')}
+          placeholder={t('formTagsPlaceholder')}
           error={errors.tags}
           value={tags}
           setValue={setTags}
@@ -128,19 +138,19 @@ export function QuestionPage() {
         <div className="buttons">
           <NavLink to="/forum/reactjs">
             <Button variant="cancel" type="button">
-              Discard
+              {t('buttonDiscard')}
             </Button>
           </NavLink>
-          <Button variant="publish" type="submit" disabled={isTransactionPending || scaledAmount.low === 0n}>
-            {isTransactionPending ? "Publishing..." : "Publish"}
-            {!isTransactionPending && <PaperPlaneRight size={20} />}
+          <Button variant="publish" type="submit" disabled={transactionStatus === "processing"}>
+            {transactionStatus === "processing" ? t('buttonPublishing') : t('buttonPublish')}
+            {transactionStatus !== "processing" && <PaperPlaneRight size={20} />}
           </Button>
         </div>
-        {(isTransactionPending || transactionData || transactionError) && (
-          <TransactionStatus status={(isTransactionPending) ? "processing" : (transactionData) ? "success" : "error"}>
-            {isTransactionPending && "Processing transaction..."}
-            {transactionData && `Transaction processed successfully! Tx: ${shortenAddress(String(transactionData?.transaction_hash))}`}
-            {transactionError && `Transaction failed: ${(transactionError)?.message}`}
+        {transactionStatus !== "idle" && (
+          <TransactionStatus status={transactionStatus}>
+            {transactionStatus === "processing" && t('statusProcessing')}
+            {transactionStatus === "success" && t('statusSuccess')}
+            {transactionStatus === "error" && t('statusError')}
           </TransactionStatus>
         )}
       </Form>

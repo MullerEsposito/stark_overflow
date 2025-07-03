@@ -1,3 +1,8 @@
+// Helper to generate a date for "yesterday at 16:24"
+const yesterday = new Date();
+yesterday.setDate(yesterday.getDate() - 1);
+yesterday.setHours(16, 24, 0, 0);
+
 // Mock data for the question
 export const mockQuestion = {
   id: "1",
