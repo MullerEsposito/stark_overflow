@@ -80,11 +80,6 @@ export const ToggleThemeButton = styled.button`
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
-
-export const HeaderActionsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
 `;
 
 export const LanguageSwitcher = styled.div`
@@ -129,6 +124,7 @@ export const GlobeIcon = styled(Globe)`
   pointer-events: none;
   color: ${({ theme }) => theme.text};
 `;
+
 export const ConnectButtonContainer = styled.div`
   position: relative;
   display: flex;

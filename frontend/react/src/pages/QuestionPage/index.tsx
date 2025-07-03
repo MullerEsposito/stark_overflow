@@ -11,7 +11,6 @@ import { EditorForm } from "./EditorForm"
 import { useTranslation } from "react-i18next";
 import { useWallet } from "@hooks/useWallet"
 import { useContract } from "@hooks/useContract"
-import { shortenAddress } from "@utils/shortenAddress"
 import { cairo } from "starknet"
 import { formatters } from "@utils/formatters"
 
@@ -33,7 +32,7 @@ export function QuestionPage() {
   const amountInWei = formatters.convertStringDecimalToWei(amount);
   const scaledAmount = cairo.uint256(amountInWei);
 
-  const { sendAsync: askQuestion, isPending: isTransactionPending, data: transactionData, error: transactionError } = useSendTransaction({
+  const { sendAsync: askQuestion } = useSendTransaction({
     calls: contract && description && amount && Number(scaledAmount.low) > 0
       ? [{
         contractAddress: import.meta.env.VITE_TOKEN_ADDRESS,
