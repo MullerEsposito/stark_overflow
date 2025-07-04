@@ -8,11 +8,24 @@ pub enum QuestionStatus {
 }
 
 #[derive(Drop, Serde, starknet::Store)]
+pub struct Forum {
+  pub id: u256,
+  pub name: ByteArray,
+  pub icon_url: ByteArray,
+  pub amount: u256,
+  pub total_questions: u256,
+}
+
+#[derive(Drop, Serde, starknet::Store)]
 pub struct Question {
   pub id: u256,
+  pub forum_id: u256,
+  pub title: ByteArray,
   pub author: ContractAddress,
   pub description: ByteArray,
-  pub value: u256,
+  pub amount: u256,
+  pub repository_url: ByteArray,
+  pub tags: Vec<ByteArray>,
   pub status: QuestionStatus,
 }
 

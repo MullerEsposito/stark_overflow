@@ -12,6 +12,30 @@ fn test_deploy_mock_stark_token() {
 }
 
 #[test]
+fn it_should_be_able_to_create_a_forum() {
+  let (
+    starkoverflow_dispatcher,
+    starkoverflow_contract_address, 
+    starkoverflow_token_dispatcher,
+    _
+  ) = deployStarkOverflowContract();
+
+  let forum_name = "Forum of test";
+  let forum_icon_url = "https://example.com/icon.png";
+
+  cheat_caller_address(starkoverflow_contract_address, ADDRESSES::ASKER.get(), CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.create_forum(forum_name.clone(), forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forums();
+  let forum_id = forum.at(0).id;
+
+  assert_eq!(forum.len(), 1);
+  assert_eq!(forum_id, 1);
+  assert_eq!(forum.at(0).name, forum_name);
+  assert_eq!(forum.at(0).icon_url, forum_icon_url);
+}
+
+#[test]
 fn it_should_be_able_to_ask_a_question() {
   let asker = ADDRESSES::ASKER.get();
 
@@ -22,24 +46,36 @@ fn it_should_be_able_to_ask_a_question() {
     _
   ) = deployStarkOverflowContract();
 
+  let forum_name = "Forum of test";
+  let forum_icon_url = "https://example.com/icon.png";
+
+  cheat_caller_address(starkoverflow_contract_address, ADDRESSES::ASKER.get(), CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.create_forum(forum_name.clone(), forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forums();
+  let forum_id = forum.at(0).id;
+
   let starting_balance = starkoverflow_token_dispatcher.balance_of(starkoverflow_contract_address);
 
-  let description = "Question of test.";
-  let value: u256 = 1 + EIGHTEEN_DECIMALS; // 1 STARK
+  let title = "Title of test"
+  let description = "Question of test";
+  let amount: u256 = 1 + EIGHTEEN_DECIMALS; // 1 STARK
 
-  approve_as_spender(asker, starkoverflow_contract_address, starkoverflow_token_dispatcher, value);
+  approve_as_spender(asker, starkoverflow_contract_address, starkoverflow_token_dispatcher, amount);
 
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
-  let question_id = starkoverflow_dispatcher.ask_question(description.clone(), value);
+  let question_id = starkoverflow_dispatcher.ask_question(forum_id, title.clone(), description.clone(), amount);
 
   let question = starkoverflow_dispatcher.get_question(question_id);
+
   assert_eq!(question.id, question_id);
+  assert_eq!(question.forum_id, forum_id);
   assert_eq!(question.author, asker);
   assert_eq!(question.description, description);
-  assert_eq!(question.value, value);
+  assert_eq!(question.amount, amount);
 
   let final_balance = starkoverflow_token_dispatcher.balance_of(starkoverflow_contract_address);
-  assert_eq!(final_balance, starting_balance + value);
+  assert_eq!(final_balance, starting_balance + amount);
 }
 
 #[test]
@@ -54,13 +90,23 @@ fn it_should_be_able_to_add_funds_to_a_question() {
     starkoverflow_token_address
   ) = deployStarkOverflowContract();
 
-  let description = "Question of test.";
-  let value = 50 + EIGHTEEN_DECIMALS; // 50 STARK
+  let forum_name = "Forum of test";
+  let forum_icon_url = "https://example.com/icon.png";
 
-  approve_as_spender(asker, starkoverflow_contract_address, starkoverflow_token_dispatcher, value);
+  cheat_caller_address(starkoverflow_contract_address, ADDRESSES::ASKER.get(), CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.create_forum(forum_name.clone(), forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forums();
+  let forum_id = forum.at(0).id;
+
+  let title = "Title of test"
+  let description = "Question of test.";
+  let amount = 50 + EIGHTEEN_DECIMALS; // 50 STARK
+
+  approve_as_spender(asker, starkoverflow_contract_address, starkoverflow_token_dispatcher, amount);
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
 
-  let question_id = starkoverflow_dispatcher.ask_question(description.clone(), value);
+  let question_id = starkoverflow_dispatcher.ask_question(forum_id, title.clone(), description.clone(), amount);
 
   cheat_caller_address(starkoverflow_token_address, asker, CheatSpan::TargetCalls(1));
   starkoverflow_token_dispatcher.mint(sponsor, 100 + EIGHTEEN_DECIMALS); // 100 STARK
@@ -72,10 +118,10 @@ fn it_should_be_able_to_add_funds_to_a_question() {
   starkoverflow_dispatcher.add_funds_to_question(question_id, additionally_funds);
 
   let question = starkoverflow_dispatcher.get_question(question_id);
-  assert_eq!(question.value, value + additionally_funds);
+  assert_eq!(question.amount, amount + additionally_funds);
 
   let final_balance = starkoverflow_token_dispatcher.balance_of(starkoverflow_contract_address);
-  assert_eq!(final_balance, value + additionally_funds);
+  assert_eq!(final_balance, amount + additionally_funds);
 }
 
 #[test]
@@ -90,12 +136,22 @@ fn it_should_be_able_to_give_an_answer() {
     _
   ) = deployStarkOverflowContract();
 
-  let question_description = "Question of test.";
-  let value = 100;
+  let forum_name = "Forum of test";
+  let forum_icon_url = "https://example.com/icon.png";
 
-  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, value);    
+  cheat_caller_address(starkoverflow_contract_address, ADDRESSES::ASKER.get(), CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.create_forum(forum_name.clone(), forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forums();
+  let forum_id = forum.at(0).id;
+
+  let title = "Title of test"
+  let question_description = "Question of test.";
+  let amount = 100 + EIGHTEEN_DECIMALS; // 100 STARK
+
+  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, amount);    
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
-  let question_id = starkoverflow_dispatcher.ask_question(question_description.clone(), value);
+  let question_id = starkoverflow_dispatcher.ask_question(forum_id, title.clone(), question_description.clone(), amount);
 
   cheat_caller_address(starkoverflow_contract_address, responder, CheatSpan::TargetCalls(1));
   let answer_description = "Answer of test.";
@@ -120,11 +176,20 @@ fn it_should_be_able_to_mark_answer_as_correct() {
     _,
   ) = deployStarkOverflowContract();
 
+  let forum_name = "Forum of test";
+  let forum_icon_url = "https://example.com/icon.png";
+
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.create_forum(forum_name.clone(), forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forums();
+  let forum_id = forum.at(0).id;
+
+  let title = "Title of test"
   let question_description = "Question of test marking answer as correct.";
-  let question_value = 100 + EIGHTEEN_DECIMALS; // 100 STARK
-  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, question_value);
-  let question_id = starkoverflow_dispatcher.ask_question(question_description.clone(), question_value);
+  let amount = 100 + EIGHTEEN_DECIMALS; // 100 STARK
+  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, amount);
+  let question_id = starkoverflow_dispatcher.ask_question(forum_id, title.clone(), question_description.clone(), amount);
 
   cheat_caller_address(starkoverflow_contract_address, responder, CheatSpan::TargetCalls(1));
   let answer_description = "This is a test answer.";
@@ -136,7 +201,7 @@ fn it_should_be_able_to_mark_answer_as_correct() {
   let correct_answer_id = starkoverflow_dispatcher.get_correct_answer(question_id);
   assert_eq!(correct_answer_id, answer_id);
 
-  let question_balance = starkoverflow_dispatcher.get_question(question_id).value;
+  let question_balance = starkoverflow_dispatcher.get_question(question_id).amount;
   let responder_balance = stark_token_dispatcher.balance_of(responder);
   let starkoverflow_contract_balance = stark_token_dispatcher.balance_of(starkoverflow_contract_address);
   assert_eq!(starkoverflow_contract_balance, 0);
@@ -150,12 +215,20 @@ fn it_should_not_be_able_to_mark_a_non_existent_answer_as_correct() {
   let (starkoverflow_dispatcher, starkoverflow_contract_address, stark_token_dispatcher, _) = deployStarkOverflowContract();
   let starkoverflow_safe_dispatcher = IStarkOverflowSafeDispatcher { contract_address: starkoverflow_contract_address };
 
-  let question_description = "Question of test.";
-  let value = 100 + EIGHTEEN_DECIMALS; // 100 STARK
+  let forum_name = "Forum of test";
+  let forum_icon_url = "https://example.com/icon.png";
 
-  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, value);
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
-  let question_id = starkoverflow_dispatcher.ask_question(question_description.clone(), value);
+  starkoverflow_dispatcher.create_forum(forum_name.clone(), forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forums();
+  let forum_id = forum.at(0).id;
+
+  let title = "Title of test"
+  let question_description = "Question of test.";
+  let amount = 100 + EIGHTEEN_DECIMALS; // 100 STARK
+  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, amount);
+  let question_id = starkoverflow_dispatcher.ask_question(forum_id, title.clone(), question_description.clone(), amount);
 
   let inexistent_answer_id = 999;
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
@@ -177,11 +250,20 @@ fn it_should_not_be_able_to_tag_an_answer_as_correct_but_the_owner() {
   let (starkoverflow_dispatcher, starkoverflow_contract_address, stark_token_dispatcher, _) = deployStarkOverflowContract();
   let starkoverflow_safe_dispatcher = IStarkOverflowSafeDispatcher { contract_address: starkoverflow_contract_address };
 
+  let forum_name = "Forum of test";
+  let forum_icon_url = "https://example.com/icon.png";
+
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.create_forum(forum_name.clone(), forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forums();
+  let forum_id = forum.at(0).id;
+
+  let title = "Title of test"
   let question_description = "Question of test marking answer as correct.";
-  let question_value = 100 + EIGHTEEN_DECIMALS; // 100 STARK
-  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, question_value);
-  let question_id = starkoverflow_dispatcher.ask_question(question_description.clone(), question_value);
+  let amount = 100 + EIGHTEEN_DECIMALS; // 100 STARK
+  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, amount);
+  let question_id = starkoverflow_dispatcher.ask_question(forum_id, title.clone(), question_description.clone(), amount);
 
   cheat_caller_address(starkoverflow_contract_address, responder, CheatSpan::TargetCalls(1));
   let answer_description = "This is a test answer.";
@@ -209,12 +291,20 @@ fn it_should_be_able_to_retrive_all_answers_for_a_question() {
     _
   ) = deployStarkOverflowContract();
 
-  let question_description = "Question of test.";
-  let value = 100 + EIGHTEEN_DECIMALS; // 100 STARK
+  let forum_name = "Forum of test";
+  let forum_icon_url = "https://example.com/icon.png";
 
-  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, value);
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
-  let question_id = starkoverflow_dispatcher.ask_question(question_description.clone(), value);
+  starkoverflow_dispatcher.create_forum(forum_name.clone(), forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forums();
+  let forum_id = forum.at(0).id;
+
+  let title = "Title of test"
+  let question_description = "Question of test.";
+  let amount = 100 + EIGHTEEN_DECIMALS; // 100 STARK
+  approve_as_spender(asker, starkoverflow_contract_address, stark_token_dispatcher, amount);
+  let question_id = starkoverflow_dispatcher.ask_question(forum_id, title.clone(), question_description.clone(), amount);
 
   cheat_caller_address(starkoverflow_contract_address, responder, CheatSpan::TargetCalls(1));
 
