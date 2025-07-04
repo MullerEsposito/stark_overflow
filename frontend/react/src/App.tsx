@@ -9,6 +9,7 @@ import { useState, useEffect } from "react"
 import { StatusMessageProvider } from "@hooks/useStatusMessage/statusMessage.provider"
 import { WalletProvider } from "@hooks/useWallet/wallet.provider"
 import { ContractProvider } from "@hooks/useContract/contract.provider"
+import { EnvironmentStatus } from "./components/EnvironmentStatus"
 
 export function App() {
   const [theme, setTheme] = useState(darkTheme);  
@@ -40,6 +41,7 @@ export function App() {
             <Router />
           </BrowserRouter>
           <GlobalStyle />
+          <EnvironmentStatus />
         </ContractProvider>
       </WalletProvider>
     </StatusMessageProvider>

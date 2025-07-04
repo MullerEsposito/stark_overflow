@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { PaperPlaneRight, Link as LinkIcon, Tag, CurrencyDollar } from "phosphor-react"
 import { Container, Form, Button, TransactionStatus } from "./style"
 import { NavLink, useNavigate } from "react-router-dom"
@@ -13,6 +13,7 @@ import { useContract } from "@hooks/useContract"
 import { shortenAddress } from "@utils/shortenAddress"
 import { cairo } from "starknet"
 import { formatters } from "@utils/formatters"
+import { validateEnvironment, getEnvironmentDebugInfo } from "@utils/environment"
 
 export function QuestionPage() {
   const [title, setTitle] = useState("")
@@ -21,19 +22,33 @@ export function QuestionPage() {
   const [repository, setRepository] = useState("")
   const [tags, setTags] = useState("")
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [envError, setEnvError] = useState<string | null>(null)
 
   const navigate = useNavigate()
   const { isConnected } = useAccount()
   const { openConnectModal } = useWallet()
-  const { contract } = useContract();
+  const { contract, contractReady } = useContract();
+
+  // Validate environment variables on component mount
+  useEffect(() => {
+    const validation = validateEnvironment()
+    if (!validation.isValid) {
+      setEnvError(`Missing environment variables: ${validation.missingVars.join(', ')}`)
+    } else {
+      setEnvError(null)
+    }
+  }, [])
 
   const amountInWei = formatters.convertStringDecimalToWei(amount);
   const scaledAmount = cairo.uint256(amountInWei);
 
+  // Get token address safely
+  const tokenAddress = import.meta.env.VITE_TOKEN_ADDRESS
+
   const { sendAsync: askQuestion, isPending: isTransactionPending, data: transactionData, error: transactionError } = useSendTransaction({
-    calls: contract && description && amount && Number(scaledAmount.low) > 0
+    calls: contract && contractReady && tokenAddress && description && amount && Number(scaledAmount.low) > 0
       ? [{
-        contractAddress: import.meta.env.VITE_TOKEN_ADDRESS,
+        contractAddress: tokenAddress,
         entrypoint: "approve",
         calldata: [contract.address, scaledAmount.low, scaledAmount.high],
       },
@@ -55,6 +70,13 @@ export function QuestionPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Check for environment errors first
+    if (envError || !contractReady) {
+      setErrors({ general: envError || "Contract not ready. Please check your environment configuration." })
+      return
+    }
+
     if (!validateForm()) return
     if (!isConnected) {
       openConnectModal()
@@ -72,10 +94,53 @@ export function QuestionPage() {
     }
   }
 
+  // Show environment error state
+  if (envError) {
+    return (
+      <Container>
+        <div style={{ 
+          padding: "20px", 
+          textAlign: "center",
+          backgroundColor: "#f8d7da",
+          color: "#721c24",
+          borderRadius: "5px",
+          border: "1px solid #f5c6cb",
+          margin: "20px 0"
+        }}>
+          <h3>Configuration Error</h3>
+          <p style={{ margin: "10px 0" }}>{envError}</p>
+          <details style={{ marginTop: "15px", textAlign: "left" }}>
+            <summary style={{ cursor: "pointer", fontWeight: "bold" }}>Debug Information</summary>
+            <div style={{ marginTop: "10px", fontFamily: "monospace", fontSize: "0.9em" }}>
+              {Object.entries(getEnvironmentDebugInfo()).map(([key, value]) => (
+                <div key={key}>{key}: {value}</div>
+              ))}
+            </div>
+          </details>
+          <div style={{ marginTop: "15px" }}>
+            <p>Please ensure your <code>.env</code> file exists and contains the required variables.</p>
+          </div>
+        </div>
+      </Container>
+    )
+  }
+
   return (
     <Container>
       <h2>Create Question</h2>
       <Form onSubmit={handleSubmit}>
+        {errors.general && (
+          <div style={{ 
+            backgroundColor: "#f8d7da", 
+            color: "#721c24", 
+            padding: "10px", 
+            borderRadius: "5px", 
+            margin: "10px 0",
+            border: "1px solid #f5c6cb"
+          }}>
+            {errors.general}
+          </div>
+        )}
         <InputForm
           id="title"
           label="Title"
@@ -131,7 +196,7 @@ export function QuestionPage() {
               Discard
             </Button>
           </NavLink>
-          <Button variant="publish" type="submit" disabled={isTransactionPending || scaledAmount.low === 0n}>
+          <Button variant="publish" type="submit" disabled={isTransactionPending || scaledAmount.low === 0n || !contractReady}>
             {isTransactionPending ? "Publishing..." : "Publish"}
             {!isTransactionPending && <PaperPlaneRight size={20} />}
           </Button>

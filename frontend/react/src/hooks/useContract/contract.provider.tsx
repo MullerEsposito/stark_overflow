@@ -1,4 +1,4 @@
-import { useState, ReactNode, useCallback } from 'react'
+import { useState, ReactNode, useCallback, useEffect } from 'react'
 import { useAccount, useContract, useSendTransaction } from "@starknet-react/core"
 import { ContractContext } from './contract.context'
 import { formatters } from '@utils/formatters'
@@ -32,11 +32,36 @@ export function ContractProvider({ children }: ContractProviderProps) {
     transactionHash: null
   })
 
-  const { contract } = useContract<typeof StarkOverflowABI>({ abi: StarkOverflowABI, address: import.meta.env.VITE_CONTRACT_ADDRESS })
+  // Check if environment variables are properly set
+  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS
+  const [contractReady, setContractReady] = useState(false)
+  const [initializationError, setInitializationError] = useState<string | null>(null)
+
+  const { contract } = useContract<typeof StarkOverflowABI>({ 
+    abi: StarkOverflowABI, 
+    address: contractAddress
+  })
+
+  // Validate contract initialization
+  useEffect(() => {
+    if (!contractAddress) {
+      setInitializationError("Contract address not configured. Please check your environment variables.")
+      setContractReady(false)
+      return
+    }
+
+    if (contract) {
+      setContractReady(true)
+      setInitializationError(null)
+    } else {
+      setContractReady(false)
+    }
+  }, [contract, contractAddress])
 
   const fetchQuestion = useCallback(async (questionId: number): Promise<Question | null> => {
-    if (!contract) {
-      setQuestionState({ isLoading: false, error: ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED, transactionHash: null })
+    if (!contract || !contractReady) {
+      const errorMsg = initializationError || ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED
+      setQuestionState({ isLoading: false, error: errorMsg, transactionHash: null })
       return null
     }
 
@@ -58,11 +83,12 @@ export function ContractProvider({ children }: ContractProviderProps) {
       setQuestionState({ isLoading: false, error: errorMessage, transactionHash: null })
       return null
     }
-  }, [contract])
+  }, [contract, contractReady, initializationError])
 
   const fetchAnswers = useCallback(async (questionId: number): Promise<Answer[]> => {
-    if (!contract) {
-      setAnswersState({ isLoading: false, error: ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED, transactionHash: null })
+    if (!contract || !contractReady) {
+      const errorMsg = initializationError || ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED
+      setAnswersState({ isLoading: false, error: errorMsg, transactionHash: null })
       return []
     }
 
@@ -88,7 +114,7 @@ export function ContractProvider({ children }: ContractProviderProps) {
       setAnswersState({ isLoading: false, error: errorMessage, transactionHash: null })
       return []
     }
-  }, [contract])
+  }, [contract, contractReady, initializationError])
 
   const clearQuestionError = () => setQuestionState(prev => ({ ...prev, error: null }))
   const clearAnswersError = () => setAnswersState(prev => ({ ...prev, error: null }))
@@ -98,10 +124,11 @@ export function ContractProvider({ children }: ContractProviderProps) {
   })
 
   const markAnswerAsCorrect = useCallback(async (questionId: string, answerId: string): Promise<boolean> => {
-    if (!contract || !isConnected) {
+    if (!contract || !contractReady || !isConnected) {
+      const errorMsg = initializationError || "Contract not initialized or wallet not connected"
       setMarkCorrectState({
         isLoading: false,
-        error: "Contract not initialized or wallet not connected",
+        error: errorMsg,
         transactionHash: null
       })
       return false
@@ -136,11 +163,11 @@ export function ContractProvider({ children }: ContractProviderProps) {
       setMarkCorrectState({ isLoading: false, error: errorMessage, transactionHash: null })
       return false
     }
-  }, [contract, isConnected, markAnswerAsCorrectSendAsync])
+  }, [contract, contractReady, isConnected, markAnswerAsCorrectSendAsync, initializationError])
 
   // Check if an answer has already been marked as correct for a question
   const getCorrectAnswer = useCallback(async (questionId: string): Promise<string | null> => {
-    if (!contract) {
+    if (!contract || !contractReady) {
       return null
     }
 
@@ -151,12 +178,12 @@ export function ContractProvider({ children }: ContractProviderProps) {
       console.error("Error fetching correct answer:", error)
       return null
     }
-  }, [contract])
+  }, [contract, contractReady])
 
   return (
     <ContractContext.Provider value={{
       contract,
-      contractReady: !!contract,
+      contractReady,
       isConnected,
       address,
       questionLoading: questionState.isLoading,
