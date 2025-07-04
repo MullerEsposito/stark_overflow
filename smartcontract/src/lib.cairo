@@ -1,4 +1,4 @@
-mod structs;
+pub mod structs;
 mod events;
 mod types;
 pub mod StarkOverflow;
