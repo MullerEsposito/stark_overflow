@@ -7,6 +7,7 @@ use starknet::ContractAddress;
 pub trait IStarkOverflow<T> {
   fn ask_question(ref self: T, description: ByteArray, value: u256) -> QuestionId;
   fn get_question(self: @T, question_id: u256) -> Question;
+  fn get_questions(self: @T, page_size: u256, page: u256) -> (Array<Question>, u256, bool); // (questions, total, has_next)
   fn add_funds_to_question(ref self: T, question_id: u256, value: u256);
   fn submit_answer(ref self: T, question_id: u256, description: ByteArray) -> AnswerId;
   fn get_answer(self: @T, answer_id: u256) -> Answer;
@@ -68,7 +69,8 @@ pub mod StarkOverflow {
     last_question_id: u256,
     answers: Map<u256, Answer>,
     last_answer_id: u256,
-    question_id_answers_ids: Map<u256, Vec<u256>>,    question_id_chosen_answer_id: Map<u256, u256>,
+    question_id_answers_ids: Map<u256, Vec<u256>>,
+    question_id_chosen_answer_id: Map<u256, u256>,
     governance_token_dispatcher: IStarkOverflowTokenDispatcher,
 
     // Question staking storage
@@ -113,6 +115,41 @@ pub mod StarkOverflow {
     fn get_question(self: @ContractState, question_id: u256) -> Question {
       let found_question = self.questions.entry(question_id).read();
       found_question
+    }
+
+    fn get_questions(self: @ContractState, page_size: u256, page: u256) -> (Array<Question>, u256, bool) {
+      assert(page_size > 0, 'PageSize must be greater than 0');
+      assert(page > 0, 'Page must be greater than 0');
+      
+      let total_questions = self.last_question_id.read();
+      
+      if total_questions == 0 {
+        return (array![], 0, false);
+      }
+
+      let page_first_question_idx = page_size * (page - 1) + 1; //2 * (3-1) + 1 = 5
+
+      if page_first_question_idx > total_questions {
+          return (array![], total_questions, false);
+      }
+
+      let mut page_last_question_idx = page_first_question_idx + page_size - 1;
+      if page_last_question_idx > total_questions {
+          page_last_question_idx = total_questions;
+      }
+
+      let mut questions_for_page = array![];
+      let mut current_index = page_first_question_idx;
+
+      while current_index <= page_last_question_idx {
+        let question = self.questions.read(current_index);
+        questions_for_page.append(question);
+        current_index += 1;
+      };
+
+      let has_next_page = page_last_question_idx < total_questions;
+
+      (questions_for_page, total_questions, has_next_page)
     }
 
     fn get_answers(self: @ContractState, question_id: u256) -> Array<Answer> {
@@ -180,9 +217,7 @@ pub mod StarkOverflow {
       assert!(found_answer.question_id == question_id, "The specified answer does not exist for this question");
 
       let found_question = self.questions.entry(question_id).read();
-      assert!(found_question.status == QuestionStatus::Open, "The question is already resolved");
-      let found_question = self.questions.entry(question_id).read();
-      assert!(found_question.status == QuestionStatus::Open, "The question is already resolved");
+      assert!(found_question.status == QuestionStatus::Open, "Question is not open");
 
       self.questions.entry(question_id).write(Question { status: QuestionStatus::Resolved, ..found_question });
       self.question_id_chosen_answer_id.entry(question_id).write(answer_id);

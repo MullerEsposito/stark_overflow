@@ -2,6 +2,7 @@ use snforge_std::{CheatSpan, cheat_caller_address, byte_array::try_deserialize_b
 use super::common::{deployStarkOverflowContract, deploy_mock_stark_token, ADDRESSES, ADDRESSESTrait, approve_as_spender, EIGHTEEN_DECIMALS};
 use stark_overflow::StarkOverflow::{IStarkOverflowSafeDispatcher, IStarkOverflowSafeDispatcherTrait, IStarkOverflowDispatcherTrait};
 use stark_overflow::StarkOverflowToken::{IStarkOverflowTokenDispatcherTrait};
+use stark_overflow::structs::{QuestionStatus};
 
 #[test]
 fn test_deploy_mock_stark_token() {
@@ -136,6 +137,9 @@ fn it_should_be_able_to_mark_answer_as_correct() {
   let correct_answer_id = starkoverflow_dispatcher.get_correct_answer(question_id);
   assert_eq!(correct_answer_id, answer_id);
 
+  let resolved_question = starkoverflow_dispatcher.get_question(question_id);
+  assert!(resolved_question.status == QuestionStatus::Resolved, "Status should be Resolved");
+
   let question_balance = starkoverflow_dispatcher.get_question(question_id).value;
   let responder_balance = stark_token_dispatcher.balance_of(responder);
   let starkoverflow_contract_balance = stark_token_dispatcher.balance_of(starkoverflow_contract_address);
@@ -268,13 +272,49 @@ fn it_should_not_be_able_to_retrieve_answers_for_a_non_existent_question() {
 }
 
 #[test]
-fn test_reputation() {
-  let (
-    _starkoverflow_dispatcher,
-    _starkoverflow_contract_address, 
-    _starkoverflow_token_dispatcher,
-    _
-  ) = deployStarkOverflowContract();
-  // Dummy test
-  assert(true, 'This test should pass');
+fn it_should_return_void_values_for_when_no_questions() {
+  let (starkoverflow_dispatcher, _, _, _) = deployStarkOverflowContract();
+  
+  let (questions, total, has_next) = starkoverflow_dispatcher.get_questions(10, 1);
+
+  assert_eq!(total, 0, "Total should be 0");
+  assert_eq!(questions.len(), 0, "Array should be empty");
+  assert_eq!(has_next, false, "Should not have next page");
+}
+
+#[test]
+fn it_should_return_paginated_questions() {
+  let asker = ADDRESSES::ASKER.get();
+  let (starkoverflow_dispatcher, contract_address, stark_token_dispatcher, _) = deployStarkOverflowContract();
+
+  let mut total_questions: u32 = 0;
+  while total_questions < 5 {
+      let value = 1_u256;
+      approve_as_spender(asker, contract_address, stark_token_dispatcher, value);
+      cheat_caller_address(contract_address, asker, CheatSpan::TargetCalls(1));
+      starkoverflow_dispatcher.ask_question("q", value);
+      total_questions += 1;
+  };
+
+  let (questions_page1, total, has_next) = starkoverflow_dispatcher.get_questions(2, 1);
+  assert_eq!(total, 5, "Page 1: Total should be 5");
+  assert_eq!(questions_page1.len(), 2, "Page 1: Should have 2 questions");
+  assert_eq!(has_next, true, "Page 1: Should have next page");
+  assert_eq!(*questions_page1.at(0).id, 1, "Page 1: First ID should be 1");
+  assert_eq!(*questions_page1.at(1).id, 2, "Page 1: Second ID should be 2");
+
+  let (questions_page2, _, has_next) = starkoverflow_dispatcher.get_questions(2, 2);
+  assert_eq!(questions_page2.len(), 2, "Page 2: Should have 2 questions");
+  assert_eq!(has_next, true, "Page 2: Should have next page");
+  assert_eq!(*questions_page2.at(0).id, 3, "Page 2: First ID should be 3");
+  assert_eq!(*questions_page2.at(1).id, 4, "Page 2: Second ID should be 4");
+
+  let (questions_page3, _, has_next) = starkoverflow_dispatcher.get_questions(2, 3);
+  assert_eq!(questions_page3.len(), 1, "Page 3: Should have 1 question");
+  assert_eq!(has_next, false, "Page 3: Should NOT have next page");
+  assert_eq!(*questions_page3.at(0).id, 5, "Page 3: First ID should be 5");
+
+  let (questions_page4, _, has_next) = starkoverflow_dispatcher.get_questions(2, 4);
+  assert_eq!(questions_page4.len(), 0, "Page 4: Should have 0 questions");
+  assert_eq!(has_next, false, "Page 4: Should NOT have next page");
 }
