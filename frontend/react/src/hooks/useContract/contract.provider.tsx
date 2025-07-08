@@ -265,7 +265,6 @@ export function ContractProvider({ children }: ContractProviderProps) {
 
     try {
       const result = await contractInstance.get_reputation(address) as bigint
-      console.log("getReputationByUser", result)
       return result?.toString() || "0"
     } catch (error) {
       console.error("Error fetching reputation by user:", error)

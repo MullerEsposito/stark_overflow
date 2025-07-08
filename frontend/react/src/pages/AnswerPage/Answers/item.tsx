@@ -33,13 +33,8 @@ export function AnswersItem({ answer, question, setQuestion }: AnswersProps) {
   React.useMemo(async() => {
     if (!answer?.authorAddress) return "0"
     const reputation = await getReputationByUser(answer?.authorAddress)
-    console.log("reputation", reputation)
     setReputationScore(reputation)
   }, [answer?.authorAddress])
-
-  useEffect(() => {
-    console.log("reputationScore", reputationScore)
-  }, [reputationScore])
 
   const handleMarkCorrect = async (answerId: string) => {
     if (!isConnected) {
