@@ -1,8 +1,8 @@
 import { CheckCircle, ThumbsDown, ThumbsUp } from "phosphor-react"
 import { UserAvatar } from "../styles"
-import { AnswerContent, AnswerDivider, AnswerFooter, AnswerHeader, AnswerItem, AnswersContainer, AnswersList, CorrectAnswerBadge, MarkCorrectButton, PaginationButton, PaginationContainer, SortingOptions, SortOption, VoteButton, VoteContainer, VoteCount } from "./styles"
+import { AnswerContent, AnswerDivider, AnswerFooter, AnswerHeader, AnswerItem, CorrectAnswerBadge, MarkCorrectButton, VoteButton, VoteContainer, VoteCount } from "./styles"
 import * as React from "react"
-import { useContext, useState, Suspense, useCallback, useEffect } from "react"
+import { useContext, useState, Suspense, useEffect } from "react"
 import { useAccount } from "@starknet-react/core"
 import { shortenAddress } from "@utils/shortenAddress"
 
@@ -11,6 +11,7 @@ import type { Answer, Question } from "@app-types/index"
 import { useWallet } from "@hooks/useWallet"
 import { useStatusMessage } from "@hooks/useStatusMessage"
 import { useContract } from "@hooks/useContract"
+import Tooltip from "@components/Tooltip"
 
 const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
@@ -163,7 +164,10 @@ export function AnswersItem({ answer, question, setQuestion }: AnswersProps) {
           <span>{answer.authorName}</span>
           <small>{shortenAddress(answer.authorAddress)}</small>
           <time>{answer.timestamp}</time>
-          <span>{reputationScore ? `Reputation: ${reputationScore}` : "Loading reputation..."}</span>
+          <Tooltip content={reputationScore ? `Reputation score of the user. 
+            The reputation is calculated based on the number of votes received.` : "Loading reputation..."}>
+            <span>{reputationScore ? `Reputation: ${reputationScore}` : "Loading reputation..."}</span>
+          </Tooltip>
         </div>                {answer.isCorrect && (
           <CorrectAnswerBadge>
             <CheckCircle size={16} weight="fill" />
