@@ -9,4 +9,5 @@ export type Question = {
   tags: string[];
   repositoryUrl: string;
   isOpen: boolean;
+  reputation?: string;
 }

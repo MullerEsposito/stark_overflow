@@ -43,9 +43,8 @@ export function Forum() {
 
 function ForumContent() {
   const { name } = useParams<{ name: string }>()
-  const { contractReady, fetchQuestion } = useContract()
+  const { contractReady, fetchQuestion, getReputationByUser } = useContract()
   const [loading, setLoading] = useState(true)
-
 
   const generateTopics = (): Topic[] => {
     const sampleTitles = [
@@ -116,13 +115,15 @@ function ForumContent() {
         initialTopics.map(async (topic) => {
           try {
             const question = await fetchQuestion(Number(topic.id))
+            const reputation = await getReputationByUser(question?.authorAddress || "")
 
             return {
               ...topic,
               title: question?.title || "",
               amount: question?.stakeAmount || 0,
               stakeLoading: false,
-              hasQuestion: question ? true : false
+              hasQuestion: question ? true : false,
+              reputation: reputation || 0
             }
           } catch (error) {
             console.error(`Error fetching stake for question ${topic.id}:`, error)

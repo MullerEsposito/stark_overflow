@@ -38,7 +38,8 @@ function AnswerPageContent() {
     questionLoading,
     questionError,
     clearQuestionError,
-    contractReady
+    contractReady,
+    getReputationByUser
   } = useContract()
 
   // Fetch question data from contract
@@ -47,6 +48,10 @@ function AnswerPageContent() {
       const loadQuestion = async () => {
         const contractQuestion = await fetchQuestion(questionId)
         if (contractQuestion) {
+          const reputation = await getReputationByUser(contractQuestion.authorAddress)
+          console.log("reputation", reputation)
+          contractQuestion.reputation = reputation || "0"
+          console.log("contractQuestion", contractQuestion)
           setQuestion(contractQuestion)
           setRetryAttempts(0) // Reset retry attempts on success
         }
