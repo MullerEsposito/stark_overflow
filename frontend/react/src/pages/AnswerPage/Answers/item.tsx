@@ -165,7 +165,9 @@ export function AnswersItem({ answer, question, setQuestion }: AnswersProps) {
           <small>{shortenAddress(answer.authorAddress)}</small>
           <time>{answer.timestamp}</time>
           <Tooltip content={reputationScore ? `Reputation score of the user. 
-            The reputation is calculated based on the number of votes received.` : "Loading reputation..."}>
+            The reputation is calculated based on the number of votes received.` : "Loading reputation..."}
+            position="right"
+          >
             <span>{reputationScore ? `Reputation: ${reputationScore}` : "Loading reputation..."}</span>
           </Tooltip>
         </div>                {answer.isCorrect && (
