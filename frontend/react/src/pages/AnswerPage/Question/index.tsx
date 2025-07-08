@@ -28,6 +28,7 @@ export function Question({ question }: QuestionProps) {
           <QuestionMeta>
             <span>{question.authorName}</span>
             <time>{question.timestamp}</time>
+            <span>Score: {question.reputation}</span>
           </QuestionMeta>
           <QuestionTitle>
             {question.isOpen ? (

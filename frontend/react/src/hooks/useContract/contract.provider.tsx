@@ -256,6 +256,23 @@ export function ContractProvider({ children }: ContractProviderProps) {
   }, [getContractForReading])
 
 
+  // Check if an answer has already been marked as correct for a question
+  const getReputationByUser = useCallback(async (address: string): Promise<string | null> => {
+    const contractInstance = getContractForReading()
+    if (!contractInstance) {
+      return null
+    }
+
+    try {
+      const result = await contractInstance.get_reputation(address) as bigint
+      console.log("getReputationByUser", result)
+      return result?.toString() || "0"
+    } catch (error) {
+      console.error("Error fetching reputation by user:", error)
+      return null
+    }
+  }, [getContractForReading])
+
 
   const clearQuestionError = () => setQuestionState(prev => ({ ...prev, error: null }))
   const clearAnswersError = () => setAnswersState(prev => ({ ...prev, error: null }))
@@ -283,7 +300,8 @@ export function ContractProvider({ children }: ContractProviderProps) {
       getCorrectAnswer,
       addFundsToQuestion,
       getTotalStakedOnQuestion,
-      clearStakingError
+      clearStakingError,
+      getReputationByUser
     }}>
       {children}
     </ContractContext.Provider>
