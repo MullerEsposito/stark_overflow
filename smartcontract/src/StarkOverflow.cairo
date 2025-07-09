@@ -1,17 +1,18 @@
-use stark_overflow::structs::{Question, Answer, QuestionStatus, Forum};
+use stark_overflow::structs::CommonStructs::{Answer, QuestionStatus, Forum};
+use stark_overflow::structs::SerialStructs::QuestionResponse;
 use stark_overflow::types::{QuestionId, AnswerId};
-use stark_overflow::StarkOverflowToken::{IStarkOverflowTokenDispatcher, IStarkOverflowTokenDispatcherTrait};
 use starknet::ContractAddress;
 
 #[starknet::interface]
 pub trait IStarkOverflow<T> {
   // Forums
-  fn create_forum(ref self: T, name: ByteArray, icon_url: ByteArray);
+  fn create_forum(ref self: T, name: ByteArray, icon_url: ByteArray) -> u256;
+  fn get_forum(self: @T, forum_id: u256) -> Forum;
   fn get_forums(self: @T) -> Array<Forum>;
 
   // Questions
-  fn ask_question(ref self: T, forum_id: u256, title: ByteArray, description: ByteArray, repository_url: ByteArray, tags: Vec<ByteArray>, value: u256) -> QuestionId;
-  fn get_question(self: @T, question_id: u256) -> Question;
+  fn ask_question(ref self: T, forum_id: u256, title: ByteArray, description: ByteArray, repository_url: ByteArray, tags: Array<ByteArray>, amount: u256) -> QuestionId;
+  fn get_question(self: @T, question_id: u256) -> QuestionResponse;
   fn stake_on_question(ref self: T, question_id: u256, amount: u256);
   fn get_total_staked_on_question(self: @T, question_id: u256) -> u256;
   fn get_staked_amount(self: @T, staker: ContractAddress, question_id: u256) -> u256;
@@ -22,36 +23,25 @@ pub trait IStarkOverflow<T> {
   fn get_answers(self: @T, question_id: u256) -> Array<Answer>;
   fn mark_answer_as_correct(ref self: T, question_id: u256, answer_id: u256);
   fn get_correct_answer(self: @T, question_id: u256) -> AnswerId;  
-
-  // Reputation system
-  fn add_reputation(ref self: T, user: ContractAddress, amount: u256);
-  fn get_reputation(self: @T, user: ContractAddress) -> u256;
-
-  // Staking Functions
-  fn stake(ref self: T, amount: u256);
-  fn withdraw_stake(ref self: T);
-  fn get_claimable_rewards(self: @T, staker: ContractAddress) -> u256;
-  fn get_stake_info(self: @T, staker: ContractAddress) -> (u256, u64, u256);  
 }
 
 #[starknet::contract]
 pub mod StarkOverflow {
-  use super::{Question, Answer, QuestionStatus, QuestionId, AnswerId, IStarkOverflow};
-  use super::{IERC20Dispatcher, IERC20DispatcherTrait};
-  use starknet::{get_caller_address, get_contract_address, ContractAddress};
+  use super::{Answer, QuestionStatus, QuestionId, AnswerId, IStarkOverflow, QuestionResponse, Forum, ContractAddress};
+  use stark_overflow::structs::StorageStructs::Question;
+  use starknet::{get_caller_address, get_contract_address, contract_address_const};
   use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map, Vec, VecTrait, MutableVecTrait};
   use openzeppelin::access::ownable::OwnableComponent;
-  use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
+  use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
   use stark_overflow::events::{QuestionAnswered, ChosenAnswer, QuestionStaked, ReputationAdded, StakeStarted, StakeWithdrawn};
 
-  component!(path: ERC20Component, storage: erc20, event: ERC20Event);
   component!(path: OwnableComponent, storage: ownable, event: OwnableEvent);
   
   #[abi(embed_v0)]
   impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
   impl InternalImpl = OwnableComponent::InternalImpl<ContractState>;
-  impl ERC20Impl = ERC20Component::ERC20Impl<ContractState>;   
-    #[event]
+  
+  #[event]
   #[derive(Drop, starknet::Event)]
   pub enum Event {
     QuestionAnswered: QuestionAnswered,
@@ -62,8 +52,6 @@ pub mod StarkOverflow {
     StakeWithdrawn: StakeWithdrawn,
     #[flat]
     OwnableEvent: OwnableComponent::Event,
-    #[flat]
-    ERC20Event: ERC20Component::Event,
   }
 
   #[storage]
@@ -93,19 +81,19 @@ pub mod StarkOverflow {
 
     #[substorage(v0)]
     ownable: OwnableComponent::Storage,
-    #[substorage(v0)]
-    erc20: ERC20Component::Storage,
   }
 
   #[constructor]
   fn constructor(ref self: ContractState) {
     self.ownable.initializer(get_caller_address());
-    self.stark_token_dispatcher.write(IERC20Dispatcher { contract_address: "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d" });
+    self.stark_token_dispatcher.write(IERC20Dispatcher { 
+      contract_address: contract_address_const::<0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d>() 
+    });
   }
 
   #[abi(embed_v0)]
   impl StarkOverflow of super::IStarkOverflow<ContractState> {
-    fn create_forum(ref self: ContractState, name: ByteArray, icon_url: ByteArray) {
+    fn create_forum(ref self: ContractState, name: ByteArray, icon_url: ByteArray) -> u256 {
       self.ownable.assert_only_owner();
 
       let forum_id = self.last_forum_id.read() + 1;
@@ -113,53 +101,79 @@ pub mod StarkOverflow {
 
       self.forums.entry(forum_id).write(forum);
       self.last_forum_id.write(forum_id);
+
+      forum_id
+    }
+
+    fn get_forum(self: @ContractState, forum_id: u256) -> Forum {
+      self.forums.entry(forum_id).read()
     }
 
     fn get_forums(self: @ContractState) -> Array<Forum> {
       let mut forums = array![];
-      let forums_ids = self.forums.keys();
+      let number_of_forums = self.last_forum_id.read();
 
-      for i in 0..forums_ids.len() {
-        let forum_id = forums_ids.at(i).read();
-        let forum = self.forums.entry(forum_id).read();
+      for i in 0..number_of_forums {
+        let forum = self.forums.entry(i).read();
         forums.append(forum);
       };
 
       forums
     }
 
-    fn ask_question(ref self: ContractState, forum_id: u256, title: ByteArray, description: ByteArray, repository_url: ByteArray, tags: Vec<ByteArray>, amount: u256) -> QuestionId {
+    fn ask_question(ref self: ContractState, forum_id: u256, title: ByteArray, description: ByteArray, repository_url: ByteArray, tags: Array<ByteArray>, amount: u256) -> QuestionId {
       let caller = get_caller_address();
       let question_id = self.last_question_id.read() + 1;
-      let question = Question { 
-        id: question_id, 
-        forum_id, 
-        title,
-        author: caller, 
-        description, 
-        amount, 
-        repository_url, 
-        tags,
-        status: QuestionStatus::Open, 
+      
+      let question = self.questions.entry(question_id);
+      question.id.write(question_id);
+      question.forum_id.write(forum_id);
+      question.title.write(title);
+      question.author.write(caller);
+      question.description.write(description);
+      question.amount.write(amount);
+      question.repository_url.write(repository_url);
+      
+      for i in 0..tags.len() {
+        let tag = tags.at(i).clone();
+        question.tags.append().write(tag);
       };
+      
+      question.status.write(QuestionStatus::Open);
       
       self.stake_on_question(question_id, amount);
       
-      self.questions.entry(question_id).write(question);
       self.last_question_id.write(question_id);
-      self.questions_ids_by_forum_id.entry(forum_id).append(question_id);
+      self.questions_ids_by_forum_id.entry(forum_id).append().write(question_id);
       
       question_id
     }
 
-    fn get_question(self: @ContractState, question_id: u256) -> Question {
-      let found_question = self.questions.entry(question_id).read();
-      found_question
+    fn get_question(self: @ContractState, question_id: u256) -> QuestionResponse {
+      let found_question = self.questions.entry(question_id);
+      let mut tags = array![];
+      for i in 0..found_question.tags.len() {
+        let tag = found_question.tags.at(i).read();
+        tags.append(tag);
+      };
+
+      let question_response = QuestionResponse {
+        id: found_question.id.read(),
+        forum_id: found_question.forum_id.read(),
+        title: found_question.title.read(),
+        author: found_question.author.read(),
+        description: found_question.description.read(),
+        amount: found_question.amount.read(),
+        repository_url: found_question.repository_url.read(),
+        tags: tags,
+        status: found_question.status.read(),
+      };
+      question_response
     }
 
     fn get_answers(self: @ContractState, question_id: u256) -> Array<Answer> {
-      let found_question = self.questions.entry(question_id).read();
-      assert!(found_question.id == question_id, "Question does not exist");
+      let found_question = self.questions.entry(question_id);
+      assert!(found_question.id.read() == question_id, "Question does not exist");
 
       let mut answers = array![];
       let answers_ids = self.answers_ids_by_question_id.entry(question_id);
@@ -205,19 +219,14 @@ pub mod StarkOverflow {
       let question_author = self.get_question(question_id).author;
 
       assert!(caller == question_author, "Only the author of the question can mark the answer as correct");
-      assert!(caller == question_author, "Only the author of the question can mark the answer as correct");
 
       let found_answer = self.get_answer(answer_id);
       assert!(found_answer.question_id == question_id, "The specified answer does not exist for this question");
-      let found_answer = self.get_answer(answer_id);
-      assert!(found_answer.question_id == question_id, "The specified answer does not exist for this question");
 
-      let found_question = self.questions.entry(question_id).read();
-      assert!(found_question.status == QuestionStatus::Open, "The question is already resolved");
-      let found_question = self.questions.entry(question_id).read();
-      assert!(found_question.status == QuestionStatus::Open, "The question is already resolved");
+      let found_question = self.questions.entry(question_id);
+      assert!(found_question.status.read() == QuestionStatus::Open, "The question is already resolved");
 
-      self.questions.entry(question_id).write(Question { status: QuestionStatus::Resolved, ..found_question });
+      found_question.status.write(QuestionStatus::Resolved);
       self.chosen_answer.entry(question_id).write(answer_id);
       
       // Emit event with all required fields
@@ -240,34 +249,33 @@ pub mod StarkOverflow {
       
     fn stake_on_question(ref self: ContractState, question_id: u256, amount: u256) {
       let caller = get_caller_address();
-      let mut found_question = self.questions.entry(question_id).read();
-      found_question.amount += amount;
+      let mut found_question = self.questions.entry(question_id);
       
       assert(amount > 0, 'Amount must be greater than 0');
+      found_question.amount.write(found_question.amount.read() + amount);
       
       // Transfer tokens from caller to contract
       let this_contract = get_contract_address();
       self.stark_token_dispatcher().transfer_from(caller, this_contract, amount);
       
       // Update question staking records
-      let current_stake = self.question_stakes.read((caller, question_id));
+      let current_stake = self.question_stake_by_user.read((caller, question_id));
       let new_stake = current_stake + amount;
-      self.question_stakes.write((caller, question_id), new_stake);
+      self.question_stake_by_user.write((caller, question_id), new_stake);
       
       // Update total staked for question
-      let total_staked = self.total_question_stakes.read(question_id);
-      self.total_question_stakes.write(question_id, total_staked + amount);
-      self.questions.entry(question_id).write(found_question);
+      let total_staked = self.question_total_staked.read(question_id);
+      self.question_total_staked.write(question_id, total_staked + amount);            
       
       self.emit(QuestionStaked { staker: caller, question_id, amount });
     }
 
     fn get_total_staked_on_question(self: @ContractState, question_id: u256) -> u256 {
-      self.total_question_stakes.read(question_id)
+      self.question_total_staked.read(question_id)
     }
 
     fn get_staked_amount(self: @ContractState, staker: ContractAddress, question_id: u256) -> u256 {
-      self.question_stakes.read((staker, question_id))
+      self.question_stake_by_user.read((staker, question_id))
     }    
   }
   
@@ -280,6 +288,10 @@ pub mod StarkOverflow {
       let total_staked = self.get_total_staked_on_question(question_id);
       
       self.stark_token_dispatcher().transfer(answer_author, total_staked);
+    }
+
+    fn stark_token_dispatcher(self: @ContractState) -> IERC20Dispatcher {
+      self.stark_token_dispatcher.read()
     }
   }
 }
