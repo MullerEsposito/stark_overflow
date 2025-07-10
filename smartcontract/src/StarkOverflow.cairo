@@ -29,7 +29,7 @@ pub trait IStarkOverflow<T> {
 pub mod StarkOverflow {
   use super::{Answer, QuestionStatus, QuestionId, AnswerId, IStarkOverflow, QuestionResponse, Forum, ContractAddress};
   use stark_overflow::structs::StorageStructs::Question;
-  use starknet::{get_caller_address, get_contract_address, contract_address_const};
+  use starknet::{get_caller_address, get_contract_address};
   use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Map, Vec, VecTrait, MutableVecTrait};
   use openzeppelin::access::ownable::OwnableComponent;
   use openzeppelin::token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
@@ -84,10 +84,10 @@ pub mod StarkOverflow {
   }
 
   #[constructor]
-  fn constructor(ref self: ContractState) {
+  fn constructor(ref self: ContractState, stark_token_address: ContractAddress) {
     self.ownable.initializer(get_caller_address());
     self.stark_token_dispatcher.write(IERC20Dispatcher { 
-      contract_address: contract_address_const::<0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d>() 
+      contract_address: stark_token_address 
     });
   }
 
@@ -131,7 +131,6 @@ pub mod StarkOverflow {
       question.title.write(title);
       question.author.write(caller);
       question.description.write(description);
-      question.amount.write(amount);
       question.repository_url.write(repository_url);
       
       for i in 0..tags.len() {
