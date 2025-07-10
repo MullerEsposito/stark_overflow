@@ -1,11 +1,10 @@
-use starknet::{ContractAddress, contract_address_const};
-use openzeppelin::utils::serde::SerializedAppend;
+use starknet::ContractAddress;
 use snforge_std::{declare, ContractClassTrait, DeclareResultTrait, cheat_caller_address, CheatSpan};
+use openzeppelin::utils::serde::SerializedAppend;
+use openzeppelin::access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
 use stark_overflow::StarkOverflow::{IStarkOverflowDispatcher, IStarkOverflowDispatcherTrait};
 use stark_overflow::MockStarkToken::{IMockStarkTokenDispatcher, IMockStarkTokenDispatcherTrait};
-use openzeppelin::access::ownable::interface::{IOwnableDispatcher, IOwnableDispatcherTrait};
-
-pub const EIGHTEEN_DECIMALS: u256 = 1_000_000_000_000_000_000;
+use super::constants::{ADDRESSES, ADDRESSESTrait, EIGHTEEN_DECIMALS};
 
 pub fn deploy_mock_stark_token() -> (IMockStarkTokenDispatcher, ContractAddress) {
   let asker = ADDRESSES::ASKER.get();
@@ -26,10 +25,11 @@ pub fn deploy_mock_stark_token() -> (IMockStarkTokenDispatcher, ContractAddress)
   (stark_token_dispatcher, stark_token_address)
 }
 
-pub fn deploy_starkoverflow_contract() -> (IStarkOverflowDispatcher, ContractAddress) {
+pub fn deploy_starkoverflow_contract(stark_token_address: ContractAddress) -> (IStarkOverflowDispatcher, ContractAddress) {
   let starkoverflow_class_hash = declare("StarkOverflow").unwrap().contract_class();
 
   let mut constructor_calldata: Array<felt252> = array![];
+  constructor_calldata.append_serde(stark_token_address);
 
   let (starkoverflow_contract_address, _) = starkoverflow_class_hash.deploy(@constructor_calldata).unwrap();
   let starkoverflow_dispatcher = IStarkOverflowDispatcher { contract_address: starkoverflow_contract_address };
@@ -68,8 +68,10 @@ pub fn ask_question(starkoverflow_dispatcher: IStarkOverflowDispatcher, token_di
   let tags = array!["tag1", "tag2", "tag3"];
   let amount = 1 + EIGHTEEN_DECIMALS; // 1 STARK
   let starkoverflow_contract_address = starkoverflow_dispatcher.contract_address;
+
+  approve_as_spender(starkoverflow_contract_address, asker, token_dispatcher, amount);
   
-  approve_as_spender(asker, starkoverflow_contract_address, token_dispatcher, amount);
+  cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
   let question_id = starkoverflow_dispatcher.ask_question(
     forum_id,
     title,
@@ -82,24 +84,11 @@ pub fn ask_question(starkoverflow_dispatcher: IStarkOverflowDispatcher, token_di
   question_id
 }
 
-#[derive(Copy, Clone, Drop)]
-pub enum ADDRESSES {
-  ASKER,
-  RESPONDER1,
-  RESPONDER2,
-  SPONSOR,
-  INTRUDER,
-}
+pub fn submit_answer(starkoverflow_dispatcher: IStarkOverflowDispatcher, starkoverflow_contract_address: ContractAddress, question_id: u256, answer_description: ByteArray) -> u256 {
+  let responder = ADDRESSES::RESPONDER1.get();
 
-#[generate_trait]
-pub impl ADDRESSESImpl of ADDRESSESTrait {
-  fn get(self: @ADDRESSES) -> ContractAddress {
-    match self {
-      ADDRESSES::ASKER => contract_address_const::<'ASKER-ADDRESS'>(),
-      ADDRESSES::RESPONDER1 => contract_address_const::<'RESPONDER-ADDRESS-ONE'>(),
-      ADDRESSES::RESPONDER2 => contract_address_const::<'RESPONDER-ADDRESS-TWO'>(),
-      ADDRESSES::SPONSOR => contract_address_const::<'SPONSOR-ADDRESS'>(),
-      ADDRESSES::INTRUDER => contract_address_const::<'INTRUDER-ADDRESS'>(),
-    }
-  }
+  cheat_caller_address(starkoverflow_contract_address, responder, CheatSpan::TargetCalls(1));
+  let answer_id = starkoverflow_dispatcher.submit_answer(question_id, answer_description.clone());
+
+  answer_id
 }
