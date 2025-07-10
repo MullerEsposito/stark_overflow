@@ -1,7 +1,7 @@
 use starknet::ContractAddress;
 
 #[starknet::interface]
-pub trait IStarkOverflowToken<T> {
+pub trait IMockStarkToken<T> {
   // ERC20 Standard Functions
   fn name(self: @T) -> ByteArray;
   fn symbol(self: @T) -> ByteArray;
@@ -24,7 +24,7 @@ pub trait IStarkOverflowToken<T> {
 }
 
 #[starknet::contract]
-mod StarkOverflowToken {
+mod MockStarkToken {
   use starknet::{ContractAddress, get_caller_address};
   use core::traits::Into;
   use core::array::ArrayTrait;
@@ -70,27 +70,15 @@ mod StarkOverflowToken {
   }
 
   #[constructor]
-  fn constructor(
-    ref self: ContractState,
-    decimals: u8,
-    initial_supply: u256,
-    recipient: ContractAddress,
-    owner: ContractAddress,
-    max_supply: u256
-  ) {
-    self.erc20.initializer("STARKOVERFLOW", "STK");
-
-    // Mint initial supply if needed
-    if initial_supply > 0 {
-      self.erc20.mint(recipient, initial_supply);
-    }
+  fn constructor(ref self: ContractState, decimals: u8, owner: ContractAddress, max_supply: u256) {
+    self.erc20.initializer("STARK", "STRK");
     self.ownable.initializer(owner);
     self.max_supply.write(max_supply);
   }
 
   // Implementation of StarkOverflowToken functions
   #[abi(embed_v0)]
-  impl StarkOverflowTokenImpl of super::IStarkOverflowToken<ContractState> {
+  impl MockStarkTokenImpl of super::IMockStarkToken<ContractState> {
     fn name(self: @ContractState) -> ByteArray {
       ERC20MetadataImpl::name(self)
     }
