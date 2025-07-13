@@ -66,7 +66,7 @@ pub fn ask_question(starkoverflow_dispatcher: IStarkOverflowDispatcher, token_di
   let question_description = "Question of test.";
   let repository_url = "https://github.com/starkoverflow";
   let tags = array!["tag1", "tag2", "tag3"];
-  let amount = 1 + EIGHTEEN_DECIMALS; // 1 STARK
+  let amount = 1 * EIGHTEEN_DECIMALS; // 1 STARK
   let starkoverflow_contract_address = starkoverflow_dispatcher.contract_address;
 
   approve_as_spender(starkoverflow_contract_address, asker, token_dispatcher, amount);
