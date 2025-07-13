@@ -83,6 +83,9 @@ fn it_should_be_able_to_ask_a_question() {
   assert_eq!(question.repository_url, repository_url);
   assert_eq!(question.tags, tags);
 
+  let total_staked = starkoverflow_dispatcher.get_total_staked_on_question(question_id);
+  assert_eq!(total_staked, amount);
+
   let final_balance = token_dispatcher.balance_of(starkoverflow_contract_address);
   assert_eq!(final_balance, contract_initial_balance + amount);
 }
@@ -143,6 +146,8 @@ fn it_should_be_able_to_mark_answer_as_correct() {
 
   let (stark_token_dispatcher, stark_token_address) = deploy_mock_stark_token();
   let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);
+  
+  assert_eq!(stark_token_dispatcher.balance_of(starkoverflow_contract_address), 0, "Starkoverflow contract should initially have 0 balance");
 
   let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
 
@@ -159,7 +164,7 @@ fn it_should_be_able_to_mark_answer_as_correct() {
   let question_balance = starkoverflow_dispatcher.get_question(question_id).amount;
   let responder_balance = stark_token_dispatcher.balance_of(responder);
   let starkoverflow_contract_balance = stark_token_dispatcher.balance_of(starkoverflow_contract_address);
-  assert_eq!(starkoverflow_contract_balance, 0);
+  assert_eq!(starkoverflow_contract_balance, 0, "Starkoverflow contract should finally have 0 balance");
   assert_eq!(responder_balance, question_balance);
 }
 
