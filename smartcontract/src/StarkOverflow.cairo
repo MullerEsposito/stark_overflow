@@ -57,20 +57,20 @@ pub mod StarkOverflow {
   #[storage]
   struct Storage {
     // Forums
-    forums: Map<u256, Forum>, // forum_id -> forum
+    forum_by_id: Map<u256, Forum>, // forum_id -> forum
     last_forum_id: u256,
     
     // Questions
-    questions: Map<u256, Question>, // question_id -> question
+    question_by_id: Map<u256, Question>, // question_id -> question
     questions_ids_by_forum_id: Map<u256, Vec<u256>>, // forum_id -> questions ids
-    question_stake_by_user: Map<(ContractAddress, u256), u256>, // (user, question_id) -> amount
-    question_total_staked: Map<u256, u256>, // question_id -> total staked
+    staked_in_question_by_user: Map<(ContractAddress, u256), u256>, // (user, question_id) -> amount
+    total_staked_by_question_id: Map<u256, u256>, // question_id -> total staked
     last_question_id: u256,
     
     // Answers
-    answers: Map<u256, Answer>, // answer_id -> answer
+    answer_by_id: Map<u256, Answer>, // answer_id -> answer
     answers_ids_by_question_id: Map<u256, Vec<u256>>, // question_id -> answers ids
-    chosen_answer: Map<u256, u256>, // question_id -> chosen answer id
+    chosen_answer_by_question_id: Map<u256, u256>, // question_id -> chosen answer id
     last_answer_id: u256,
 
     // Reputation
@@ -99,14 +99,14 @@ pub mod StarkOverflow {
       let forum_id = self.last_forum_id.read() + 1;
       let forum = Forum { id: forum_id, name, icon_url, amount: 0, total_questions: 0 };
 
-      self.forums.entry(forum_id).write(forum);
+      self.forum_by_id.entry(forum_id).write(forum);
       self.last_forum_id.write(forum_id);
 
       forum_id
     }
 
     fn get_forum(self: @ContractState, forum_id: u256) -> Forum {
-      self.forums.entry(forum_id).read()
+      self.forum_by_id.entry(forum_id).read()
     }
 
     fn get_forums(self: @ContractState) -> Array<Forum> {
@@ -114,7 +114,7 @@ pub mod StarkOverflow {
       let number_of_forums = self.last_forum_id.read();
 
       for i in 0..number_of_forums {
-        let forum = self.forums.entry(i).read();
+        let forum = self.forum_by_id.entry(i).read();
         forums.append(forum);
       };
 
@@ -123,33 +123,37 @@ pub mod StarkOverflow {
 
     fn ask_question(ref self: ContractState, forum_id: u256, title: ByteArray, description: ByteArray, repository_url: ByteArray, tags: Array<ByteArray>, amount: u256) -> QuestionId {
       let caller = get_caller_address();
+
+      assert(amount > 0, 'Amount must be greater than 0');
+
       let question_id = self.last_question_id.read() + 1;
       
-      let question = self.questions.entry(question_id);
+      self.stark_token_dispatcher().transfer_from(caller, get_contract_address(), amount);
+
+      let question = self.question_by_id.entry(question_id);
       question.id.write(question_id);
       question.forum_id.write(forum_id);
       question.title.write(title);
       question.author.write(caller);
       question.description.write(description);
       question.repository_url.write(repository_url);
+      question.status.write(QuestionStatus::Open);
+      question.amount.write(amount);
       
       for i in 0..tags.len() {
         let tag = tags.at(i).clone();
         question.tags.append().write(tag);
       };
       
-      question.status.write(QuestionStatus::Open);
-      
-      self.stake_on_question(question_id, amount);
-      
       self.last_question_id.write(question_id);
       self.questions_ids_by_forum_id.entry(forum_id).append().write(question_id);
+      self.total_staked_by_question_id.entry(question_id).write(amount);
       
       question_id
     }
 
     fn get_question(self: @ContractState, question_id: u256) -> QuestionResponse {
-      let found_question = self.questions.entry(question_id);
+      let found_question = self.question_by_id.entry(question_id);
       let mut tags = array![];
       for i in 0..found_question.tags.len() {
         let tag = found_question.tags.at(i).read();
@@ -171,7 +175,7 @@ pub mod StarkOverflow {
     }
 
     fn get_answers(self: @ContractState, question_id: u256) -> Array<Answer> {
-      let found_question = self.questions.entry(question_id);
+      let found_question = self.question_by_id.entry(question_id);
       assert!(found_question.id.read() == question_id, "Question does not exist");
 
       let mut answers = array![];
@@ -179,7 +183,7 @@ pub mod StarkOverflow {
 
       for i in 0..answers_ids.len() {
         let answer_id = answers_ids.at(i).read();
-        let answer = self.answers.entry(answer_id).read();
+        let answer = self.answer_by_id.entry(answer_id).read();
         answers.append(answer);
       };
 
@@ -191,7 +195,7 @@ pub mod StarkOverflow {
       let answer_id = self.last_answer_id.read() + 1;
       let answer = Answer { id: answer_id, author: caller, description, question_id };
 
-      self.answers.entry(answer_id).write(answer);
+      self.answer_by_id.entry(answer_id).write(answer);
       self.last_answer_id.write(answer_id);
 
       let answers_ids = self.answers_ids_by_question_id.entry(question_id);
@@ -209,7 +213,7 @@ pub mod StarkOverflow {
     }
 
     fn get_answer(self: @ContractState, answer_id: u256) -> Answer {
-      let found_answer = self.answers.entry(answer_id).read();
+      let found_answer = self.answer_by_id.entry(answer_id).read();
       found_answer
     }
 
@@ -222,59 +226,52 @@ pub mod StarkOverflow {
       let found_answer = self.get_answer(answer_id);
       assert!(found_answer.question_id == question_id, "The specified answer does not exist for this question");
 
-      let found_question = self.questions.entry(question_id);
+      let found_question = self.question_by_id.entry(question_id);
       assert!(found_question.status.read() == QuestionStatus::Open, "The question is already resolved");
 
       found_question.status.write(QuestionStatus::Resolved);
-      self.chosen_answer.entry(question_id).write(answer_id);
+      self.chosen_answer_by_question_id.entry(question_id).write(answer_id);
       
-      // Emit event with all required fields
-      self.emit(ChosenAnswer { 
-          id: answer_id, 
-          question_id, 
-          answer_id,
-          author_address: found_answer.author, 
-          date: starknet::get_block_timestamp().into(), 
-      });
-
-      // Distribute rewards through the governance token
       self.distribute_rewards(question_id, answer_id);
+
+      self.emit(ChosenAnswer { 
+        id: answer_id, 
+        question_id, 
+        answer_id,
+        author_address: found_answer.author, 
+        date: starknet::get_block_timestamp().into(), 
+      });
     }
 
     fn get_correct_answer(self: @ContractState, question_id: u256) -> AnswerId {
-      let found_correct_answer_id = self.chosen_answer.entry(question_id).read();
+      let found_correct_answer_id = self.chosen_answer_by_question_id.entry(question_id).read();
       found_correct_answer_id
     }
       
     fn stake_on_question(ref self: ContractState, question_id: u256, amount: u256) {
       let caller = get_caller_address();
-      let mut found_question = self.questions.entry(question_id);
+      let mut found_question = self.question_by_id.entry(question_id);
       
       assert(amount > 0, 'Amount must be greater than 0');
+      self.stark_token_dispatcher().transfer_from(caller, get_contract_address(), amount);
       found_question.amount.write(found_question.amount.read() + amount);
-      
-      // Transfer tokens from caller to contract
-      let this_contract = get_contract_address();
-      self.stark_token_dispatcher().transfer_from(caller, this_contract, amount);
-      
-      // Update question staking records
-      let current_stake = self.question_stake_by_user.read((caller, question_id));
+
+      let current_stake = self.staked_in_question_by_user.read((caller, question_id));
       let new_stake = current_stake + amount;
-      self.question_stake_by_user.write((caller, question_id), new_stake);
+      self.staked_in_question_by_user.write((caller, question_id), new_stake);
       
-      // Update total staked for question
-      let total_staked = self.question_total_staked.read(question_id);
-      self.question_total_staked.write(question_id, total_staked + amount);            
+      let total_staked = self.total_staked_by_question_id.read(question_id);
+      self.total_staked_by_question_id.write(question_id, total_staked + amount);            
       
       self.emit(QuestionStaked { staker: caller, question_id, amount });
     }
 
     fn get_total_staked_on_question(self: @ContractState, question_id: u256) -> u256 {
-      self.question_total_staked.read(question_id)
+      self.total_staked_by_question_id.read(question_id)
     }
 
     fn get_staked_amount(self: @ContractState, staker: ContractAddress, question_id: u256) -> u256 {
-      self.question_stake_by_user.read((staker, question_id))
+      self.staked_in_question_by_user.read((staker, question_id))
     }    
   }
   
