@@ -5,6 +5,7 @@ import { UserAvatar } from "../styles";
 import type { Question } from "@app-types/index";
 import React, { Suspense } from "react";
 import { useStaking } from "../hooks/useStaking";
+import Tooltip from "@components/Tooltip";
 
 const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
@@ -28,6 +29,10 @@ export function Question({ question }: QuestionProps) {
           <QuestionMeta>
             <span>{question.authorName}</span>
             <time>{question.timestamp}</time>
+            <Tooltip content={`Reputation score of the user. 
+              The reputation is calculated based on the number of votes received.`}>
+              <span>Score: {question.reputation}</span>
+            </Tooltip>
           </QuestionMeta>
           <QuestionTitle>
             {question.isOpen ? (

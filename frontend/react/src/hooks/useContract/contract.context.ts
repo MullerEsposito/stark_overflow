@@ -25,6 +25,7 @@ interface ContractContextType {
   addFundsToQuestion: (questionId: number, amount: Uint256) => Promise<boolean>
   getTotalStakedOnQuestion: (questionId: number) => Promise<number>
   clearStakingError: () => void
+  getReputationByUser: (address: string) => Promise<string | null>
 }
 
 export const ContractContext = createContext<ContractContextType | undefined>(undefined)
