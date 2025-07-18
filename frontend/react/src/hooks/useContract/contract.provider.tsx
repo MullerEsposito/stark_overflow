@@ -3,10 +3,10 @@ import { useAccount, useContract, useSendTransaction } from "@starknet-react/cor
 import { Contract, RpcProvider } from 'starknet'
 import { ContractContext } from './contract.context'
 import { formatters } from '@utils/formatters'
-import { contractAnswerToFrontend, contractQuestionToFrontend } from '@utils/contractTypeMapping'
+import { contractAnswerToFrontend, contractQuestionToFrontend, contractForumToFrontend } from '@utils/contractTypeMapping'
 import { ERROR_MESSAGES } from './errors'
-import { ContractState, Question, Answer, StarkOverflowABI } from '@app-types/index'
-import { Question as ContractQuestion, Answer as ContractAnswer, Uint256 } from '@app-types/contract-types'
+import { ContractState, Question, Answer, Forum, StarkOverflowABI } from '@app-types/index'
+import { Question as ContractQuestion, Answer as ContractAnswer, ContractForum, Uint256 } from '@app-types/contract-types'
 
 interface ContractProviderProps {
   children: ReactNode
@@ -39,6 +39,18 @@ export function ContractProvider({ children }: ContractProviderProps) {
     transactionHash: null
   })
 
+  const [forumsState, setForumsState] = useState<ContractState>({
+    isLoading: false,
+    error: null,
+    transactionHash: null
+  })
+
+  const [ownerState, setOwnerState] = useState<ContractState>({
+    isLoading: false,
+    error: null,
+    transactionHash: null
+  })
+
   const { contract } = useContract<typeof StarkOverflowABI>({ abi: StarkOverflowABI, address: import.meta.env.VITE_CONTRACT_ADDRESS })
 
   // Create a read-only contract instance that works without wallet connection
@@ -47,7 +59,7 @@ export function ContractProvider({ children }: ContractProviderProps) {
 
     try {
       const provider = new RpcProvider({
-        nodeUrl: "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
+        nodeUrl: import.meta.env.VITE_RPC_URL ?? "https://starknet-sepolia.public.blastapi.io/rpc/v0_7"
       })
       return new Contract(StarkOverflowABI, import.meta.env.VITE_CONTRACT_ADDRESS, provider)
     } catch (error) {
@@ -197,7 +209,7 @@ export function ContractProvider({ children }: ContractProviderProps) {
           entrypoint: "approve",
           calldata: [contractInstance.address, amount.low, amount.high],
         },
-        contractInstance.populate("add_funds_to_question", [
+        contractInstance.populate("stake_on_question", [
           BigInt(questionId),
           amount
         ])]
@@ -255,11 +267,199 @@ export function ContractProvider({ children }: ContractProviderProps) {
     }
   }, [getContractForReading])
 
+  // Forum functions
+  const fetchForums = useCallback(async (): Promise<Forum[]> => {
+    const contractInstance = getContractForReading()
+    if (!contractInstance) {
+      setForumsState({ isLoading: false, error: ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED, transactionHash: null })
+      return []
+    }
 
+    setForumsState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      const contractForums = await contractInstance.get_forums() as unknown as ContractForum[]
+
+      const forums = contractForums.map(contractForum => contractForumToFrontend(contractForum))
+
+      setForumsState({ isLoading: false, error: null, transactionHash: null })
+      return forums
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch forums"
+      setForumsState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return []
+    }
+  }, [getContractForReading])
+
+  const fetchForum = useCallback(async (forumId: string): Promise<Forum | null> => {
+    const contractInstance = getContractForReading()
+    if (!contractInstance) {
+      setForumsState({ isLoading: false, error: ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED, transactionHash: null })
+      return null
+    }
+
+    setForumsState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      const contractForum = await contractInstance.get_forum(BigInt(forumId)) as unknown as ContractForum
+
+      if (!contractForum.id) {
+        setForumsState({ isLoading: false, error: "Forum not found", transactionHash: null })
+        return null
+      }
+
+      const forum = contractForumToFrontend(contractForum)
+      setForumsState({ isLoading: false, error: null, transactionHash: null })
+      return forum
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch forum"
+      setForumsState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return null
+    }
+  }, [getContractForReading])
+
+  const { sendAsync: createForumSendAsync } = useSendTransaction({
+    calls: undefined,
+  })
+
+  const { sendAsync: updateForumSendAsync } = useSendTransaction({
+    calls: undefined,
+  })
+
+  const { sendAsync: deleteForumSendAsync } = useSendTransaction({
+    calls: undefined,
+  })
+
+  const createForum = useCallback(async (name: string, iconUrl: string): Promise<string | null> => {
+    const contractInstance = getContractForWriting()
+    if (!contractInstance || !isConnected) {
+      setForumsState({
+        isLoading: false,
+        error: "Contract not initialized or wallet not connected",
+        transactionHash: null
+      })
+      return null
+    }
+
+    setForumsState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      const transaction = [contractInstance.populate("create_forum", [name, iconUrl])]
+      const response = await createForumSendAsync(transaction)
+
+      if (response) {
+        setForumsState({
+          isLoading: false,
+          error: null,
+          transactionHash: response.transaction_hash || null
+        })
+        return response.transaction_hash || null
+      }
+
+      return null
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to create forum"
+      setForumsState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return null
+    }
+  }, [getContractForWriting, isConnected, createForumSendAsync])
+
+  const updateForum = useCallback(async (forumId: string, name: string, iconUrl: string): Promise<string | null> => {
+    const contractInstance = getContractForWriting()
+    if (!contractInstance || !isConnected) {
+      setForumsState({
+        isLoading: false,
+        error: "Contract not initialized or wallet not connected",
+        transactionHash: null
+      })
+      return null
+    }
+
+    setForumsState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      const transaction = [contractInstance.populate("update_forum", [BigInt(forumId), name, iconUrl])]
+      const response = await updateForumSendAsync(transaction)
+
+      if (response) {
+        setForumsState({
+          isLoading: false,
+          error: null,
+          transactionHash: response.transaction_hash || null
+        })
+        return response.transaction_hash || null
+      }
+
+      return null
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update forum"
+      setForumsState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return null
+    }
+  }, [getContractForWriting, isConnected, updateForumSendAsync])
+
+  const deleteForum = useCallback(async (forumId: string): Promise<string | null> => {
+    const contractInstance = getContractForWriting()
+    if (!contractInstance || !isConnected) {
+      setForumsState({
+        isLoading: false,
+        error: "Contract not initialized or wallet not connected",
+        transactionHash: null
+      })
+      return null
+    }
+
+    setForumsState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      const transaction = [contractInstance.populate("delete_forum", [BigInt(forumId)])]
+      const response = await deleteForumSendAsync(transaction)
+
+      if (response) {
+        setForumsState({
+          isLoading: false,
+          error: null,
+          transactionHash: response.transaction_hash || null
+        })
+        return response.transaction_hash || null
+      }
+
+      return null
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete forum"
+      setForumsState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return null
+    }
+  }, [getContractForWriting, isConnected, deleteForumSendAsync])
+
+  const checkIsOwner = useCallback(async (): Promise<boolean> => {
+    const contractInstance = getContractForReading()
+    if (!contractInstance || !address) {
+      setOwnerState({ isLoading: false, error: ERROR_MESSAGES.CONTRACT_NOT_INITIALIZED, transactionHash: null })
+      return false
+    }
+
+    setOwnerState({ isLoading: true, error: null, transactionHash: null })
+
+    try {
+      const ownerAddressBigInt = await contractInstance.owner() as bigint
+      const ownerAddress = formatters.bigIntToAddress(ownerAddressBigInt)
+      const isOwner = ownerAddress.toLowerCase() === address.toLowerCase()
+
+      setOwnerState({ isLoading: false, error: null, transactionHash: null })
+      return isOwner
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to check owner"
+      setOwnerState({ isLoading: false, error: errorMessage, transactionHash: null })
+      return false
+    }
+  }, [getContractForReading, address])
 
   const clearQuestionError = () => setQuestionState(prev => ({ ...prev, error: null }))
   const clearAnswersError = () => setAnswersState(prev => ({ ...prev, error: null }))
   const clearStakingError = () => setStakingState(prev => ({ ...prev, error: null }))
+  const clearForumsError = () => setForumsState(prev => ({ ...prev, error: null }))
+  const clearOwnerError = () => setOwnerState(prev => ({ ...prev, error: null }))
 
   return (
     <ContractContext.Provider value={{
@@ -275,15 +475,27 @@ export function ContractProvider({ children }: ContractProviderProps) {
       markCorrectError: markCorrectState.error,
       stakingLoading: stakingState.isLoading,
       stakingError: stakingState.error,
+      forumsLoading: forumsState.isLoading,
+      forumsError: forumsState.error,
+      ownerLoading: ownerState.isLoading,
+      ownerError: ownerState.error,
       fetchQuestion,
       fetchAnswers,
+      fetchForums,
+      fetchForum,
+      createForum,
+      updateForum,
+      deleteForum,
+      checkIsOwner,
       clearQuestionError,
       clearAnswersError,
       markAnswerAsCorrect,
       getCorrectAnswer,
       addFundsToQuestion,
       getTotalStakedOnQuestion,
-      clearStakingError
+      clearStakingError,
+      clearForumsError,
+      clearOwnerError
     }}>
       {children}
     </ContractContext.Provider>

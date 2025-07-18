@@ -23,6 +23,7 @@ export interface Question {
   description: string;
   value: bigint | number | Uint256;
   status: CairoCustomEnum;
+  tags?: string[];
 }
 
 export interface Answer {
@@ -30,4 +31,12 @@ export interface Answer {
   author: bigint;
   description: string;
   question_id: bigint | number | Uint256;
+}
+
+export interface ContractForum {
+  id: bigint;
+  name: string;
+  icon_url: string;
+  amount: bigint;
+  total_questions: bigint;
 }

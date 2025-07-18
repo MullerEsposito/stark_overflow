@@ -1,13 +1,7 @@
 import { formatters } from "./formatters"
-import { Question, Answer } from "@app-types/index"
-import { Question as ContractQuestion, Answer as ContractAnswer } from "../types/contract-types"
+import { Question, Answer, Forum } from "@app-types/index"
+import { Question as ContractQuestion, Answer as ContractAnswer, ContractForum } from "../types/contract-types"
 
-// Mock data generators for missing fields
-const generateMockTags = (): string[] => {
-  const allTags = ["starknet", "cairo", "blockchain", "smart-contracts", "defi", "nft", "web3"]
-  const count = Math.floor(Math.random() * 3) + 1 // 1-3 tags
-  return allTags.sort(() => 0.5 - Math.random()).slice(0, count)
-}
 
 const generateMockTimestamp = (): string => {
   const randomHours = Math.floor(Math.random() * 48) // 0-48 hours ago
@@ -61,7 +55,7 @@ export const contractQuestionToFrontend = (contractQuestion: ContractQuestion): 
     authorName,
     timestamp: generateMockTimestamp(),
     stakeAmount: decimalValue,
-    tags: generateMockTags(),
+    tags: contractQuestion?.tags || [],
     repositoryUrl: generateMockRepository(),
     isOpen: status === "Open",
   }
@@ -79,5 +73,15 @@ export const contractAnswerToFrontend = (contractAnswer: ContractAnswer, isCorre
     timestamp: generateMockTimestamp(),
     isCorrect,
     votes: Math.floor(Math.random() * 10), // Random votes for now
+  }
+}
+
+export const contractForumToFrontend = (contractForum: ContractForum): Forum => {
+  return {
+    id: contractForum.id.toString(),
+    name: contractForum.name,
+    icon_url: contractForum.icon_url,
+    amount: formatters.convertWeiToDecimal(Number(contractForum.amount)),
+    total_questions: Number(contractForum.total_questions),
   }
 }

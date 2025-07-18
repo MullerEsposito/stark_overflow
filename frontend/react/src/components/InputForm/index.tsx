@@ -9,14 +9,15 @@ interface InputFormProps {
   error: string | null
   tooltipText?: string
   placeholder?: string
+  disabled?: boolean
   setValue: (value: string) => void
-  validateForm: () => void
-  children?:  React.ReactElement<IconProps>
+  validateForm?: () => void
+  children?: React.ReactElement<IconProps>
 }
 
-export function InputForm({ label, tooltipText, error, value, id, placeholder, setValue, validateForm, children }: InputFormProps) {
+export function InputForm({ label, tooltipText, error, value, id, placeholder, disabled = false, setValue, validateForm, children }: InputFormProps) {
   return (
-    <InputGroupContainer>      
+    <InputGroupContainer>
       <Label
         inputId={id}
         inputValue={value}
@@ -31,8 +32,10 @@ export function InputForm({ label, tooltipText, error, value, id, placeholder, s
           type="text"
           placeholder={placeholder}
           value={value}
+          disabled={disabled}
           onChange={(e) => setValue(e.target.value)}
-          onBlur={() => validateForm()}
+          onKeyUp={() => validateForm && validateForm()}
+          onBlur={() => validateForm && validateForm()}
         />
       </InputContainer>
       {error && <ErrorMessage>{error}</ErrorMessage>}

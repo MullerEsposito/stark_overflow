@@ -41,6 +41,81 @@ fn it_should_be_able_to_create_a_forum() {
   assert_eq!(forum.id, 1);
   assert_eq!(forum.name, forum_name);
   assert_eq!(forum.icon_url, forum_icon_url);
+  assert_eq!(forum.deleted, false);
+}
+
+#[test]
+fn it_should_be_able_to_update_a_forum() {
+  let (_, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);  
+  let ownable_dispatcher = IOwnableDispatcher { contract_address: starkoverflow_contract_address };
+  
+  let owner = ownable_dispatcher.owner();
+
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+
+  let new_forum_name = "Forum of test updated";
+  let new_forum_icon_url = "https://example.com/icon_updated.png";
+
+  cheat_caller_address(starkoverflow_contract_address, owner, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.update_forum(forum_id, new_forum_name.clone(), new_forum_icon_url.clone());
+
+  let forum = starkoverflow_dispatcher.get_forum(forum_id);
+  assert_eq!(forum.name, new_forum_name);
+  assert_eq!(forum.icon_url, new_forum_icon_url);
+}
+
+#[test]
+fn it_should_be_able_to_delete_a_forum() {
+  let (_, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);
+  let ownable_dispatcher = IOwnableDispatcher { contract_address: starkoverflow_contract_address };
+
+  let owner = ownable_dispatcher.owner();
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+
+  let forum = starkoverflow_dispatcher.get_forum(forum_id);
+  assert_eq!(forum.deleted, false);
+
+  cheat_caller_address(starkoverflow_contract_address, owner, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.delete_forum(forum_id);
+
+  let forum = starkoverflow_dispatcher.get_forum(forum_id);
+  assert_eq!(forum.deleted, true);
+}
+
+#[test]
+fn it_should_be_able_to_retrieve_all_not_deleted_forums() {
+  let (_, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, _) = deploy_starkoverflow_contract(stark_token_address);
+
+  let starkoverflow_contract_address = starkoverflow_dispatcher.contract_address;
+  let ownable_dispatcher = IOwnableDispatcher { contract_address: starkoverflow_contract_address };
+  let owner = ownable_dispatcher.owner();
+
+  let forum_name_1 = "Forum of test 1";
+  let forum_icon_url_1 = "https://example.com/icon.png";
+  let forum_name_2 = "Forum of test 2";
+  let forum_icon_url_2 = "https://example.com/icon.png";
+  let forum_name_3 = "Forum of test 3";
+  let forum_icon_url_3 = "https://example.com/icon.png";
+  
+  cheat_caller_address(starkoverflow_contract_address, owner, CheatSpan::TargetCalls(3));
+  starkoverflow_dispatcher.create_forum(forum_name_1.clone(), forum_icon_url_1.clone());
+  let forum_id_2 = starkoverflow_dispatcher.create_forum(forum_name_2.clone(), forum_icon_url_2.clone());
+  starkoverflow_dispatcher.create_forum(forum_name_3.clone(), forum_icon_url_3.clone());
+
+  cheat_caller_address(starkoverflow_contract_address, owner, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.delete_forum(forum_id_2);
+
+  let forums = starkoverflow_dispatcher.get_forums();
+  assert_eq!(forums.len(), 2);
+  assert_eq!(forums[0].id, @1);
+  assert_eq!(forums[1].id, @3);
+  assert_eq!(forums[0].name, @forum_name_1);
+  assert_eq!(forums[1].name, @forum_name_3);
+  assert_eq!(forums[0].icon_url, @forum_icon_url_1);
+  assert_eq!(forums[1].icon_url, @forum_icon_url_3);
 }
 
 #[test]
@@ -74,6 +149,7 @@ fn it_should_be_able_to_ask_a_question() {
   );  
 
   let question = starkoverflow_dispatcher.get_question(question_id);
+  let forum = starkoverflow_dispatcher.get_forum(forum_id);
 
   assert_eq!(question.id, question_id);
   assert_eq!(question.forum_id, forum_id);
@@ -82,6 +158,9 @@ fn it_should_be_able_to_ask_a_question() {
   assert_eq!(question.amount, amount);
   assert_eq!(question.repository_url, repository_url);
   assert_eq!(question.tags, tags);
+
+  assert_eq!(forum.amount, amount);
+  assert_eq!(forum.total_questions, 1);
 
   let total_staked = starkoverflow_dispatcher.get_total_staked_on_question(question_id);
   assert_eq!(total_staked, amount);
@@ -112,6 +191,9 @@ fn it_should_be_able_to_add_funds_to_a_question() {
 
   question = starkoverflow_dispatcher.get_question(question_id);
   assert_eq!(question.amount, question_initial_amount + additionally_funds);
+
+  let forum = starkoverflow_dispatcher.get_forum(forum_id);
+  assert_eq!(forum.amount, question_initial_amount + additionally_funds);
 
   let final_balance = stark_token_dispatcher.balance_of(starkoverflow_contract_address);
   assert_eq!(final_balance, question_initial_amount + additionally_funds);
@@ -225,16 +307,16 @@ fn it_should_be_able_to_retrive_all_answers_for_a_question() {
   let question_id = ask_question(starkoverflow_dispatcher, stark_token_dispatcher, forum_id);
 
   let answer_description_1 = "Answer of test.";
-  let answer_id_1 = submit_answer(starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description_1.clone());
+  submit_answer(starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description_1.clone());
   let answer_description_2 = "Another answer of test.";
-  let answer_id_2 = submit_answer(starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description_2.clone());
+  submit_answer(starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description_2.clone());
 
   let answers = starkoverflow_dispatcher.get_answers(question_id);
 
   assert_eq!(answers.len(), 2);
-  assert_eq!(*answers.at(0).id, answer_id_1);
+  assert_eq!(*answers.at(0).id, 1);
   assert_eq!(answers.at(0).description, @answer_description_1);
-  assert_eq!(*answers.at(1).id, answer_id_2);
+  assert_eq!(*answers.at(1).id, 2);
   assert_eq!(answers.at(1).description, @answer_description_2);
 }
 

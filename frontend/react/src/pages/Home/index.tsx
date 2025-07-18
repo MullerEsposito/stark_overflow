@@ -1,41 +1,115 @@
-import reactjsLogo from "@logos/reactjs.webp";
-import nodejsLogo from "@logos/nodejs.webp";
-import pythonLogo from "@logos/python.svg";
-import javaLogo from "@logos/java.webp";
 import { Cards } from "./Cards";
 import { HomeContainer } from "./style";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SearchInput } from "../../components/SearchInput";
-
-const initialForumsList = [
-  { name: "ReactJS", icon: reactjsLogo, topics: 15, amount: "2500,00", path: "reactjs" },
-  { name: "Node.js", icon: nodejsLogo, topics: 11, amount: "1850,00", path: "nodejs" },
-  { name: "Python", icon: pythonLogo, topics: 3, amount: "700,00", path: "python" },
-  { name: "Java", icon: javaLogo, topics: 3, amount: "2700,00", path: "java" },
-];
-
-export type ForumsList = typeof initialForumsList;
+import { useContract } from "@hooks/useContract";
+import { Forum } from "@app-types/index";
+import { Link } from "react-router-dom";
+import { LoadingSpinner } from "@components/LoadingSpinner";
 
 export function Home() {
-  const [forumsList, setForumsList] = useState<ForumsList>(initialForumsList);
-  
+  const [forumsList, setForumsList] = useState<Forum[]>([]);
+  const [filteredForums, setFilteredForums] = useState<Forum[]>([]);
+  const [isOwner, setIsOwner] = useState(false);
+  const {
+    fetchForums,
+    checkIsOwner,
+    forumsLoading,
+    forumsError,
+    contractReady,
+    isConnected,
+    address
+  } = useContract();
+
+  // Fetch forums on mount
+  useEffect(() => {
+    if (contractReady) {
+      const loadForums = async () => {
+        const forums = await fetchForums();
+        setForumsList(forums);
+        setFilteredForums(forums);
+      };
+      loadForums();
+    }
+  }, [contractReady, fetchForums]);
+
+  // Check if user is owner when address changes
+  useEffect(() => {
+    if (isConnected && address && contractReady) {
+      const checkOwnership = async () => {
+        const ownerResult = await checkIsOwner();
+        setIsOwner(ownerResult);
+      };
+      checkOwnership();
+    } else {
+      setIsOwner(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected, address, contractReady]);
+
   const handleSearch = (searchTerm: string) => {
     if (searchTerm === '') {
-      setForumsList(initialForumsList);
+      setFilteredForums(forumsList);
       return;
     }
 
-    const filteredForums = initialForumsList.filter(forum =>
+    const filtered = forumsList.filter(forum =>
       forum.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    setForumsList(filteredForums);
+    setFilteredForums(filtered);
   };
+
+  const handleForumDeleted = (deletedForumId: string) => {
+    // Remove the deleted forum from both lists
+    setForumsList(prev => prev.filter(forum => forum.id !== deletedForumId));
+    setFilteredForums(prev => prev.filter(forum => forum.id !== deletedForumId));
+  };
+
+  if (forumsLoading) {
+    return (
+      <HomeContainer>
+        <h1>Fóruns</h1>
+        <LoadingSpinner message={!contractReady ? "Initializing contract..." : "Loading forums..."} />
+      </HomeContainer>
+    );
+  }
+
+  if (forumsError) {
+    return (
+      <HomeContainer>
+        <h1>Fóruns</h1>
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <p>Error loading forums: {forumsError}</p>
+        </div>
+      </HomeContainer>
+    );
+  }
 
   return (
     <HomeContainer>
-      <h1>Fóruns</h1>
-      {forumsList.length > 6 && <SearchInput onSearch={handleSearch} /> }
-      <Cards forums={forumsList} />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", width: "100%" }}>
+        <h1>Fóruns</h1>
+        {isOwner && (
+          <Link to="/admin/create-forum">
+            <button style={{
+              padding: "10px 20px",
+              backgroundColor: "#7c3aed",
+              color: "white",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer"
+            }}>
+              Create Forum
+            </button>
+          </Link>
+        )}
+      </div>
+      {filteredForums.length > 6 && <SearchInput onSearch={handleSearch} />}
+      <Cards
+        forums={filteredForums}
+        isOwner={isOwner}
+        onForumDeleted={handleForumDeleted}
+      />
     </HomeContainer>
   );
 }

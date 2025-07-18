@@ -1,5 +1,0 @@
-
-[sncast.devnet]
-account = "account-1"
-accounts-file = "/home/user/.starknet_accounts/starknet_open_zeppelin_accounts.json"
-url = "http://127.0.0.1:5050"

@@ -7,6 +7,7 @@ pub struct Forum {
   pub icon_url: ByteArray,
   pub amount: u256,
   pub total_questions: u256,
+  pub deleted: bool,
 }
 
 #[derive(Drop, Serde, starknet::Store)]

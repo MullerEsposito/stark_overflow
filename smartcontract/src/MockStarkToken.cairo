@@ -41,11 +41,12 @@ mod MockStarkToken {
   impl ERC20HooksImpl = ERC20HooksEmptyImpl<ContractState>;
 
   // Implement traits for components
+  #[abi(embed_v0)]
+  impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
+  impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
   impl ERC20Impl = ERC20Component::ERC20Impl<ContractState>;
   impl ERC20MetadataImpl = ERC20Component::ERC20MetadataImpl<ContractState>;
-  impl OwnableMixinImpl = OwnableComponent::OwnableMixinImpl<ContractState>;
   impl ERC20InternalImpl = ERC20Component::InternalImpl<ContractState>;
-  impl OwnableInternalImpl = OwnableComponent::InternalImpl<ContractState>;
 
   #[storage]
   struct Storage {
@@ -70,13 +71,12 @@ mod MockStarkToken {
   }
 
   #[constructor]
-  fn constructor(ref self: ContractState, decimals: u8, owner: ContractAddress, max_supply: u256) {
+  fn constructor(ref self: ContractState, owner: ContractAddress) {
     self.erc20.initializer("STARK", "STRK");
     self.ownable.initializer(owner);
-    self.max_supply.write(max_supply);
+    self.max_supply.write(1000_000_000_000_000_000_000); // 1M
   }
 
-  // Implementation of StarkOverflowToken functions
   #[abi(embed_v0)]
   impl MockStarkTokenImpl of super::IMockStarkToken<ContractState> {
     fn name(self: @ContractState) -> ByteArray {

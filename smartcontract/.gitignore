@@ -1,3 +1,4 @@
 target
 Scarb.lock
 .snfoundry_cache
+snfoundry.toml
