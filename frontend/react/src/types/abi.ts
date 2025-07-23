@@ -1,4 +1,4 @@
-export const StarkOverflowABI = [
+export const ABI = [
   {
     "type": "impl",
     "name": "StarkOverflow",
@@ -38,7 +38,51 @@ export const StarkOverflowABI = [
   },
   {
     "type": "enum",
-    "name": "stark_overflow::structs::QuestionStatus",
+    "name": "core::bool",
+    "variants": [
+      {
+        "name": "False",
+        "type": "()"
+      },
+      {
+        "name": "True",
+        "type": "()"
+      }
+    ]
+  },
+  {
+    "type": "struct",
+    "name": "stark_overflow::structs::CommonStructs::Forum",
+    "members": [
+      {
+        "name": "id",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "name",
+        "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "icon_url",
+        "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "amount",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "total_questions",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "deleted",
+        "type": "core::bool"
+      }
+    ]
+  },
+  {
+    "type": "enum",
+    "name": "stark_overflow::structs::CommonStructs::QuestionStatus",
     "variants": [
       {
         "name": "Open",
@@ -52,11 +96,19 @@ export const StarkOverflowABI = [
   },
   {
     "type": "struct",
-    "name": "stark_overflow::structs::Question",
+    "name": "stark_overflow::structs::SerialStructs::QuestionResponse",
     "members": [
       {
         "name": "id",
         "type": "core::integer::u256"
+      },
+      {
+        "name": "forum_id",
+        "type": "core::integer::u256"
+      },
+      {
+        "name": "title",
+        "type": "core::byte_array::ByteArray"
       },
       {
         "name": "author",
@@ -67,18 +119,26 @@ export const StarkOverflowABI = [
         "type": "core::byte_array::ByteArray"
       },
       {
-        "name": "value",
+        "name": "amount",
         "type": "core::integer::u256"
       },
       {
+        "name": "repository_url",
+        "type": "core::byte_array::ByteArray"
+      },
+      {
+        "name": "tags",
+        "type": "core::array::Array::<core::byte_array::ByteArray>"
+      },
+      {
         "name": "status",
-        "type": "stark_overflow::structs::QuestionStatus"
+        "type": "stark_overflow::structs::CommonStructs::QuestionStatus"
       }
     ]
   },
   {
     "type": "struct",
-    "name": "stark_overflow::structs::Answer",
+    "name": "stark_overflow::structs::CommonStructs::Answer",
     "members": [
       {
         "name": "id",
@@ -104,14 +164,109 @@ export const StarkOverflowABI = [
     "items": [
       {
         "type": "function",
+        "name": "create_forum",
+        "inputs": [
+          {
+            "name": "name",
+            "type": "core::byte_array::ByteArray"
+          },
+          {
+            "name": "icon_url",
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "delete_forum",
+        "inputs": [
+          {
+            "name": "forum_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "update_forum",
+        "inputs": [
+          {
+            "name": "forum_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "name",
+            "type": "core::byte_array::ByteArray"
+          },
+          {
+            "name": "icon_url",
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "outputs": [],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_forum",
+        "inputs": [
+          {
+            "name": "forum_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "stark_overflow::structs::CommonStructs::Forum"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_forums",
+        "inputs": [],
+        "outputs": [
+          {
+            "type": "core::array::Array::<stark_overflow::structs::CommonStructs::Forum>"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
         "name": "ask_question",
         "inputs": [
+          {
+            "name": "forum_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "title",
+            "type": "core::byte_array::ByteArray"
+          },
           {
             "name": "description",
             "type": "core::byte_array::ByteArray"
           },
           {
-            "name": "value",
+            "name": "repository_url",
+            "type": "core::byte_array::ByteArray"
+          },
+          {
+            "name": "tags",
+            "type": "core::array::Array::<core::byte_array::ByteArray>"
+          },
+          {
+            "name": "amount",
             "type": "core::integer::u256"
           }
         ],
@@ -133,107 +288,7 @@ export const StarkOverflowABI = [
         ],
         "outputs": [
           {
-            "type": "stark_overflow::structs::Question"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "add_funds_to_question",
-        "inputs": [
-          {
-            "name": "question_id",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "value",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "submit_answer",
-        "inputs": [
-          {
-            "name": "question_id",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "description",
-            "type": "core::byte_array::ByteArray"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "get_answer",
-        "inputs": [
-          {
-            "name": "answer_id",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "stark_overflow::structs::Answer"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_answers",
-        "inputs": [
-          {
-            "name": "question_id",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::array::Array::<stark_overflow::structs::Answer>"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "mark_answer_as_correct",
-        "inputs": [
-          {
-            "name": "question_id",
-            "type": "core::integer::u256"
-          },
-          {
-            "name": "answer_id",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "get_correct_answer",
-        "inputs": [
-          {
-            "name": "question_id",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
+            "type": "stark_overflow::structs::SerialStructs::QuestionResponse"
           }
         ],
         "state_mutability": "view"
@@ -292,7 +347,75 @@ export const StarkOverflowABI = [
       },
       {
         "type": "function",
-        "name": "distribute_rewards",
+        "name": "get_questions",
+        "inputs": [
+          {
+            "name": "forum_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::array::Array::<stark_overflow::structs::SerialStructs::QuestionResponse>"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "submit_answer",
+        "inputs": [
+          {
+            "name": "question_id",
+            "type": "core::integer::u256"
+          },
+          {
+            "name": "description",
+            "type": "core::byte_array::ByteArray"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::integer::u256"
+          }
+        ],
+        "state_mutability": "external"
+      },
+      {
+        "type": "function",
+        "name": "get_answer",
+        "inputs": [
+          {
+            "name": "answer_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "stark_overflow::structs::CommonStructs::Answer"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "get_answers",
+        "inputs": [
+          {
+            "name": "question_id",
+            "type": "core::integer::u256"
+          }
+        ],
+        "outputs": [
+          {
+            "type": "core::array::Array::<stark_overflow::structs::CommonStructs::Answer>"
+          }
+        ],
+        "state_mutability": "view"
+      },
+      {
+        "type": "function",
+        "name": "mark_answer_as_correct",
         "inputs": [
           {
             "name": "question_id",
@@ -308,83 +431,16 @@ export const StarkOverflowABI = [
       },
       {
         "type": "function",
-        "name": "add_reputation",
+        "name": "get_correct_answer",
         "inputs": [
           {
-            "name": "user",
-            "type": "core::starknet::contract_address::ContractAddress"
-          },
-          {
-            "name": "amount",
+            "name": "question_id",
             "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "get_reputation",
-        "inputs": [
-          {
-            "name": "user",
-            "type": "core::starknet::contract_address::ContractAddress"
           }
         ],
         "outputs": [
           {
             "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "stake",
-        "inputs": [
-          {
-            "name": "amount",
-            "type": "core::integer::u256"
-          }
-        ],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "withdraw_stake",
-        "inputs": [],
-        "outputs": [],
-        "state_mutability": "external"
-      },
-      {
-        "type": "function",
-        "name": "get_claimable_rewards",
-        "inputs": [
-          {
-            "name": "staker",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "core::integer::u256"
-          }
-        ],
-        "state_mutability": "view"
-      },
-      {
-        "type": "function",
-        "name": "get_stake_info",
-        "inputs": [
-          {
-            "name": "staker",
-            "type": "core::starknet::contract_address::ContractAddress"
-          }
-        ],
-        "outputs": [
-          {
-            "type": "(core::integer::u256, core::integer::u64, core::integer::u256)"
           }
         ],
         "state_mutability": "view"
@@ -456,7 +512,11 @@ export const StarkOverflowABI = [
     "name": "constructor",
     "inputs": [
       {
-        "name": "governance_token_address",
+        "name": "owner",
+        "type": "core::starknet::contract_address::ContractAddress"
+      },
+      {
+        "name": "stark_token_address",
         "type": "core::starknet::contract_address::ContractAddress"
       }
     ]
@@ -661,67 +721,6 @@ export const StarkOverflowABI = [
   },
   {
     "type": "event",
-    "name": "openzeppelin_token::erc20::erc20::ERC20Component::Transfer",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "from",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "key"
-      },
-      {
-        "name": "to",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "key"
-      },
-      {
-        "name": "value",
-        "type": "core::integer::u256",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "openzeppelin_token::erc20::erc20::ERC20Component::Approval",
-    "kind": "struct",
-    "members": [
-      {
-        "name": "owner",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "key"
-      },
-      {
-        "name": "spender",
-        "type": "core::starknet::contract_address::ContractAddress",
-        "kind": "key"
-      },
-      {
-        "name": "value",
-        "type": "core::integer::u256",
-        "kind": "data"
-      }
-    ]
-  },
-  {
-    "type": "event",
-    "name": "openzeppelin_token::erc20::erc20::ERC20Component::Event",
-    "kind": "enum",
-    "variants": [
-      {
-        "name": "Transfer",
-        "type": "openzeppelin_token::erc20::erc20::ERC20Component::Transfer",
-        "kind": "nested"
-      },
-      {
-        "name": "Approval",
-        "type": "openzeppelin_token::erc20::erc20::ERC20Component::Approval",
-        "kind": "nested"
-      }
-    ]
-  },
-  {
-    "type": "event",
     "name": "stark_overflow::StarkOverflow::StarkOverflow::Event",
     "kind": "enum",
     "variants": [
@@ -759,12 +758,9 @@ export const StarkOverflowABI = [
         "name": "OwnableEvent",
         "type": "openzeppelin_access::ownable::ownable::OwnableComponent::Event",
         "kind": "flat"
-      },
-      {
-        "name": "ERC20Event",
-        "type": "openzeppelin_token::erc20::erc20::ERC20Component::Event",
-        "kind": "flat"
       }
     ]
   }
 ] as const;
+
+export const StarkOverflowABI = ABI;

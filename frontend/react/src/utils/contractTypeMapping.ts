@@ -1,13 +1,7 @@
 import { formatters } from "./formatters"
-import { Question, Answer } from "@app-types/index"
-import { Question as ContractQuestion, Answer as ContractAnswer } from "../types/contract-types"
+import { Question, Answer, Forum } from "@app-types/index"
+import { Question as ContractQuestion, Answer as ContractAnswer, ContractForum } from "../types/contract-types"
 
-// Mock data generators for missing fields
-const generateMockTags = (): string[] => {
-  const allTags = ["starknet", "cairo", "blockchain", "smart-contracts", "defi", "nft", "web3"]
-  const count = Math.floor(Math.random() * 3) + 1 // 1-3 tags
-  return allTags.sort(() => 0.5 - Math.random()).slice(0, count)
-}
 
 const generateMockTimestamp = (): string => {
   const randomHours = Math.floor(Math.random() * 48) // 0-48 hours ago
@@ -28,12 +22,11 @@ const generateMockRepository = (): string => {
     "https://github.com/starknet-community/starknet-js",
     "https://github.com/xJonathanLEI/starkli",
     "https://github.com/MullerEsposito/stark_overflow",
-    ""
+    "",
   ]
   return repos[Math.floor(Math.random() * repos.length)]
 }
 
-// Generate mock author name from address
 const generateMockAuthorName = (address: string): string => {
   const names = ["Alice", "Bob", "Charlie", "Diana", "Eve", "Frank", "Grace", "Henry"]
   const surnames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis"]
@@ -45,14 +38,12 @@ const generateMockAuthorName = (address: string): string => {
   return `${names[nameIndex]} ${surnames[surnameIndex]}`
 }
 
-// Convert contract Question to frontend Question
 export const contractQuestionToFrontend = (contractQuestion: ContractQuestion): Question => {
-  // convert author and value to hex address and number
   const authorAddress = formatters.bigIntToAddress(contractQuestion.author)
-  const value = formatters.bigIntToNumber(contractQuestion.value)
   const status = formatters.formatStatus(contractQuestion.status)
   const authorName = generateMockAuthorName(authorAddress)
-
+  const weiValue = formatters.bigIntToNumber(contractQuestion.value)
+  const decimalValue = formatters.convertWeiToDecimal(weiValue)
 
   return {
     id: contractQuestion.id.toString(),
@@ -63,14 +54,13 @@ export const contractQuestionToFrontend = (contractQuestion: ContractQuestion): 
     authorAddress: authorAddress,
     authorName,
     timestamp: generateMockTimestamp(),
-    stakeAmount: (Number(value)).toFixed(2),
-    tags: generateMockTags(),
+    stakeAmount: decimalValue,
+    tags: contractQuestion?.tags || [],
     repositoryUrl: generateMockRepository(),
-    isOpen: status === "Open"
+    isOpen: status === "Open",
   }
 }
 
-// Convert contract Answer to frontend Answer
 export const contractAnswerToFrontend = (contractAnswer: ContractAnswer, isCorrect = false): Answer => {
   const authorAddress = formatters.bigIntToAddress(contractAnswer.author)
   const authorName = generateMockAuthorName(authorAddress)
@@ -82,7 +72,16 @@ export const contractAnswerToFrontend = (contractAnswer: ContractAnswer, isCorre
     content: contractAnswer.description,
     timestamp: generateMockTimestamp(),
     isCorrect,
-    votes: Math.floor(Math.random() * 10) // Random votes for now
+    votes: Math.floor(Math.random() * 10), // Random votes for now
   }
 }
 
+export const contractForumToFrontend = (contractForum: ContractForum): Forum => {
+  return {
+    id: contractForum.id.toString(),
+    name: contractForum.name,
+    icon_url: contractForum.icon_url,
+    amount: formatters.convertWeiToDecimal(Number(contractForum.amount)),
+    total_questions: Number(contractForum.total_questions),
+  }
+}

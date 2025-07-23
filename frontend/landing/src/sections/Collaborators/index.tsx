@@ -1,4 +1,4 @@
-import { CircleWavyCheck } from "@phosphor-icons/react"
+import { SealCheck } from "@phosphor-icons/react"
 import { CollaboratorsContainer, CollaboratorsItens, CollaboratorItem, CollaboratorImage } from "./styles"
 import { SocialLinks } from "@components/SocialLinks"
 import { useEffect, useState } from "react"
@@ -40,7 +40,7 @@ export function Collaborators({ ...props }) {
           <CollaboratorItem key={collaborator.id}>
             {collaborator.avatar 
               ? <CollaboratorImage src={collaborator.avatar} alt={collaborator.name} /> 
-              : <CircleWavyCheck size={24} weight="fill" />} 
+              : <SealCheck size={24} weight="fill" />} 
             <span>{collaborator.name}</span>
             <SocialLinks socials={collaborator.socials} name={collaborator.name} />
           </CollaboratorItem>

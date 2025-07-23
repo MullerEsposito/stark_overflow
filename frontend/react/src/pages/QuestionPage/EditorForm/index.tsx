@@ -192,10 +192,10 @@ export function EditorForm({ value, error, id, setValue, validateForm}: EditorFo
       />
 
       <TabContainer>
-        <Tab type="button" active={activeTab === "write"} onClick={() => handleTabChange("write")}>
+        <Tab type="button" $active={activeTab === "write"} onClick={() => handleTabChange("write")}>
           Write
         </Tab>
-        <Tab type="button" active={activeTab === "preview"} onClick={() => handleTabChange("preview")}>
+        <Tab type="button" $active={activeTab === "preview"} onClick={() => handleTabChange("preview")}>
           Preview
         </Tab>
       </TabContainer>

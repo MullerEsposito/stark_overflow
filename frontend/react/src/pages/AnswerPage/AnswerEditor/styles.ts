@@ -5,6 +5,10 @@ export const EditorContainer = styled.div`
   border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 8px;
   overflow: hidden;
+
+  h2 {
+    padding: 0 10px;
+  }
 `
 
 export const EditorTabs = styled.div`

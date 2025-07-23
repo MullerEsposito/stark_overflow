@@ -12,10 +12,13 @@ export const CollaboratorsContainer = styled.div`
 `
 
 export const CollaboratorsItens = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  row-gap: 55px;
+  justify-items: center;
+  align-items: start;
+  max-width: 800px;
+  margin: 0 auto;
 `
 
 export const CollaboratorItem = styled.div`
@@ -56,4 +59,3 @@ export const CollaboratorImage = styled.img`
   z-index: 10;
 
 `
-

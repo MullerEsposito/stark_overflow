@@ -5,7 +5,7 @@ import { UserAvatar } from "../styles";
 import type { Question } from "@app-types/index";
 import React, { Suspense } from "react";
 import { useStaking } from "../hooks/useStaking";
-// Add this near the top of the file with other imports
+
 const ReactMarkdown = React.lazy(() => import("react-markdown"))
 const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
 
@@ -76,8 +76,9 @@ export function Question({ question }: QuestionProps) {
           </RepositoryLink>
         )}
         <StakeInfo>
-          <CurrencyDollar size={24} color="#25c028" weight="fill" />
-          <span>{question.stakeAmount}</span>
+          <CurrencyDollar size={20} color="#25c028" weight="fill" />
+          <span>{question.stakeAmount.toFixed(2)}</span>
+
           {question.isOpen && (
             <ActionButton onClick={() => setIsStakeModalOpen(true)}>
               Add Stake

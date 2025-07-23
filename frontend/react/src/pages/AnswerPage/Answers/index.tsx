@@ -18,7 +18,7 @@ const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
 
 interface AnswersProps {
   question: Question
-  setQuestion: (question: Question) => void
+  setQuestion: React.Dispatch<React.SetStateAction<Question | null>>
 }
 
 export function Answers({ question, setQuestion }: AnswersProps) {
@@ -40,7 +40,7 @@ export function Answers({ question, setQuestion }: AnswersProps) {
     }
   })
 
-  
+
 
   const handleMarkCorrect = async (answerId: string) => {
     if (!isConnected) {
@@ -96,10 +96,13 @@ export function Answers({ question, setQuestion }: AnswersProps) {
           message: "Answer marked as correct! Funds have been transferred to the responder.",
         })
 
-        // Update question status
-        setQuestion({
-          ...question,
-          isOpen: false,
+        // Update question with new status 
+        setQuestion(prevQuestion => {
+          if (!prevQuestion) return null
+          return {
+            ...prevQuestion,
+            isOpen: false,
+          }
         })
       }
     } catch (error) {

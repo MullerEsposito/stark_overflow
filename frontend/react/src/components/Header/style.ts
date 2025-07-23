@@ -2,11 +2,12 @@ import styled from "styled-components";
 
 export const HeaderContainer = styled.header`
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   width: 100%;
   padding: 0 20px;
   border-bottom: 1px solid ${(props) => props.theme.borderColor};
+  min-height: 60px;
 
   a {
     grid-column: 2;
@@ -14,10 +15,57 @@ export const HeaderContainer = styled.header`
     justify-content: center;
     align-items: center;
   }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 2fr 1fr;
+    padding: 0 16px;
+    min-height: 56px;
+    
+    a {
+      grid-column: 1;
+      justify-content: start;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0 12px;
+    min-height: 52px;
+  }
+`;
+
+export const HeaderActionsContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+`;
+
+export const LogoContainer = styled.div`
+  grid-column: 2;
+
+  @media (max-width: 768px) {
+    display: flex;
+    grid-column: 1;
+    
+  }
 `;
 
 export const Logo = styled.img`
   width: 10rem;
+  height: auto;
+  max-width: 100%;
+
+  @media (max-width: 768px) {
+    width: 8rem;
+  }
+
+  @media (max-width: 480px) {
+    width: 6rem;
+  }
+
+  @media (max-width: 320px) {
+    width: 5rem;
+  }
 `;
 
 export const ToggleThemeButton = styled.button`
@@ -25,8 +73,26 @@ export const ToggleThemeButton = styled.button`
   border: none;
   cursor: pointer;
   color: ${(props) => props.theme.text};
-`;
+  padding: 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
 
+  &:hover {
+    background-color: ${(props) => props.theme.secondary || "rgba(0, 0, 0, 0.05)"};
+  }
+
+  @media (max-width: 480px) {
+    padding: 6px;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+`;
 
 export const ConnectButtonContainer = styled.div`
   position: relative;
@@ -36,18 +102,31 @@ export const ConnectButtonContainer = styled.div`
 `;
 
 export const StyledButton = styled.button`
-  background: ${(props) => props.theme.connectBg};
-  color: ${(props) => props.theme.connectText};
+   background: ${(props) => props.theme?.button?.primary?.background || 'red'};
+  color: ${(props) => props.theme?.button?.primary?.text || 'white'};
   border: none;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 14px;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.2s;
-  
-  &:hover {
-    opacity: 0.9;
+  box-shadow: ${(props) => props.theme?.shadow?.sm || 'none'};
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s, opacity 0.2s;
+
+  &:hover:not(:disabled) {
+    background: ${(props) => props.theme?.button?.primary?.hover || '#6842c2'};
+    box-shadow: ${(props) => props.theme?.shadow?.md || 'none'};
+  }
+  &:active:not(:disabled) {
+    background: ${(props) => props.theme?.button?.primary?.active || '#4c2885'};
+    box-shadow: ${(props) => props.theme?.shadow?.lg || 'none'};
+  }
+  &:disabled {
+    background: ${(props) => props.theme?.button?.primary?.disabled || '#e3e8ee'};
+    color: ${(props) => props.theme?.button?.primary?.disabledText || '#a0aec0'};
+    opacity: 0.6;
+    cursor: not-allowed;
+    box-shadow: none;
   }
 `;
 
@@ -189,23 +268,29 @@ export const InstallButton = styled.button`
   gap: 12px;
   width: 100%;
   padding: 12px 16px;
-  background: ${(props) => props.theme.cardBackground || props.theme.connectText};
-  border: 1px solid ${(props) => props.theme.borderColor};
-  border-radius: 6px;
+  background: ${(props) => props.theme?.button?.secondary?.background || 'red'};
+  color: ${(props) => props.theme?.button?.secondary?.text || 'white'};
+  border: 1px solid ${(props) => props.theme?.button?.secondary?.border || '#e3e8ee'};
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  color: ${(props) => props.theme.text} !important;
+  box-shadow: ${(props) => props.theme?.shadow?.sm || 'none'};
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s, opacity 0.2s;
 
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  &:hover:not(:disabled) {
+    background: ${(props) => props.theme?.button?.secondary?.hover || '#f3f6fa'};
+    box-shadow: ${(props) => props.theme?.shadow?.md || 'none'};
   }
-  
+  &:active:not(:disabled) {
+    background: ${(props) => props.theme?.button?.secondary?.active || '#e3e8ee'};
+    box-shadow: ${(props) => props.theme?.shadow?.lg || 'none'};
+  }
   &:disabled {
-    opacity: 0.5;
+    background: ${(props) => props.theme?.button?.secondary?.disabled || '#f3f6fa'};
+    color: ${(props) => props.theme?.button?.secondary?.disabledText || '#a0aec0'};
+    opacity: 0.6;
     cursor: not-allowed;
-    transform: none;
     box-shadow: none;
   }
 `;

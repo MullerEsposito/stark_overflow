@@ -1,12 +1,12 @@
+import React from "react";
 import { EditorPreviewContainer } from "./styles";
 import { Suspense } from "react";
 import { useAnswerEditor } from "../useAnswerEditor";
-import remarkGfm from "remark-gfm";
-import ReactMarkdown from "react-markdown";
+const ReactMarkdown = React.lazy(() => import("react-markdown"))
+const remarkGfm = await import("remark-gfm").then((mod) => mod.default || mod)
 
 export function EditorPreview() {
   const { content } = useAnswerEditor()
-  // Custom components for ReactMarkdown
   const components = {
     img: ({ ...props }) => (
       <img
