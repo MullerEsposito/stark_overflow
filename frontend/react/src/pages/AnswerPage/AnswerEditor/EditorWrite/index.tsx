@@ -88,6 +88,7 @@ export function EditorWrite() {
       <EditorToolbar textAreaRef={textAreaRef} fileInputRef={fileInputRef} />
 
       <EditorTextarea
+        data-cy="answer-this-question"
         ref={textAreaRef}
         value={content}
         onChange={(e) => setContent(e.target.value)}

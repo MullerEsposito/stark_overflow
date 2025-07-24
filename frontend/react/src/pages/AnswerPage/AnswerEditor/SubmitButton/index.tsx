@@ -106,7 +106,7 @@ export function SubmitButton({ questionId }: { questionId: number }) {
   }
 
   return (
-    <SubmitButtonContainer onClick={handleSubmit} disabled={isSubmitting}>
+    <SubmitButtonContainer data-cy='submit-answer' onClick={handleSubmit} disabled={isSubmitting}>
       {isSubmitting ? "Submitting..." : "Submit Answer"}
       {transactionHash && (
         <span>

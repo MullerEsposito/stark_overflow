@@ -8,7 +8,11 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate:contract-types": "node --loader ts-node/esm src/scripts/generate-types-from-abi.ts"
+    "generate:contract-types": "node --loader ts-node/esm src/scripts/generate-types-from-abi.ts",
+    "cy:open": "cypress open",
+    "test:e2e": "cypress run",
+    "test:e2e:headed": "cypress run --headed",
+    "test:e2e:chrome": "cypress run --browser chrome"
   },
   "dependencies": {
     "@starknet-react/chains": "^3.1.2",
@@ -26,11 +30,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^22.13.5",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@vitejs/plugin-react": "^4.3.4",
+    "cypress": "^14.5.2",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.19",

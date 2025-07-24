@@ -169,7 +169,7 @@ function ForumContent() {
       <Header>
         <SearchInput onSearch={handleSearch} />
         <NavLink to={`/forum/${name}/question`}>
-          <Button>New Question</Button>
+          <Button data-cy="new-question-button">New Question</Button>
         </NavLink>
       </Header>
       <ForumList>

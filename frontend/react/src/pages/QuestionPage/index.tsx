@@ -196,7 +196,7 @@ export function QuestionPage() {
               Discard
             </Button>
           </NavLink>
-          <Button variant="publish" type="submit" disabled={isTransactionPending || scaledAmount.low === 0n || !contractReady}>
+          <Button data-cy='publish-button' variant="publish" type="submit" disabled={isTransactionPending || scaledAmount.low === 0n || !contractReady}>
             {isTransactionPending ? "Publishing..." : "Publish"}
             {!isTransactionPending && <PaperPlaneRight size={20} />}
           </Button>

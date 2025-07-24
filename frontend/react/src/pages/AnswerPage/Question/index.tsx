@@ -80,7 +80,7 @@ export function Question({ question }: QuestionProps) {
           <span>{question.stakeAmount.toFixed(2)}</span>
 
           {question.isOpen && (
-            <ActionButton onClick={() => setIsStakeModalOpen(true)}>
+            <ActionButton data-cy="add-stake-btn-card" onClick={() => setIsStakeModalOpen(true)}>
               Add Stake
             </ActionButton>
           )}
