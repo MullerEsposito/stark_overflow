@@ -21,6 +21,7 @@ assert_macros = "2.9.2"
 [profile.dev.cairo]
 unstable-add-statements-code-locations-debug-info = true
 unstable-add-statements-functions-debug-info = true
+inlining-strategy = "avoid" 
 
 [[target.starknet-contract]]
 sierra = true

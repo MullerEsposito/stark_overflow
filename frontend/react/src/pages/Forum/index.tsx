@@ -19,6 +19,7 @@ import { useState, useEffect, useMemo } from "react"
 import { useParams } from "react-router-dom"
 import { useContract } from "@hooks/useContract"
 import { ContractProvider } from "@hooks/useContract/contract.provider"
+import { LoadingSpinner } from "@components/LoadingSpinner"
 
 
 interface Topic {
@@ -157,9 +158,7 @@ function ForumContent() {
   if (!contractReady || loading) {
     return (
       <ForumContainer>
-        <div style={{ padding: "20px", textAlign: "center" }}>
-          <p>Loading forum...</p>
-        </div>
+        <LoadingSpinner message={!contractReady ? "Initializing contract..." : "Loading questions..."} />
       </ForumContainer>
     )
   }

@@ -7,12 +7,15 @@ use starknet::ContractAddress;
 pub trait IStarkOverflow<T> {
   // Forums
   fn create_forum(ref self: T, name: ByteArray, icon_url: ByteArray) -> u256;
+  fn delete_forum(ref self: T, forum_id: u256);
+  fn update_forum(ref self: T, forum_id: u256, name: ByteArray, icon_url: ByteArray);
   fn get_forum(self: @T, forum_id: u256) -> Forum;
   fn get_forums(self: @T) -> Array<Forum>;
 
   // Questions
   fn ask_question(ref self: T, forum_id: u256, title: ByteArray, description: ByteArray, repository_url: ByteArray, tags: Array<ByteArray>, amount: u256) -> QuestionId;
   fn get_question(self: @T, question_id: u256) -> QuestionResponse;
+  fn get_questions(self: @T, page_size: u256, page: u256) -> (Array<QuestionResponse>, u256, bool); // (questions, total, has_next)
   fn stake_on_question(ref self: T, question_id: u256, amount: u256);
   fn get_total_staked_on_question(self: @T, question_id: u256) -> u256;
   fn get_staked_amount(self: @T, staker: ContractAddress, question_id: u256) -> u256;
@@ -84,8 +87,8 @@ pub mod StarkOverflow {
   }
 
   #[constructor]
-  fn constructor(ref self: ContractState, stark_token_address: ContractAddress) {
-    self.ownable.initializer(get_caller_address());
+  fn constructor(ref self: ContractState, owner: ContractAddress, stark_token_address: ContractAddress) {
+    self.ownable.initializer(owner);
     self.stark_token_dispatcher.write(IERC20Dispatcher { 
       contract_address: stark_token_address 
     });
@@ -97,12 +100,27 @@ pub mod StarkOverflow {
       self.ownable.assert_only_owner();
 
       let forum_id = self.last_forum_id.read() + 1;
-      let forum = Forum { id: forum_id, name, icon_url, amount: 0, total_questions: 0 };
+      let forum = Forum { id: forum_id, name, icon_url, amount: 0, total_questions: 0, deleted: false };
 
       self.forum_by_id.entry(forum_id).write(forum);
       self.last_forum_id.write(forum_id);
 
       forum_id
+    }
+
+    fn delete_forum(ref self: ContractState, forum_id: u256) {
+      self.ownable.assert_only_owner();
+
+      let forum = self.forum_by_id.entry(forum_id);
+      forum.deleted.write(true);
+    }
+
+    fn update_forum(ref self: ContractState, forum_id: u256, name: ByteArray, icon_url: ByteArray) {
+      self.ownable.assert_only_owner();
+
+      let forum = self.forum_by_id.entry(forum_id);
+      forum.name.write(name);
+      forum.icon_url.write(icon_url);
     }
 
     fn get_forum(self: @ContractState, forum_id: u256) -> Forum {
@@ -113,9 +131,11 @@ pub mod StarkOverflow {
       let mut forums = array![];
       let number_of_forums = self.last_forum_id.read();
 
-      for i in 0..number_of_forums {
+      for i in 1..number_of_forums + 1 {
         let forum = self.forum_by_id.entry(i).read();
-        forums.append(forum);
+        if forum.deleted == false {
+          forums.append(forum);
+        }
       };
 
       forums
@@ -129,6 +149,10 @@ pub mod StarkOverflow {
       let question_id = self.last_question_id.read() + 1;
       
       self.stark_token_dispatcher().transfer_from(caller, get_contract_address(), amount);
+
+      let found_forum = self.forum_by_id.entry(forum_id);
+      found_forum.amount.write(found_forum.amount.read() + amount);
+      found_forum.total_questions.write(found_forum.total_questions.read() + 1);
 
       let question = self.question_by_id.entry(question_id);
       question.id.write(question_id);
@@ -172,6 +196,57 @@ pub mod StarkOverflow {
         status: found_question.status.read(),
       };
       question_response
+    }
+
+    fn get_questions(self: @ContractState, page_size: u256, page: u256) -> (Array<QuestionResponse>, u256, bool) {
+      assert(page_size > 0, 'PageSize must be greater than 0');
+      assert(page > 0, 'Page must be greater than 0');
+      
+      let total_questions = self.last_question_id.read();
+      
+      if total_questions == 0 {
+        return (array![], 0, false);
+      }
+
+      let page_first_question_idx = page_size * (page - 1) + 1; //2 * (3-1) + 1 = 5
+
+      if page_first_question_idx > total_questions {
+          return (array![], total_questions, false);
+      }
+
+      let mut page_last_question_idx = page_first_question_idx + page_size - 1;
+      if page_last_question_idx > total_questions {
+          page_last_question_idx = total_questions;
+      }
+
+      let mut questions_for_page = array![];
+      let mut current_index = page_first_question_idx;
+
+      while current_index <= page_last_question_idx {
+        let found_question = self.question_by_id.entry(current_index);
+        let mut tags = array![];
+        for i in 0..found_question.tags.len() {
+          let tag = found_question.tags.at(i).read();
+          tags.append(tag);
+        };
+        let question_response = QuestionResponse {
+          id: found_question.id.read(),
+          forum_id: found_question.forum_id.read(),
+          title: found_question.title.read(),
+          author: found_question.author.read(),
+          description: found_question.description.read(),
+          amount: found_question.amount.read(),
+          repository_url: found_question.repository_url.read(),
+          tags: tags,
+          status: found_question.status.read(),
+        };
+        questions_for_page.append(question_response);
+        current_index += 1;
+      };
+
+      let has_next_page = page_last_question_idx < total_questions;
+
+      (questions_for_page, total_questions, has_next_page)
     }
 
     fn get_answers(self: @ContractState, question_id: u256) -> Array<Answer> {
@@ -261,7 +336,10 @@ pub mod StarkOverflow {
       self.staked_in_question_by_user.write((caller, question_id), new_stake);
       
       let total_staked = self.total_staked_by_question_id.read(question_id);
-      self.total_staked_by_question_id.write(question_id, total_staked + amount);            
+      self.total_staked_by_question_id.write(question_id, total_staked + amount);
+
+      let found_forum = self.forum_by_id.entry(found_question.forum_id.read());
+      found_forum.amount.write(found_forum.amount.read() + amount);
       
       self.emit(QuestionStaked { staker: caller, question_id, amount });
     }
