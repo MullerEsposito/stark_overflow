@@ -60,8 +60,14 @@ describe('Test Create a question in ReactJS forum', () => {
     cy.get('#repository').type('https://github.com/username/react-project')
     cy.get('#repository').should('have.value', 'https://github.com/username/react-project')
 
-    cy.get('#tags').type('react hooks useEffect javascript')
-    cy.get('#tags').should('have.value', 'react hooks useEffect javascript')
+    cy.get('#tags').type('react hooks useEffect javascript ')
+    const expectedTags = ['react', 'hooks', 'useEffect', 'javascript']
+    cy.get('[data-testid="tags-container"]')
+      .within(() => {
+        expectedTags.forEach((tag) => {
+          cy.contains(tag).should('be.visible')
+        })
+      })
     
     cy.get('[data-cy=publish-button]').scrollIntoView()
     
