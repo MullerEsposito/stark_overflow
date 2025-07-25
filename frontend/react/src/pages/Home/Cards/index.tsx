@@ -39,8 +39,6 @@ export function Cards({ forums, isOwner, onForumDeleted }: CardsProps) {
 
   return (
     <CardsContainer>
-        {forums.map((forum, index) => (
-          <NavLink to={`/forum/${forum.path}`} key={index}>
       {forums.map((forum) => (
         <div key={forum.id} style={{ position: "relative" }}>
           <NavLink to={`/forum/${forum.id}`}>
