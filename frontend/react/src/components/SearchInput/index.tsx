@@ -32,6 +32,7 @@ export function  SearchInput({ onSearch }: SearchInputProps){
     <SearchInputContainer>
       <MagnifyingGlass size={24} color="#b3b3b3" weight="fill" />
       <Input 
+      data-cy="search-input"
       placeholder="Enter a term to search..."
       value={searchTerm}
       onChange={handleInputChange}
