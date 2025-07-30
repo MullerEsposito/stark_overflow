@@ -41,11 +41,15 @@ export const formatters = {
   },
 
   convertStringDecimalToWei: (decimal: string) => {
-    const [integerPart, fractionalPart = ''] = decimal.toString().split('.');
-
-    const integerWei = BigInt(integerPart) * (10n ** 18n);
-    const fractionalWei = BigInt(fractionalPart.padEnd(18, '0'));
-    return integerWei + fractionalWei;
+    const [integerPart, fractionalPart = '0'] = decimal.toString().split('.');
+    
+    try {
+      const integerWei = BigInt(integerPart) * (10n ** 18n);
+      const fractionalWei = BigInt(fractionalPart.padEnd(18, '0'));
+      return integerWei + fractionalWei;
+    } catch {
+      return 0n;
+    }
   }
 
   
