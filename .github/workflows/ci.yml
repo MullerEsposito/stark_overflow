@@ -22,8 +22,8 @@ jobs:
         #run: npm ci
         #run: npm install
         run: |
-        #   rm -rf node_modules package-lock.json
-        #   npm install
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: Build application
         working-directory: ./frontend/react
@@ -53,8 +53,8 @@ jobs:
         #run: npm ci
         #run: npm install
         run: |
-        #   rm -rf node_modules package-lock.json
-        #   npm install
+          rm -rf node_modules package-lock.json
+          npm install
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
