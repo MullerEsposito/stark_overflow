@@ -1,17 +1,14 @@
 // Simple E2E test for wallet connection functionality
 describe('Wallet Connection', () => {
-  beforeEach(() => {
-    cy.visit('/')
-  })
-
+  
   it('should display connect wallet button when wallet is not connected', () => {
-    cy.setupWalletMocks();
+    cy.setupE2E({ walletInstalled: true });
      cy.visit('/')
     cy.login()
   })
 
   it('should open connect wallet modal when button is clicked', () => {
-     cy.setupWalletMocks();
+     cy.setupE2E({ walletInstalled: true });
      cy.visit('/')
     cy.contains('Connect Wallet').click()
     
@@ -21,6 +18,8 @@ describe('Wallet Connection', () => {
   })
 
   it('should show wallet installation message when no wallets are detected', () => {
+    cy.setupE2E({ walletInstalled: false });
+    cy.visit('/')
     cy.contains('Connect Wallet').click()
     
     cy.get('body').then(($body) => {
@@ -35,7 +34,7 @@ describe('Wallet Connection', () => {
   })
 
   it('should close modal when close button (×) is clicked', () => {
-    cy.setupWalletMocks();
+    cy.setupE2E({ walletInstalled: true });
     cy.visit('/')
     cy.contains('Connect Wallet').click()
     
@@ -43,7 +42,8 @@ describe('Wallet Connection', () => {
   })
 
   it('should maintain consistent UI state across page navigation', () => {
-    cy.setupWalletMocks();
+    cy.setupE2E({ walletInstalled: true });
+    cy.visit('/')
     cy.contains('Connect Wallet').should('be.visible')
     
     cy.visit('/forum/reactjs')
@@ -56,7 +56,7 @@ describe('Wallet Connection', () => {
   })
 
   it('should show wallet detector notification when no wallet is installed', () => {
-    cy.setupNoWalletMocks();
+    cy.setupE2E({ walletInstalled: false });
     cy.visit('/')
     cy.get('body').should('contain.text', 'No StarkNet wallets detected')
   })
