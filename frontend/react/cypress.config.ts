@@ -15,10 +15,10 @@ export default defineConfig({
     requestTimeout: 10000,
     responseTimeout: 10000,
     specPattern: 'cypress/e2e/**/*.cy.{js,ts,jsx,tsx}',
-    env: {
-      RPC_URL: process.env.VITE_STARKNET_RPC_URL
-    },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setupNodeEvents(_on, _config) {},
-  }
+  },
+  env: {
+    RPC_URL: process.env.VITE_RPC_URL
+  },
 });
