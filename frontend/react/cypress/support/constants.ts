@@ -1,7 +1,8 @@
 // export const RPC_URL = 'http://localhost:5050';
 export const RPC_URL = Cypress.env('RPC_URL');
 export const SELECTORS = {
-  GET_ALL_FORUMS: '0x17cc439fbc04c207fe4f86321ef047d708a1e2b8b303fe943cb9461673a5496'  // Adicione outros seletores de função aqui conforme necessário
+  GET_ALL_FORUMS: '0x17cc439fbc04c207fe4f86321ef047d708a1e2b8b303fe943cb9461673a5496' ,
+  GET_OWNER: "0x2016836a56b71f0d02689e69e326f4f4c1b9057164ef592671cf0d37c8040c0"
 };
 
 export const MOCK_ACCOUNT ='0x04f348398f859a55a0c80b1446c5fdc37edb3a8478a32f10764659fc241027d3';
