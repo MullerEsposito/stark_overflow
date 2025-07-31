@@ -6,7 +6,7 @@ describe("Test Create Forum with Mocked State", () => {
     cy.visit("/");
   });
 
-  it.only("should allow a user to connect, create a question, and see it in the list", () => {
+  it("should allow a user to connect, create a question, and see it in the list", () => {
     let isAfterSubmit = false;
     cy.intercept("POST", RPC_URL, (req) => {
       if (
