@@ -5,7 +5,7 @@ export default defineConfig({
     baseUrl: "http://localhost:5173",
     viewportWidth: 1280,
     viewportHeight: 720,
-    video: false,
+    video: true,
     screenshotOnRunFailure: true,
     defaultCommandTimeout: 10000,
     requestTimeout: 10000,
