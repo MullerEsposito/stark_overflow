@@ -16,6 +16,9 @@ Cypress.Commands.add("setupWalletMocks", () => {
   Cypress.on("window:before:load", (win) => {
     console.log("Injecting StarkNet wallet provider mock...");
 
+    delete win.starknet_argentX;
+    delete win.starknet_braavos;
+
     win.starknet_argentX = {
       id: "argentX",
       name: "Ready Wallet (Mocked by Cypress)",
