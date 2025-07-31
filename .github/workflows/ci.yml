@@ -76,6 +76,7 @@ jobs:
           browser: chrome
           
         env:
+          DEBUG: 'cypress:*'
           VITE_RPC_URL: ${{ secrets.VITE_RPC_URL }}
           VITE_CONTRACT_ADDRESS: ${{ secrets.VITE_CONTRACT_ADDRESS }}
           VITE_TOKEN_ADDRESS: ${{ secrets.VITE_TOKEN_ADDRESS }}
