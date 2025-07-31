@@ -20,8 +20,11 @@ jobs:
       
       - name: Instalar dependências
         working-directory: ./frontend/react
-        run: npm install
-      
+        #run: npm install
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install
+          
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
