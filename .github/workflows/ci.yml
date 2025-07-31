@@ -73,7 +73,7 @@ jobs:
         uses: cypress-io/github-action@v6
         with:
           working-directory: frontend/react
-          wait-on: 'http://localhost:4173'
+          wait-on: 'http://localhost:3000'
           browser: chrome
           
         env:
