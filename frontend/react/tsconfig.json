@@ -6,6 +6,8 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
+     "types": ["node"] ,
+  
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -33,5 +35,5 @@
       "@app-types/*": ["types/*"],
     }
   },
-  "include": ["src"]
+  "include": ["src", "cypress.config.ts"]
 }

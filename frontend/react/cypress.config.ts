@@ -10,8 +10,8 @@ export default defineConfig({
     defaultCommandTimeout: 10000,
     requestTimeout: 10000,
     responseTimeout: 10000,
-    setupNodeEvents(_on, _config) {
-      // implement node event listeners here
-    },
-  },
+    specPattern: 'cypress/e2e/**/*.cy.{js,ts,jsx,tsx}',
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setupNodeEvents(_on, _config) {},
+  }
 });
