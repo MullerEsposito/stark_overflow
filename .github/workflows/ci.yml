@@ -76,7 +76,7 @@ jobs:
           mkdir -p ~/.starknet_accounts
           
           # Create the accounts file in the expected location
-          cat > ~/.starknet_accounts/starknet_open_zeppelin_accounts.json << EOF
+          cat > /home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json << EOF
           {
             "alpha-sepolia": {
               "account-1": {
@@ -100,6 +100,12 @@ jobs:
           url = "http://127.0.0.1:5050"
           EOF
 
+          # Debug: verify file was created
+          echo "Account file contents:"
+          cat /home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json
+          echo "snfoundry.toml contents:"
+          cat snfoundry.toml
+
       - name: Verify Devnet Connection
         working-directory: smartcontract
         run: |
@@ -112,9 +118,9 @@ jobs:
         working-directory: smartcontract
         run: |
           #export PATH="$HOME/.foundry/bin:$PATH"
-          export SNCAST_URL="http://127.0.0.1:5050"
+          #export SNCAST_URL="http://127.0.0.1:5050"
           
-          export SNCAST_ACCOUNT="devnet_account"
+          #export SNCAST_ACCOUNT="devnet_account"
 
           source $HOME/.cargo/env
           echo "Current dir: $(pwd)"
