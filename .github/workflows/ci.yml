@@ -24,7 +24,8 @@ jobs:
       - name: Install Starknet Foundry (sncast)
         run: |
           curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh
-          export PATH="$HOME/.foundry/bin:$PATH"
+          # export PATH="$HOME/.foundry/bin:$PATH"
+          source "$HOME/.bashrc"
           snfoundry-up
 
       - name: Start Starknet Devnet in a Docker Container
