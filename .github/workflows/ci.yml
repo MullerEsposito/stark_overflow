@@ -21,12 +21,15 @@ jobs:
         #run: npm ci
         run: npm install
 
+      - name: Add local bin to PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+      
       - name: Install Starknet Foundry (sncast)
         run: |
           curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh
-          # export PATH="$HOME/.foundry/bin:$PATH"
-          source "$HOME/.bashrc"
-          snfoundry-up
+          #export PATH="$HOME/.foundry/bin:$PATH"
+          #source "$HOME/.bashrc"
+          snfoundryup
 
       - name: Start Starknet Devnet in a Docker Container
         run: |
