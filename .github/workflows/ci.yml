@@ -69,6 +69,7 @@ jobs:
 
       - name: Deploy Contract and Capture Address
         id: deploy_step 
+        working-directory: smartcontract
         run: |
           #export PATH="$HOME/.foundry/bin:$PATH"
           export SNCAST_URL="http://127.0.0.1:5050"
