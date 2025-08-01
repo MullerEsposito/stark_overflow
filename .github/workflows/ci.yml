@@ -78,7 +78,7 @@ jobs:
 
           source $HOME/.cargo/env
           pwd
-          cd cd stark_overflow
+          cd stark_overflow
 
           echo "Compiling contract..."
           scarb build
