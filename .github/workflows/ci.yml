@@ -43,7 +43,7 @@ jobs:
 
       - name: Install Scarb (prebuilt)
         run: |
-          SCARB_VERSION="0.5.2" # ou troca para a versão que você quer fixar
+          SCARB_VERSION="2.10.1"
           ARCHIVE="scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
           DOWNLOAD_URL="https://github.com/embarkstudios/scarb/releases/download/v${SCARB_VERSION}/${ARCHIVE}"
 
