@@ -81,7 +81,7 @@ jobs:
           find . -maxdepth 3 -name Scarb.toml -print
           echo "......."
           
-          cd cd smartcontract
+          cd smartcontract
 
           echo "Compiling contract..."
           scarb build
