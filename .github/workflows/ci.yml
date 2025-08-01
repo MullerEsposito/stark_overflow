@@ -33,6 +33,14 @@ jobs:
           source "$HOME/.bashrc"
           snfoundryup
 
+      - name: Install Rust and Scarb
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+          source $HOME/.cargo/env
+
+          cargo install --locked scarb
+          scarb --version
+
       - name: Start Starknet Devnet in a Docker Container
         run: |
           docker run -d -p 127.0.0.1:5050:5050 --name devnet shardlabs/starknet-devnet-rs:latest --seed 0
@@ -48,6 +56,8 @@ jobs:
           
           export SNCAST_ACCOUNT="0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
           export SNCAST_PRIVATE_KEY="0x71d7bb07b9a64f6f78ac4c816aff4da9"
+
+          source $HOME/.cargo/env
 
           echo "Compiling contract..."
           scarb build
