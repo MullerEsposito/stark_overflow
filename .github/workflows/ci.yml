@@ -42,7 +42,7 @@ jobs:
       #     scarb --version
 
       - name: Install Scarb
-      - uses: software-mansion/setup-scarb@v1
+        uses: software-mansion/setup-scarb@v1
         with:
           scarb-version: "2.9.1"
       - run: scarb --version
