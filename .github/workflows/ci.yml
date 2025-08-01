@@ -77,13 +77,17 @@ jobs:
           export SNCAST_PRIVATE_KEY="0x71d7bb07b9a64f6f78ac4c816aff4da9"
 
           source $HOME/.cargo/env
-          echo "find..."
-          find . -maxdepth 3 -name Scarb.toml -print
-          echo "......."
-          
-          cd smartcontract
+          echo "Current dir: $(pwd)"
+          ls -la
+
+          if [ ! -f Scarb.toml ]; then
+            echo "Erro: Scarb.toml não encontrado em $(pwd)"
+            exit 1
+          fi
 
           echo "Compiling contract..."
+          # limpa cache se estiver com conflito persistente (opcional)
+          rm -rf ~/.cache/scarb || true
           scarb build
 
           echo "Declaring contract..."
