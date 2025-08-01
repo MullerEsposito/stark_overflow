@@ -41,7 +41,7 @@ jobs:
       - name: Deploy Contract and Capture Address
         id: deploy_step 
         run: |
-          export PATH="$HOME/.foundry/bin:$PATH"
+          #export PATH="$HOME/.foundry/bin:$PATH"
           export SNCAST_URL="http://127.0.0.1:5050"
           
           export SNCAST_ACCOUNT="0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
