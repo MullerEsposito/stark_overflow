@@ -63,7 +63,7 @@ jobs:
       - name: Start Starknet Devnet in a Docker Container
         run: |
           docker run -d -p 127.0.0.1:5050:5050 --name devnet shardlabs/starknet-devnet-rs:latest --seed 0
-          sleep 15
+          sleep 20
           echo "Devnet logs:"
           docker logs devnet --tail 50
           echo "Checking Devnet health:"
@@ -103,10 +103,9 @@ jobs:
       - name: Verify Devnet Connection
         working-directory: smartcontract
         run: |
+        
           echo "Testing Devnet connection..."
-          sncast --url http://127.0.0.1:5050 get-block
-          echo "Account status:"
-          sncast --url http://127.0.0.1:5050 --account account-1 --accounts-file ~/.starknet_accounts/starknet_open_zeppelin_accounts.json account
+          curl -v http://127.0.0.1:5050/is_alive
 
       - name: Deploy Contract and Capture Address
         id: deploy_step 
@@ -140,7 +139,7 @@ jobs:
 
           echo "Declaring contract..."
           
-          DECLARE_OUTPUT=$(sncast --url http://127.0.0.1:5050 --account account-1 --accounts-file ~/.starknet_accounts/starknet_open_zeppelin_accounts.json declare --contract-name StarkOverflow)
+          DECLARE_OUTPUT=$(sncast --profile devnet declare --contract-name StarkOverflow)
           CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
           echo "Class Hash: $CLASS_HASH"
           if [ -z "$CLASS_HASH" ]; then
@@ -149,7 +148,7 @@ jobs:
           fi
 
           echo "Deploying contract..."
-          DEPLOY_OUTPUT=$(sncast --url http://127.0.0.1:5050 --account account-1 --accounts-file ~/.starknet_accounts/starknet_open_zeppelin_accounts.json deploy --class-hash $CLASS_HASH --arguments "0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D")
+          DEPLOY_OUTPUT=$(sncast --profile devnet deploy --class-hash $CLASS_HASH --arguments "0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D")
           
           echo "--- Saída do Deploy ---"
           echo "$DEPLOY_OUTPUT"
