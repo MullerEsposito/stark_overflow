@@ -38,7 +38,7 @@ jobs:
           curl https://sh.rustup.rs -sSf | sh -s -- -y
           source $HOME/.cargo/env
 
-          cargo install --locked scarb
+          cargo install scarb
           scarb --version
 
       - name: Start Starknet Devnet in a Docker Container
