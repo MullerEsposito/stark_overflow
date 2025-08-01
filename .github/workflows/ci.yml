@@ -5,78 +5,82 @@ on:
   pull_request:
     branches: [ main ]
 jobs:
-  build:
-    name: Build Application
-    runs-on: ubuntu-24.04
+  test-e2e:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout PR code
-        uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      - name: Instalar dependências
-        working-directory: ./frontend/react
-        #run: npm install
+      - name: Install Frontend Dependencies
+        #run: npm ci
+        run: npm install
+
+      - name: Install Starknet Foundry (sncast)
         run: |
-          rm -rf node_modules package-lock.json
-          npm install
+          curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh
+          export PATH="$HOME/.foundry/bin:$PATH"
+          snfoundry-up
 
-      - name: Build application
-        working-directory: ./frontend/react
-        run: npm run build
-      
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-folder
-          path: frontend/react/dist
-
-  cypress-run:
-    name: Run Cypress Tests
-    runs-on: ubuntu-24.04
-    needs: build 
-    steps:
-      - name: Checkout base repository
-        uses: actions/checkout@v4
-
-      - name: Configurar Node.js e Cache
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      
-      - name: Instalar dependências
-        working-directory: ./frontend/react
-        #run: npm install
+      - name: Start Starknet Devnet in a Docker Container
         run: |
-          rm -rf node_modules package-lock.json
-          npm install
+          docker run -d -p 127.0.0.1:5050:5050 --name devnet shardlabs/starknet-devnet-rs:latest --seed 0
+          sleep 10
+          echo "Devnet logs:"
+          docker logs devnet
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-folder
-          path: frontend/react/dist
-    
-      - name: Serve application from build folder
-        working-directory: ./frontend/react
-        run: npx serve -s dist &
-        #run: npx vite preview
+      - name: Deploy Contract and Capture Address
+        id: deploy_step 
+        run: |
+          export PATH="$HOME/.foundry/bin:$PATH"
+          export SNCAST_URL="http://127.0.0.1:5050"
+          
+          export SNCAST_ACCOUNT="0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
+          export SNCAST_PRIVATE_KEY="0x71d7bb07b9a64f6f78ac4c816aff4da9"
 
-      - name: Cypress run
-        uses: cypress-io/github-action@v6
+          echo "Compiling contract..."
+          scarb build
+
+          echo "Declaring contract..."
+          
+          DECLARE_OUTPUT=$(sncast declare --contract-name StarkOverflow)
+          CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
+          echo "Class Hash: $CLASS_HASH"
+          if [ -z "$CLASS_HASH" ]; then
+            echo "Falha ao obter o Class Hash!"
+            exit 1
+          fi
+
+          echo "Deploying contract..."
+          DEPLOY_OUTPUT=$(sncast deploy --class-hash $CLASS_HASH --constructor-calldata "0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D")
+          
+          echo "--- Saída do Deploy ---"
+          echo "$DEPLOY_OUTPUT"
+          echo "-----------------------"
+          
+          CONTRACT_ADDRESS=$(echo "$DEPLOY_OUTPUT" | grep "contract_address" | awk '{print $2}')
+          echo "Contract Address Captured: $CONTRACT_ADDRESS"
+          if [ -z "$CONTRACT_ADDRESS" ]; then
+            echo "Falha ao capturar o endereço do contrato!"
+            exit 1
+          fi
+
+          echo "address=$CONTRACT_ADDRESS" >> $GITHUB_OUTPUT
+
+      - name: Run Cypress Tests
+        uses: cypress-io/github-action@v5
         with:
-          working-directory: frontend/react
+          start: npm run dev
           wait-on: 'http://localhost:3000'
           browser: chrome
-          
         env:
-          #DEBUG: 'cypress:*'
-          VITE_RPC_URL: ${{ secrets.VITE_RPC_URL }}
-          VITE_CONTRACT_ADDRESS: ${{ secrets.VITE_CONTRACT_ADDRESS }}
-          VITE_TOKEN_ADDRESS: ${{ secrets.VITE_TOKEN_ADDRESS }}
+          RPC_URL: "http://127.0.0.1:5050"
+          CONTRACT_ADDRESS: ${{ steps.deploy_step.outputs.address }}
+          VITE_TOKEN_ADDRESS: "0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D"
           
       - uses: actions/upload-artifact@v4
         # add the line below to store screenshots only on failures
