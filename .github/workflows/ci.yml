@@ -93,7 +93,7 @@ jobs:
 
           echo "Declaring contract..."
           
-          DECLARE_OUTPUT=$(sncast declare --contract-name StarkOverflow)
+          DECLARE_OUTPUT=$(sncast declare --contract-name StarkOverflow --url "$SNCAST_URL")
           CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
           echo "Class Hash: $CLASS_HASH"
           if [ -z "$CLASS_HASH" ]; then
@@ -102,7 +102,7 @@ jobs:
           fi
 
           echo "Deploying contract..."
-          DEPLOY_OUTPUT=$(sncast deploy --class-hash $CLASS_HASH --constructor-calldata "0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D")
+          DEPLOY_OUTPUT=$(sncast deploy --class-hash $CLASS_HASH --constructor-calldata "0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D" --url "$SNCAST_URL")
           
           echo "--- Saída do Deploy ---"
           echo "$DEPLOY_OUTPUT"
