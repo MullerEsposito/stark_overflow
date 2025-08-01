@@ -1,4 +1,4 @@
-import { RPC_URL, SELECTORS, MOCK_ACCOUNT } from "../support/constants";
+import { RPC_URL, SELECTORS, MOCK_ACCOUNT, CONTRACT_ADDRESS } from "../support/constants";
 
 describe("Test Create Forum with Mocked State", () => {
 
@@ -24,11 +24,13 @@ describe("Test Create Forum with Mocked State", () => {
       }
       if (req.body.params?.request?.entry_point_selector === SELECTORS.GET_OWNER) {
         console.log('[Intercept] Replying to owner check call.');
+
+        const feltOwner = BigInt(MOCK_ACCOUNT).toString();
         // Responde com o endereço do nosso usuário mockado.
         // A resposta crua de um 'felt' é um array com um único elemento.
         req.reply({
           statusCode: 200,
-          body: { result: [MOCK_ACCOUNT] } 
+          body: { result: [feltOwner] } 
         });
         return;
       }
