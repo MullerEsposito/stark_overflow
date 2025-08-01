@@ -17,6 +17,7 @@ jobs:
           node-version: '20'
 
       - name: Install Frontend Dependencies
+        working-directory: ./frontend/react
         #run: npm ci
         run: npm install
 
