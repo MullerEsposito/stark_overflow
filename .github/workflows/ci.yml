@@ -67,6 +67,38 @@ jobs:
           echo "Devnet logs:"
           docker logs devnet
 
+      - name: Setup Starknet Account Configuration
+        working-directory: smartcontract
+        run: |
+          # Create snfoundry.toml with account configuration
+          cat > snfoundry.toml << EOF
+          [sncast.default]
+          account = "devnet_account"
+          accounts_file = "accounts.json"
+          url = "http://127.0.0.1:5050"
+          
+          [sncast.devnet_account]
+          account = "devnet_account"
+          url = "http://127.0.0.1:5050"
+          EOF
+          
+          # Create accounts.json with the devnet account
+          cat > accounts.json << EOF
+          {
+            "alpha-goerli": {},
+            "alpha-mainnet": {},
+            "devnet_account": {
+              "address": "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+              "private_key": "0x71d7bb07b9a64f6f78ac4c816aff4da9",
+              "public_key": "0x...",
+              "salt": "0x...",
+              "class_hash": "0x...",
+              "deployed": true
+            }
+          }
+          EOF
+
+
       - name: Deploy Contract and Capture Address
         id: deploy_step 
         working-directory: smartcontract
@@ -74,15 +106,23 @@ jobs:
           #export PATH="$HOME/.foundry/bin:$PATH"
           export SNCAST_URL="http://127.0.0.1:5050"
           
-          export SNCAST_ACCOUNT="0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691"
-          export SNCAST_PRIVATE_KEY="0x71d7bb07b9a64f6f78ac4c816aff4da9"
+          export SNCAST_ACCOUNT="devnet_account"
 
           source $HOME/.cargo/env
           echo "Current dir: $(pwd)"
           ls -la
 
+          # Verify snfoundry.toml exists
+          if [ ! -f snfoundry.toml ]; then
+            echo "Error: snfoundry.toml not found"
+            exit 1
+          fi
+          
+          echo "Contents of snfoundry.toml:"
+          cat snfoundry.toml
+          
           if [ ! -f Scarb.toml ]; then
-            echo "Erro: Scarb.toml não encontrado em $(pwd)"
+            echo "Error: Scarb.toml not found in $(pwd)"
             exit 1
           fi
 
@@ -93,7 +133,7 @@ jobs:
 
           echo "Declaring contract..."
           
-          DECLARE_OUTPUT=$(sncast declare --contract-name StarkOverflow --url "$SNCAST_URL")
+          DECLARE_OUTPUT=$(sncast --account devnet_account declare --contract-name StarkOverflow)
           CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
           echo "Class Hash: $CLASS_HASH"
           if [ -z "$CLASS_HASH" ]; then
@@ -102,7 +142,7 @@ jobs:
           fi
 
           echo "Deploying contract..."
-          DEPLOY_OUTPUT=$(sncast deploy --class-hash $CLASS_HASH --constructor-calldata "0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D" --url "$SNCAST_URL")
+          DEPLOY_OUTPUT=$(sncast --account devnet_account deploy --class-hash $CLASS_HASH --constructor-calldata "0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D")
           
           echo "--- Saída do Deploy ---"
           echo "$DEPLOY_OUTPUT"
