@@ -41,20 +41,24 @@ jobs:
       #     cargo install scarb
       #     scarb --version
 
-      - name: Install Scarb (prebuilt)
-        run: |
-          SCARB_VERSION="2.10.1"
-          ARCHIVE="scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-          DOWNLOAD_URL="https://github.com/embarkstudios/scarb/releases/download/v${SCARB_VERSION}/${ARCHIVE}"
+      - name: Install Scarb
+      - uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: "2.9.1"
+      - run: scarb --version
+        # run: |
+        #   SCARB_VERSION="2.10.1"
+        #   ARCHIVE="scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+        #   DOWNLOAD_URL="https://github.com/embarkstudios/scarb/releases/download/v${SCARB_VERSION}/${ARCHIVE}"
 
-          mkdir -p $HOME/.local/bin
-          curl -L "$DOWNLOAD_URL" -o /tmp/${ARCHIVE}
-          tar -xzf /tmp/${ARCHIVE} -C /tmp
-          mv /tmp/scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu/scarb $HOME/.local/bin/
-          chmod +x $HOME/.local/bin/scarb
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        #   mkdir -p $HOME/.local/bin
+        #   curl -L "$DOWNLOAD_URL" -o /tmp/${ARCHIVE}
+        #   tar -xzf /tmp/${ARCHIVE} -C /tmp
+        #   mv /tmp/scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu/scarb $HOME/.local/bin/
+        #   chmod +x $HOME/.local/bin/scarb
+        #   echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-          scarb --version
+        #   scarb --version
 
       - name: Start Starknet Devnet in a Docker Container
         run: |
