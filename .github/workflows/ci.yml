@@ -33,12 +33,27 @@ jobs:
           source "$HOME/.bashrc"
           snfoundryup
 
-      - name: Install Rust and Scarb
-        run: |
-          curl https://sh.rustup.rs -sSf | sh -s -- -y
-          source $HOME/.cargo/env
+      # - name: Install Rust and Scarb
+      #   run: |
+      #     curl https://sh.rustup.rs -sSf | sh -s -- -y
+      #     source $HOME/.cargo/env
 
-          cargo install scarb
+      #     cargo install scarb
+      #     scarb --version
+
+      - name: Install Scarb (prebuilt)
+        run: |
+          SCARB_VERSION="0.5.2" # ou troca para a versão que você quer fixar
+          ARCHIVE="scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+          DOWNLOAD_URL="https://github.com/embarkstudios/scarb/releases/download/v${SCARB_VERSION}/${ARCHIVE}"
+
+          mkdir -p $HOME/.local/bin
+          curl -L "$DOWNLOAD_URL" -o /tmp/${ARCHIVE}
+          tar -xzf /tmp/${ARCHIVE} -C /tmp
+          mv /tmp/scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu/scarb $HOME/.local/bin/
+          chmod +x $HOME/.local/bin/scarb
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
           scarb --version
 
       - name: Start Starknet Devnet in a Docker Container
