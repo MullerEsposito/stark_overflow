@@ -77,7 +77,10 @@ jobs:
           export SNCAST_PRIVATE_KEY="0x71d7bb07b9a64f6f78ac4c816aff4da9"
 
           source $HOME/.cargo/env
-          ls -la
+          echo "find..."
+          find . -maxdepth 3 -name Scarb.toml -print
+          echo "......."
+          
           cd stark_overflow
 
           echo "Compiling contract..."
