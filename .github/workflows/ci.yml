@@ -68,7 +68,8 @@ jobs:
           docker run --network host -d shardlabs/starknet-devnet-rs:latest --seed 0
           sleep 30
           echo "Devnet logs:"
-          docker logs devnet --tail 50
+          #docker logs devnet --tail 50
+          docker logs
           echo "Checking Devnet health:"
           curl -v http://127.0.0.1:5050/is_alive
           for i in {1..10}; do
