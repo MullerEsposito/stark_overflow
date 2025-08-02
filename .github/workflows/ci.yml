@@ -65,11 +65,11 @@ jobs:
         run: |
           # Install jq for JSON processing
           sudo apt-get update && sudo apt-get install -y jq
-          docker run --network host -d shardlabs/starknet-devnet-rs:latest --seed 0
+          docker run --network host -d --name devnet shardlabs/starknet-devnet-rs:latest --seed 0
           sleep 30
           echo "Devnet logs:"
           #docker logs devnet --tail 50
-          docker logs
+          docker logs devnet
           echo "Checking Devnet health:"
           curl -v http://127.0.0.1:5050/is_alive
           for i in {1..10}; do
