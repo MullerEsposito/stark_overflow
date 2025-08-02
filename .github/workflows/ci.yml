@@ -135,7 +135,6 @@ jobs:
           echo "snfoundry.toml contents:"
           cat snfoundry.toml
 
-
       - name: Verify Devnet Connection and Get Predeployed Accounts
         working-directory: smartcontract
         run: |
