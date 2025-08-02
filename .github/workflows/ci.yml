@@ -168,18 +168,9 @@ jobs:
           rm -rf ~/.cache/scarb || true
           scarb build
 
-          echo "Declaring contract..."
-          echo "Listando contas disponíveis..."
-          if ! sncast --profile devnet account list; then
-            echo "Erro: não foi possível listar contas. Verifique snfoundry.toml e importação da conta."
-            exit 1
-          fi
-
           echo "mostrando devnet config..."
           sncast show-config
-
           
-          # Tentar declare com account e private key diretos
           for i in {1..3}; do
             echo "Tentativa $i de declare..."
             if DECLARE_OUTPUT=$(sncast --profile devnet declare --contract-name StarkOverflow --max-fee 999999999999999999); then
