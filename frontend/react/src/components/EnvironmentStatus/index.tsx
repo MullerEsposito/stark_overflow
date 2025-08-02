@@ -31,7 +31,7 @@ export function EnvironmentStatus({ show = isDevelopment() }: EnvironmentStatusP
       minWidth: '200px',
       maxWidth: '400px'
     }}>
-      <div 
+      <div data-cy="environment-status"
         style={{ 
           cursor: 'pointer', 
           fontWeight: 'bold',

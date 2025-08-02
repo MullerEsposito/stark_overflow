@@ -228,7 +228,7 @@ export function ForumAdmin() {
         </div>
       )}
       <FormContainer onSubmit={handleSubmit}>
-        <InputForm
+        <InputForm data-cy="InputForm-name"
           id="name"
           label="Name"
           tooltipText="The name of the forum"
@@ -240,7 +240,7 @@ export function ForumAdmin() {
           maxLength={20}
         />
 
-        <InputForm
+        <InputForm data-cy="InputForm-icon-url"
           id="iconUrl"
           label="Icon URL"
           tooltipText="The URL of the forum icon"
@@ -287,7 +287,7 @@ export function ForumAdmin() {
             onClick={() => navigate("/")}>
             Cancel
           </Button>
-          <Button variant="create" type="submit" disabled={isLoading || forumsLoading}>
+          <Button data-cy="create-forum-button" variant="create" type="submit" disabled={isLoading || forumsLoading}>
             {isLoading ? `${isEditMode ? 'Updating' : 'Creating'} Forum...` : `${isEditMode ? 'Update' : 'Create'} Forum`}
           </Button>
         </div>
