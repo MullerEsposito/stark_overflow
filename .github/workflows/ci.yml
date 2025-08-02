@@ -128,7 +128,7 @@ jobs:
           cat <<'EOF' > snfoundry.toml
           [sncast.devnet]
           account = "account-1"
-          accounts-file = "/home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+          accounts-file = "/home/runner/work/.starknet_accounts/starknet_open_zeppelin_accounts.json"
           url = "http://127.0.0.1:5050/rpc"
           EOF
 
