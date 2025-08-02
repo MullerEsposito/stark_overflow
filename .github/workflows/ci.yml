@@ -65,7 +65,7 @@ jobs:
         run: |
           # Install jq for JSON processing
           sudo apt-get update && sudo apt-get install -y jq
-          docker run -d -p 127.0.0.1:5050:5050 --name devnet shardlabs/starknet-devnet-rs:latest --seed 0
+          docker run -d -p 127.0.0.1:5050:5050 --name devnet shardlabs/starknet-devnet-rs:v0.4.2 --seed 0
           sleep 30
           echo "Devnet logs:"
           docker logs devnet --tail 50
@@ -173,7 +173,7 @@ jobs:
           
           for i in {1..3}; do
             echo "Tentativa $i de declare..."
-            if DECLARE_OUTPUT=$(sncast --profile devnet declare --accounts-file /home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json --account account-1 --contract-name StarkOverflow --max-fee 999999999999999999); then
+            if DECLARE_OUTPUT=$(sncast --profile devnet declare --contract-name StarkOverflow --max-fee 999999999999999999); then
               echo "Declare bem-sucedido!"
               echo "$DECLARE_OUTPUT"
               CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
