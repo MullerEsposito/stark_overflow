@@ -173,7 +173,7 @@ jobs:
           
           for i in {1..3}; do
             echo "Tentativa $i de declare..."
-            if DECLARE_OUTPUT=$(sncast -p devnet declare -f /home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json -a account-1 --contract-name StarkOverflow --max-fee 999999999999999999); then
+            if DECLARE_OUTPUT=$(sncast --profile devnet declare --accounts-file /home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json --account account-1 --contract-name StarkOverflow --max-fee 999999999999999999); then
               echo "Declare bem-sucedido!"
               echo "$DECLARE_OUTPUT"
               CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
