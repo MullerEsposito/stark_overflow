@@ -176,7 +176,7 @@ jobs:
           fi
 
           echo "mostrando devnet config..."
-          sncast show-config -p devnet
+          sncast show-config
 
           
           # Tentar declare com account e private key diretos
