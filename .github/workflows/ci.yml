@@ -112,7 +112,7 @@ jobs:
                 "class_hash": "0x5b4b537eaa2399e3aa99c4e2e0208ebd6c71bc1467938cd52c798c601e43564",
                 "deployed": true,
                 "legacy": false,
-                "private_key": "0xe1406455b7d66b1690803be066cbe5e",
+                "private_key": "0x0000000000000000000000000000000071d7bb07b9a64f6f78ac4c816aff4da9",
                 "public_key": "0x7a1bb2744a7dd29bffd44341dbd78008adb4bc11733601e7eddff322ada9cb",
                 "type": "open_zeppelin"
               }
@@ -130,7 +130,7 @@ jobs:
           [sncast.devnet]
           account = "account-1"
           accounts-file = "/home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json"
-          url = "http://127.0.0.1:5050/rpc"
+          url = "http://127.0.0.1:5050"
           EOF
 
           echo "snfoundry.toml contents:"
