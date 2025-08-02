@@ -200,7 +200,7 @@ jobs:
           # Deploy com retry também
           for i in {1..3}; do
             echo "Tentativa $i de deploy..."
-            if DEPLOY_OUTPUT=$(sncast --profile devnet --account-address $ACCOUNT_ADDRESS --private-key $ACCOUNT_PRIVATE_KEY deploy --class-hash $CLASS_HASH --arguments "$ACCOUNT_ADDRESS, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D" --max-fee 999999999999999999); then
+            if DEPLOY_OUTPUT=$(sncast --profile --verbose devnet --account-address $ACCOUNT_ADDRESS --private-key $ACCOUNT_PRIVATE_KEY deploy --class-hash $CLASS_HASH --arguments "$ACCOUNT_ADDRESS, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D" --max-fee 999999999999999999); then
               echo "Deploy bem-sucedido!"
               echo "$DEPLOY_OUTPUT"
               CONTRACT_ADDRESS=$(echo "$DEPLOY_OUTPUT" | grep "contract_address" | awk '{print $2}')
