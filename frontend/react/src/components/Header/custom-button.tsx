@@ -68,7 +68,7 @@ export function ConnectButton() {
               </Dropdown>
             </>
           ) : (
-            <StyledButton onClick={openConnectModal}>
+            <StyledButton data-cy='connect-wallet-btn' onClick={openConnectModal}>
               Connect Wallet
             </StyledButton>
           )}
