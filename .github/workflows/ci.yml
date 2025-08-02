@@ -86,7 +86,7 @@ jobs:
         run: |
           # Create the accounts file in the expected location
           mkdir -p /home/runner/.starknet_accounts
-          cat <<'EOF' > /home/runner/work/.starknet_accounts/starknet_open_zeppelin_accounts.json
+          cat <<'EOF' > /home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json
           {
             "alpha-sepolia": {
               "account-1": {
@@ -120,16 +120,16 @@ jobs:
           }
           EOF
           echo "verify .starknet_accounts contents..."
-          ls -la /home/runner/work/.starknet_accounts
+          ls -la /home/runner/.starknet_accounts
 
           echo "verify starknet_open_zeppelin_accounts contents..."
-          cat /home/runner/work/.starknet_accounts/starknet_open_zeppelin_accounts.json
+          cat /home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json
 
           # Create snfoundry.toml with simplified configuration
           cat <<'EOF' > snfoundry.toml
           [sncast.devnet]
           account = "account-1"
-          accounts-file = "/home/runner/work/.starknet_accounts/starknet_open_zeppelin_accounts.json"
+          accounts-file = "/home/runner/.starknet_accounts/starknet_open_zeppelin_accounts.json"
           url = "http://127.0.0.1:5050/rpc"
           EOF
 
