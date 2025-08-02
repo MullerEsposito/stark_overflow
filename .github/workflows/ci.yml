@@ -31,7 +31,10 @@ jobs:
           echo "$HOME/.foundry/bin" >> $GITHUB_PATH
           echo "$HOME/.cairo/bin" >> $GITHUB_PATH
           source "$HOME/.bashrc"
-          snfoundryup
+          # Try to install 0.44.0, fallback to latest if not available
+          snfoundryup --version 0.44.0 || snfoundryup
+          sncast --version
+          #snfoundryup
 
       # - name: Install Rust and Scarb
       #   run: |
