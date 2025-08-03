@@ -212,7 +212,7 @@ jobs:
         with:
           working-directory: frontend/react
           start: npm run dev
-          wait-on: 'http://localhost:3000'
+          wait-on: 'http://localhost:5173'
           browser: chrome
         env:
           RPC_URL: "http://127.0.0.1:5050"
