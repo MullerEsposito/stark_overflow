@@ -217,7 +217,7 @@ jobs:
         env:
           RPC_URL: "http://127.0.0.1:5050"
           CONTRACT_ADDRESS: ${{ steps.deploy_step.outputs.address }}
-          VITE_TOKEN_ADDRESS: "0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D"
+          TOKEN_ADDRESS: "0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D"
           
       - uses: actions/upload-artifact@v4
         # add the line below to store screenshots only on failures

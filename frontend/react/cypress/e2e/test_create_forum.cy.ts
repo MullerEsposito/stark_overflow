@@ -19,19 +19,6 @@ describe("Test Create Forum with Mocked State", () => {
     cy.contains("Fórum de Teste da Pipeline", { timeout: 10000 }).should("be.visible");
     cy.get('[data-cy="forum-list"]').children().should("have.length", 1);
   });
-
-    it.only("should environment status click", () => {
-
-    cy.setupE2E({ walletInstalled: true });
-    cy.visit("/");
-   
-    cy.login();
-
- 
-    cy.get('[data-cy="environment-status"]').click();
-    cy.wait(2000);
-
-  });
 });
 
 
