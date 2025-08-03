@@ -88,7 +88,7 @@ jobs:
         working-directory: smartcontract
         run: |
           #import the account address and create files to user
-          ACCOUNT_IMPORTED_OUTPUT=$(sncast account import --address=0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691 --type=oz --url=http://127.0.0.1:5050 --private_key=0x0000000000000000000000000000000071d7bb07b9a64f6f78ac4c816aff4da9 --add-profile=devnet --verbose)
+          ACCOUNT_IMPORTED_OUTPUT=$(sncast account import --address=0x064b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691 --type=oz --url=http://127.0.0.1:5050 --private-key=0x0000000000000000000000000000000071d7bb07b9a64f6f78ac4c816aff4da9 --add-profile=devnet --verbose)
 
           echo "Account imported output: $ACCOUNT_IMPORTED_OUTPUT"
           #ACCOUNT_ADDRESS=$(echo "$ACCOUNT_IMPORTED_OUTPUT" | grep "address" | awk '{print $2}')
