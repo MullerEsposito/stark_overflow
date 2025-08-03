@@ -14,12 +14,12 @@ export default defineConfig({
     defaultCommandTimeout: 10000,
     requestTimeout: 10000,
     responseTimeout: 10000,
-    specPattern: 'cypress/e2e/**/*.cy.{js,ts,jsx,tsx}',
-    env: {
-      RPC_URL: process.env.VITE_RPC_URL,
-      CONTRACT_ADDRESS: process.env.VITE_CONTRACT_ADDRESS,
-      TOKEN_ADDRESS: process.env.VITE_TOKEN_ADDRESS
-    },
+    // specPattern: 'cypress/e2e/**/*.cy.{js,ts,jsx,tsx}',
+    // env: {
+    //   RPC_URL: process.env.VITE_RPC_URL,
+    //   CONTRACT_ADDRESS: process.env.VITE_CONTRACT_ADDRESS,
+    //   TOKEN_ADDRESS: process.env.VITE_TOKEN_ADDRESS
+    // },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setupNodeEvents(_on, _config) {},
   },
