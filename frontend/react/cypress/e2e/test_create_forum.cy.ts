@@ -7,6 +7,8 @@ describe("Test Create Forum with Mocked State", () => {
    
     cy.login();
 
+    cy.get('[data-cy="environment-status"]').click();
+    cy.wait(2000);
     cy.get('[data-cy="forum-list"]').should('not.contain', 'Fórum de Teste');
 
     cy.get("[data-cy=create-forum]").click();
@@ -19,6 +21,7 @@ describe("Test Create Forum with Mocked State", () => {
     cy.contains("Fórum de Teste da Pipeline", { timeout: 10000 }).should("be.visible");
     cy.get('[data-cy="forum-list"]').children().should("have.length", 1);
   });
+
 });
 
 
