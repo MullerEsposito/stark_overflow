@@ -99,7 +99,8 @@ jobs:
                 "legacy": false,
                 "private_key": "0x71d7bb07b9a64f6f78ac4c816aff4da9",
                 "public_key": "0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b",
-                "type": "open_zeppelin"
+                "type": "open_zeppelin",
+                "block_id":"latest"
               }
             }
           }
@@ -160,7 +161,7 @@ jobs:
 
           for i in {1..3}; do
             echo "Tentativa $i de declare..."
-            if DECLARE_OUTPUT=$(sncast --wait --profile devnet declare --contract-name StarkOverflow); then
+            if DECLARE_OUTPUT=$(sncast --profile devnet declare --contract-name StarkOverflow); then
               echo "Declare bem-sucedido!"
               echo "$DECLARE_OUTPUT"
               CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
