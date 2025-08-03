@@ -221,10 +221,10 @@ jobs:
           start: npm run dev
           wait-on: 'http://localhost:5173'
           browser: chrome
-        env:
-          RPC_URL: ${{ steps.deploy_step.outputs.VITE_RPC_URL }}
-          CONTRACT_ADDRESS: ${{ steps.deploy_step.outputs.VITE_CONTRACT_ADDRESS }}
-          TOKEN_ADDRESS: ${{ steps.deploy_step.outputs.VITE_TOKEN_ADDRESS }}
+        # env:
+        #   RPC_URL: ${{ steps.deploy_step.outputs.VITE_RPC_URL }}
+        #   CONTRACT_ADDRESS: ${{ steps.deploy_step.outputs.VITE_CONTRACT_ADDRESS }}
+        #   TOKEN_ADDRESS: ${{ steps.deploy_step.outputs.VITE_TOKEN_ADDRESS }}
           
       - uses: actions/upload-artifact@v4
         # add the line below to store screenshots only on failures
