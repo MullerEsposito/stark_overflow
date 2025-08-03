@@ -108,7 +108,7 @@ jobs:
           echo "address_imported=$ACCOUNT_ADDRESS" >> $GITHUB_OUTPUT
 
           #import the account address and create files to user
-          ACCOUNT_IMPORTED_OUTPUT=$(sncast account import --address=ACCOUNT_ADDRESS --type=oz --url=http://127.0.0.1:5050 --private-key=ACCOUNT_PRIVATE_KEY --add-profile=devnet)
+          ACCOUNT_IMPORTED_OUTPUT=$(sncast account import --address=$ACCOUNT_ADDRESS --type=oz --url=http://127.0.0.1:5050 --private-key=$ACCOUNT_PRIVATE_KEY --add-profile=devnet)
 
           echo "Account imported output: $ACCOUNT_IMPORTED_OUTPUT"
           echo "$ACCOUNT_IMPORTED_OUTPUT"
