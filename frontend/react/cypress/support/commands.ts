@@ -6,7 +6,6 @@ declare global {
     interface Chainable {
       login(): Chainable<void>;
       setupE2E(options: { walletInstalled: boolean }): Chainable<void>;
-      setupNoWalletMocks(): Chainable<void>;
     }
   }
 }

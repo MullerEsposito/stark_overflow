@@ -211,7 +211,7 @@ jobs:
 
           echo "VITE_CONTRACT_ADDRESS=$CONTRACT_ADDRESS" >> $GITHUB_ENV
           echo "VITE_TOKEN_ADDRESS=0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D" >> $GITHUB_ENV
-          echo "VITE_RPC_URL=http://localhost:5050" >> $GITHUB_ENV
+          echo "VITE_RPC_URL=http://127.0.0.1:5050" >> $GITHUB_ENV
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
