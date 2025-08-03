@@ -29,6 +29,7 @@ describe("Test Create Forum with Mocked State", () => {
 
  
     cy.get('[data-cy=environment-status"]').click();
+    cy.wait(2000);
 
   });
 });
