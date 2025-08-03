@@ -37,29 +37,30 @@ Cypress.Commands.add("setupE2E", ({ walletInstalled }) => {
               console.log("[CASE] wallet_requestChainId");
               return Promise.resolve(MOCK_CHAIN_ID);
 
-            case "starknet_addInvokeTransaction":
-              console.log("[CASE] starknet_addInvokeTransaction");
-              return Promise.resolve({
-                transaction_hash: "0xMOCKTRANSACTIONHASH",
-              });
+            // case "starknet_addInvokeTransaction":
+            //   console.log("[CASE] starknet_addInvokeTransaction");
+            //   return Promise.resolve({
+            //     transaction_hash: "0xMOCKTRANSACTIONHASH",
+            //   });
 
-            case "starknet_signTypedData":
-              console.log("[CASE] starknet_signTypedData");
-              return Promise.resolve(["0xMOCKS", "0xIGNATURE"]);
+            // case "starknet_signTypedData":
+            //   console.log("[CASE] starknet_signTypedData");
+            //   return Promise.resolve(["0xMOCKS", "0xIGNATURE"]);
 
             case "wallet_getPermissions":
               console.log("[CASE] wallet_getPermissions");
               return Promise.resolve([]);
 
-            case "wallet_addInvokeTransaction":
-              console.log("[CASE] wallet_addInvokeTransaction");
-              return Promise.resolve({
-                transaction_hash: `0xMOCK_TX_HASH_${Math.random()}`,
-              });
+            // case "wallet_addInvokeTransaction":
+            //   console.log("[CASE] wallet_addInvokeTransaction");
+            //   return Promise.resolve({
+            //     transaction_hash: `0xMOCK_TX_HASH_${Math.random()}`,
+            //   });
 
             default:
               console.log("[CASE] DEFAULT");
-              console.warn(`StarkNet method not mocked: ${type}`, params);
+              //console.warn(`StarkNet method not mocked: ${type}`, params);
+              console.warn(`[Cypress Mock] Unhandled method: ${type}. Letting it pass through.`, params);
               return Promise.resolve([]);
           }
         },
