@@ -160,7 +160,7 @@ jobs:
 
           for i in {1..3}; do
             echo "Tentativa $i de declare..."
-            if DECLARE_OUTPUT=$(sncast --profile devnet declare --contract-name StarkOverflow --wait); then
+            if DECLARE_OUTPUT=$(sncast --wait --profile devnet declare --contract-name StarkOverflow); then
               echo "Declare bem-sucedido!"
               echo "$DECLARE_OUTPUT"
               CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
