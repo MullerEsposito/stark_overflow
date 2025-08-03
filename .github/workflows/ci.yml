@@ -205,6 +205,8 @@ jobs:
             exit 1
           fi
 
+          OWNER=$(sncast --profile devnet call --contract-address $CONTRACT_ADDRESS --function owner)
+          echo "Contract owner: $OWNER"
           echo "address=$CONTRACT_ADDRESS" >> $GITHUB_OUTPUT
 
       - name: Run Cypress Tests
