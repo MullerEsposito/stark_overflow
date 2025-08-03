@@ -207,7 +207,11 @@ jobs:
 
           OWNER=$(sncast --profile devnet call --contract-address $CONTRACT_ADDRESS --function owner)
           echo "Contract owner: $OWNER"
-          echo "address=$CONTRACT_ADDRESS" >> $GITHUB_OUTPUT
+          #echo "address=$CONTRACT_ADDRESS" >> $GITHUB_OUTPUT
+
+          echo "VITE_CONTRACT_ADDRESS=$CONTRACT_ADDRESS" >> $GITHUB_ENV
+          echo "VITE_TOKEN_ADDRESS=0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D" >> $GITHUB_ENV
+          echo "VITE_RPC_URL=http://localhost:5050" >> $GITHUB_ENV
 
       - name: Run Cypress Tests
         uses: cypress-io/github-action@v5
@@ -217,9 +221,9 @@ jobs:
           wait-on: 'http://localhost:5173'
           browser: chrome
         env:
-          RPC_URL: "http://127.0.0.1:5050"
-          CONTRACT_ADDRESS: ${{ steps.deploy_step.outputs.address }}
-          TOKEN_ADDRESS: "0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D"
+          RPC_URL: ${{ steps.deploy_step.outputs.VITE_RPC_URL }}
+          CONTRACT_ADDRESS: ${{ steps.deploy_step.outputs.VITE_CONTRACT_ADDRESS }}
+          TOKEN_ADDRESS: ${{ steps.deploy_step.outputs.VITE_TOKEN_ADDRESS }}
           
       - uses: actions/upload-artifact@v4
         # add the line below to store screenshots only on failures
