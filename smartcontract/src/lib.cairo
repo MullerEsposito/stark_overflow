@@ -1,7 +1,7 @@
 pub mod structs {
-  pub mod SerialStructs;
-  pub mod StorageStructs;
-  pub mod CommonStructs;
+    pub mod SerialStructs;
+    pub mod StorageStructs;
+    pub mod CommonStructs;
 }
 mod events;
 mod types;
