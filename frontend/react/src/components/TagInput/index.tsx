@@ -74,7 +74,7 @@ export function TagInput({
       />
       <TagInputContainer $hasError={!!error}>
         {children}
-        <TagsContainer>
+        <TagsContainer data-testid="tags-container">
           {tags.map((tag, index) => (
             <TagChip key={index}>
               {tag}

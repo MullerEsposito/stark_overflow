@@ -189,6 +189,7 @@ export function StakeModal({ question, setQuestion }: StakeModalProps) {
           <InputContainer>
             <CurrencyDollar size={20} weight="fill" />
             <StakeInput
+              data-cy="stake-amount-input"
               type="text"
               value={amount}
               onChange={handleAmountChange}
@@ -200,7 +201,7 @@ export function StakeModal({ question, setQuestion }: StakeModalProps) {
 
           {error && <ErrorMessage>{error}</ErrorMessage>}
 
-          <StakeButton onClick={handleSubmit} disabled={stakingLoading}>
+          <StakeButton data-cy="add-stake-btn-popup" onClick={handleSubmit} disabled={stakingLoading}>
             {stakingLoading ? "Processing..." : "Add Stake"}
           </StakeButton>
         </ModalBody>

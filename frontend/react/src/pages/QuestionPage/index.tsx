@@ -216,9 +216,12 @@ export function QuestionPage() {
         >
           <LinkIcon size={20} />
         </InputForm>
-
         <TagInput
           id="tags"
+          label="Tags (Optional)"
+          tooltipText="Add up to 5 tags to describe what your question is about. Press space to add a tag."
+          placeholder="Type a tag and press space"
+          error={errors.tags}
           label="Tags (Optional)"
           tooltipText="Add up to 5 tags to describe what your question is about. Press space to add a tag."
           placeholder="Type a tag and press space"
@@ -237,7 +240,7 @@ export function QuestionPage() {
               Discard
             </Button>
           </NavLink>
-          <Button variant="publish" type="submit" disabled={isTransactionPending || scaledAmount.low === 0n || !contractReady}>
+          <Button data-cy='publish-button' variant="publish" type="submit" disabled={isTransactionPending || scaledAmount.low === 0n || !contractReady}>
             {isTransactionPending ? "Publishing..." : "Publish"}
             {!isTransactionPending && <PaperPlaneRight size={20} />}
           </Button>
