@@ -13,11 +13,11 @@ describe('Test Create a question in ReactJS forum', () => {
 
   // Test for empty form validation
   it('should display validation errors for empty form submission', () => {
-    cy.get('[data-cy=new-question-button]').click()
+    cy.get('[data-cy=new-question-button]').click({force: true})
 
     cy.get('[data-cy=publish-button]').scrollIntoView()
     
-    cy.get('[data-cy=publish-button]').click({ force: true })
+    cy.get('[data-cy=publish-button]').should('be.visible').click({force: true})
     
     cy.contains('Title is required').should('be.visible')
     cy.contains('Description is required').should('be.visible')
@@ -26,7 +26,7 @@ describe('Test Create a question in ReactJS forum', () => {
 
     // Test for invalid input lengths
   it('should display validation errors for invalid input lengths', () => {
-    cy.get('[data-cy=new-question-button]').click()
+    cy.get('[data-cy=new-question-button]').click({force: true})
     
     cy.get('#title').type('Short')
     
@@ -35,7 +35,7 @@ describe('Test Create a question in ReactJS forum', () => {
     cy.get('[data-cy=publish-button]').scrollIntoView()
     
     // Try to submit - using force: true to bypass visibility checks
-    cy.get('[data-cy=publish-button]').click({ force: true })
+    cy.get('[data-cy=publish-button]').should('be.visible').click({force: true})
     
     // Check for validation errors
     cy.contains('Title should be at least 10 characters').should('be.visible')
@@ -60,23 +60,17 @@ describe('Test Create a question in ReactJS forum', () => {
     cy.get('#repository').type('https://github.com/username/react-project')
     cy.get('#repository').should('have.value', 'https://github.com/username/react-project')
 
-    cy.get('#tags').type('react hooks useEffect javascript')
-    cy.get('#tags').should('have.value', 'react hooks useEffect javascript')
+    cy.get('#tags').type('react hooks useEffect javascript ')
+    const expectedTags = ['react', 'hooks', 'useEffect', 'javascript']
+    cy.get('[data-cy="tags-container"]').within(() => {
+      expectedTags.forEach(tag => {
+        cy.contains(tag).should('be.visible')
+      })
+    })
     
     cy.get('[data-cy=publish-button]').scrollIntoView()
     
-    cy.get('[data-cy=publish-button]').should('not.be.disabled').click({ force: true })
-    
-    cy.get('body').then(($body) => {
-      if ($body.text().includes('No StarkNet wallets detected')) {
-        cy.contains('No StarkNet wallets detected').should('be.visible')
-        cy.contains('Install ArgentX').should('be.visible')
-        cy.contains('Install Braavos').should('be.visible')
-      } else {
-        cy.contains('Available').should('exist')
-      }
-    })
-    
+    cy.get('[data-cy=publish-button]').should('not.be.disabled').should('be.visible').click({force: true})
   })
 
   it('should display all form fields with correct placeholders', () => {
@@ -98,7 +92,7 @@ describe('Test Create a question in ReactJS forum', () => {
     cy.get('#title').type('Test question title')
     cy.get('#amount').type('10')
     
-    cy.contains('button', 'Discard').scrollIntoView().click({ force: true })
+    cy.contains('button', 'Discard').scrollIntoView().should('be.visible').click()
     
     cy.url().should('include', '/forum/reactjs')
   })

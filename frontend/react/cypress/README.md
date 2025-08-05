@@ -32,6 +32,9 @@ npm install cypress --save-dev
 
 - **Run below command to launch Cypress**
 ```bash
+cd frontend/react
+# Ensure that your local server is running
+npm run dev
 npx cypress open
 # or
 yarn cypress open
@@ -82,5 +85,6 @@ yarn run dev
 
 - **To run tests locally, run:**
 ```bash
+cd frontend/react
 npm run test:e2e
 ```

@@ -6,10 +6,6 @@ describe('Adding Stake for a question inside ReactJS forum', () => {
     })
 
     it('Navigate to ReactJS forum, search for question', ()=>{
-        // // connect wallet
-        // cy.get('[data-cy=connect-wallet-btn]').click({ force: true })
-        // cy.get('Ready Wallet').click({ force: true })
-
         cy.contains('Loading forum...', { timeout: 10000 }).should('not.exist')
         // for testing we are searching specific test that is not answered
         cy.get('[data-cy=search-input]').type('Question of test')
@@ -19,7 +15,7 @@ describe('Adding Stake for a question inside ReactJS forum', () => {
             const questionLinks = $body.find('a[href*="/question/"]')
             // for testing we are using un-answered question
             if (questionLinks.length > 0) {
-                cy.get('a[href*="/question/3"]').first().click({ force: true })
+                cy.get('a[href*="/question/3"]').first().should('be.visible').click()
                 cy.url().should('include', '/question/3')
             } else {
                 cy.log('No questions available to click')
@@ -29,16 +25,16 @@ describe('Adding Stake for a question inside ReactJS forum', () => {
         cy.wait(1000)
 
         // connect wallet
-        cy.get('[data-cy=connect-wallet-btn]').click({ force: true })
+        cy.get('[data-cy=connect-wallet-btn]').should('be.visible').click()
 
-        // click add stake button
-        cy.get('[data-cy=add-stake-btn-card]').click({force: true})
+        // click add stake button - using {force:true} to click even if covered by another element
+        cy.get('[data-cy=add-stake-btn-card]').should('exist').scrollIntoView().click({ force: true })
 
         // add stake amount in input
-        cy.get('[data-cy=stake-amount-input]').type('1')
+        cy.get('[data-cy=stake-amount-input]').should('be.visible').type('1')
 
         // add stake
-        cy.get('[data-cy=add-stake-btn-popup]').click({force: true})
+        cy.get('[data-cy=add-stake-btn-popup]').should('be.visible').click()
         
     })
 })

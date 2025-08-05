@@ -50,7 +50,7 @@ describe('Question Listing in Forum', () => {
       const questionLinks = $body.find('a[href*="/question/"]')
       
       if (questionLinks.length > 0) {
-        cy.get('a[href*="/question/"]').first().click({ force: true })
+        cy.get('a[href*="/question/"]').first().should('be.visible').click()
         cy.url().should('include', '/question/1')
       } else {
         cy.log('No questions available to click')
@@ -67,7 +67,7 @@ describe('Question Listing in Forum', () => {
       const questionLinks = $body.find('a[href*="/question/"]')
       
       if (questionLinks.length > 0) {
-        cy.get('a[href*="/question/"]').first().click({ force: true })
+        cy.get('a[href*="/question/"]').first().should('be.visible').click()
         cy.url().should('include', '/question/1')
       } else {
         cy.log('No questions available to click')

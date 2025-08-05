@@ -180,6 +180,7 @@ export function QuestionPage() {
           <LinkIcon size={20} />
         </InputForm>
         <InputForm id="tags"
+          data-cy="tags-container"
           label="Tags (Optional)"
           tooltipText="Add up to 5 tags to describe what your question is about"
           placeholder="e.g. react hooks typescript"
