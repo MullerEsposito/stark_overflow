@@ -2,32 +2,37 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { PaperPlaneRight, Link as LinkIcon, Tag, CurrencyDollar } from "phosphor-react"
+import { PaperPlaneRight, Link as LinkIcon, Tag, CurrencyDollar, Buildings } from "phosphor-react"
 import { Container, Form, Button, TransactionStatus } from "./style"
-import { NavLink, useNavigate } from "react-router-dom"
+import { NavLink, useNavigate, useParams } from "react-router-dom"
 import { useAccount, useSendTransaction } from "@starknet-react/core"
-import { InputForm } from "./InputForm"
+import { InputForm } from "../../components/InputForm"
 import { EditorForm } from "./EditorForm"
+import { TagInput } from "../../components/TagInput"
 import { useWallet } from "@hooks/useWallet"
 import { useContract } from "@hooks/useContract"
 import { shortenAddress } from "@utils/shortenAddress"
 import { cairo } from "starknet"
 import { formatters } from "@utils/formatters"
 import { validateEnvironment, getEnvironmentDebugInfo } from "@utils/environment"
+import { Forum } from "@app-types/index"
 
 export function QuestionPage() {
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
   const [amount, setAmount] = useState("")
   const [repository, setRepository] = useState("")
-  const [tags, setTags] = useState("")
+  const [tags, setTags] = useState<string[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [envError, setEnvError] = useState<string | null>(null)
 
   const navigate = useNavigate()
+  const params = useParams<{ name: string }>()
+  const forumName = params.name || ""
   const { isConnected } = useAccount()
   const { openConnectModal } = useWallet()
-  const { contract, contractReady } = useContract();
+  const { contract, contractReady, fetchForum } = useContract();
+  const [forum, setForum] = useState<Forum | null>(null)
 
   // Validate environment variables on component mount
   useEffect(() => {
@@ -39,6 +44,14 @@ export function QuestionPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const loadForum = async () => {
+      const forum = await fetchForum(forumName)
+      setForum(forum)
+    }
+    loadForum()
+  }, [fetchForum, forumName])
+
   const amountInWei = formatters.convertStringDecimalToWei(amount);
   const scaledAmount = cairo.uint256(amountInWei);
 
@@ -46,13 +59,20 @@ export function QuestionPage() {
   const tokenAddress = import.meta.env.VITE_TOKEN_ADDRESS
 
   const { sendAsync: askQuestion, isPending: isTransactionPending, data: transactionData, error: transactionError } = useSendTransaction({
-    calls: contract && contractReady && tokenAddress && description && amount && Number(scaledAmount.low) > 0
+    calls: contract && contractReady && tokenAddress && description && amount && Number(scaledAmount.low) > 0 && title && forum?.id
       ? [{
         contractAddress: tokenAddress,
         entrypoint: "approve",
         calldata: [contract.address, scaledAmount.low, scaledAmount.high],
       },
-      contract.populate("ask_question", [description, scaledAmount])]
+      contract.populate("ask_question", [
+        BigInt(forum.id),
+        title,
+        description,
+        repository,
+        tags, // Send tags array directly
+        scaledAmount
+      ])]
       : undefined,
   });
 
@@ -64,13 +84,15 @@ export function QuestionPage() {
     else if (description.length < 30) newErrors.description = "Description should be at least 30 characters"
     if (!amount.trim()) newErrors.amount = "Amount is required"
     else if (isNaN(Number(amount)) || Number(amount) <= 0) newErrors.amount = "Amount must be a positive number"
+    else if (repository && !repository.startsWith('http')) newErrors.repository = "Repository URL must be a valid URL"
+    if (tags.length > 5) newErrors.tags = "Maximum 5 tags allowed"
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Check for environment errors first
     if (envError || !contractReady) {
       setErrors({ general: envError || "Contract not ready. Please check your environment configuration." })
@@ -86,7 +108,7 @@ export function QuestionPage() {
       const result = await askQuestion()
       if (result.transaction_hash) {
         setTimeout(() => {
-          navigate("/forum/reactjs")
+          navigate(`/forum/${forumName}`)
         }, 2000)
       }
     } catch (error) {
@@ -98,8 +120,8 @@ export function QuestionPage() {
   if (envError) {
     return (
       <Container>
-        <div style={{ 
-          padding: "20px", 
+        <div style={{
+          padding: "20px",
           textAlign: "center",
           backgroundColor: "#f8d7da",
           color: "#721c24",
@@ -130,16 +152,31 @@ export function QuestionPage() {
       <h2>Create Question</h2>
       <Form onSubmit={handleSubmit}>
         {errors.general && (
-          <div style={{ 
-            backgroundColor: "#f8d7da", 
-            color: "#721c24", 
-            padding: "10px", 
-            borderRadius: "5px", 
+          <div style={{
+            backgroundColor: "#f8d7da",
+            color: "#721c24",
+            padding: "10px",
+            borderRadius: "5px",
             margin: "10px 0",
             border: "1px solid #f5c6cb"
           }}>
             {errors.general}
           </div>
+        )}
+
+        {forum && (
+          <InputForm
+            id="forum"
+            label="Forum"
+            tooltipText="The forum where this question will be posted"
+            placeholder="Forum"
+            error={errors.forum}
+            value={forum.name}
+            disabled={true}
+            setValue={() => { }}
+          >
+            <Buildings size={20} />
+          </InputForm>
         )}
         <InputForm
           id="title"
@@ -151,7 +188,7 @@ export function QuestionPage() {
           setValue={setTitle}
         />
         <InputForm id="amount"
-          label="Amout to Stake"
+          label="Amount to Stake"
           tooltipText="The amount you're willing to pay for a solution"
           placeholder="Amount"
           error={errors.amount}
@@ -179,20 +216,26 @@ export function QuestionPage() {
         >
           <LinkIcon size={20} />
         </InputForm>
-        <InputForm id="tags"
-          data-cy="tags-container"
+        <TagInput
+          id="tags"
           label="Tags (Optional)"
-          tooltipText="Add up to 5 tags to describe what your question is about"
-          placeholder="e.g. react hooks typescript"
+          tooltipText="Add up to 5 tags to describe what your question is about. Press space to add a tag."
+          placeholder="Type a tag and press space"
           error={errors.tags}
-          value={tags}
-          setValue={setTags}
+          label="Tags (Optional)"
+          tooltipText="Add up to 5 tags to describe what your question is about. Press space to add a tag."
+          placeholder="Type a tag and press space"
+          error={errors.tags}
+          tags={tags}
+          setTags={setTags}
           validateForm={validateForm}
+          maxTags={5}
         >
           <Tag size={20} />
-        </InputForm>
+        </TagInput>
+
         <div className="buttons">
-          <NavLink to="/forum/reactjs">
+          <NavLink to={`/forum/${forumName}`}>
             <Button variant="cancel" type="button">
               Discard
             </Button>

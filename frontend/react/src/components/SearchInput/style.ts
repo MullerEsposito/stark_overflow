@@ -5,15 +5,12 @@ export const SearchInputContainer = styled.div`
   align-items: center;
   justify-content: center;
   background-color: ${({ theme }) => theme.forum.topicCard.background};
-  margin-bottom: 1rem;
   padding: 0.5rem 1rem;
   border-radius: 12px;
   border: 2px solid ${({ theme }) => theme.primaryLight};
   box-shadow: 0 2px 8px rgba(60,72,88,0.07);
   width: 100%;
   max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
   transition: border 0.3s, box-shadow 0.3s;
 
   &:hover, &:focus-within {

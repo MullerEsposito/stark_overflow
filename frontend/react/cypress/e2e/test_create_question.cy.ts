@@ -62,11 +62,12 @@ describe('Test Create a question in ReactJS forum', () => {
 
     cy.get('#tags').type('react hooks useEffect javascript ')
     const expectedTags = ['react', 'hooks', 'useEffect', 'javascript']
-    cy.get('[data-cy="tags-container"]').within(() => {
-      expectedTags.forEach(tag => {
-        cy.contains(tag).should('be.visible')
+    cy.get('[data-testid="tags-container"]')
+      .within(() => {
+        expectedTags.forEach((tag) => {
+          cy.contains(tag).should('be.visible')
+        })
       })
-    })
     
     cy.get('[data-cy=publish-button]').scrollIntoView()
     

@@ -8,19 +8,17 @@ use super::constants::{ADDRESSES, ADDRESSESTrait, EIGHTEEN_DECIMALS};
 
 pub fn deploy_mock_stark_token() -> (IMockStarkTokenDispatcher, ContractAddress) {
   let asker = ADDRESSES::ASKER.get();
+  let sponsor = ADDRESSES::SPONSOR.get();
   let stark_token_class_hash = declare("MockStarkToken").unwrap().contract_class();
-  let MAX_SUPPLY: u256 = 1000 * EIGHTEEN_DECIMALS; // 1M STARK
 
   let mut calldata = array![];
-  calldata.append_serde(18); // decimals
   calldata.append_serde(asker); // owner
-  calldata.append_serde(MAX_SUPPLY); // max supply
   let (stark_token_address, _) = stark_token_class_hash.deploy(@calldata).unwrap();
   let stark_token_dispatcher = IMockStarkTokenDispatcher { contract_address: stark_token_address };
   
   cheat_caller_address(stark_token_address, asker, CheatSpan::TargetCalls(2));
   stark_token_dispatcher.mint(asker, 100 * EIGHTEEN_DECIMALS);
-  stark_token_dispatcher.mint(ADDRESSES::SPONSOR.get(), 100 * EIGHTEEN_DECIMALS);
+  stark_token_dispatcher.mint(sponsor, 100 * EIGHTEEN_DECIMALS);
 
   (stark_token_dispatcher, stark_token_address)
 }
@@ -29,6 +27,7 @@ pub fn deploy_starkoverflow_contract(stark_token_address: ContractAddress) -> (I
   let starkoverflow_class_hash = declare("StarkOverflow").unwrap().contract_class();
 
   let mut constructor_calldata: Array<felt252> = array![];
+  constructor_calldata.append_serde(ADDRESSES::ASKER.get());
   constructor_calldata.append_serde(stark_token_address);
 
   let (starkoverflow_contract_address, _) = starkoverflow_class_hash.deploy(@constructor_calldata).unwrap();
