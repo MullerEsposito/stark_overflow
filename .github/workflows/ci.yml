@@ -21,9 +21,6 @@ jobs:
         #run: npm ci
         run: npm install
 
-      # - name: Add local bin to PATH
-      #   run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-      
       - name: Install Starknet Foundry (sncast)
         run: |
           curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh
@@ -36,39 +33,17 @@ jobs:
           sncast --version
           #snfoundryup
 
-      # - name: Install Rust and Scarb
-      #   run: |
-      #     curl https://sh.rustup.rs -sSf | sh -s -- -y
-      #     source $HOME/.cargo/env
-
-      #     cargo install scarb
-      #     scarb --version
-
       - name: Install Scarb
         uses: software-mansion/setup-scarb@v1
         with:
           scarb-version: "2.9.2"
       - run: scarb --version
 
-        # run: |
-        #   SCARB_VERSION="2.10.1"
-        #   ARCHIVE="scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
-        #   DOWNLOAD_URL="https://github.com/embarkstudios/scarb/releases/download/v${SCARB_VERSION}/${ARCHIVE}"
-
-        #   mkdir -p $HOME/.local/bin
-        #   curl -L "$DOWNLOAD_URL" -o /tmp/${ARCHIVE}
-        #   tar -xzf /tmp/${ARCHIVE} -C /tmp
-        #   mv /tmp/scarb-${SCARB_VERSION}-x86_64-unknown-linux-gnu/scarb $HOME/.local/bin/
-        #   chmod +x $HOME/.local/bin/scarb
-        #   echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-        #   scarb --version
-
       - name: Start Starknet Devnet in a Docker Container
         run: |
           # Install jq for JSON processing
           sudo apt-get update && sudo apt-get install -y jq
-          docker run -d -p 127.0.0.1:5050:5050 --name devnet shardlabs/starknet-devnet-rs:0.4.0-seed0
+          docker run -d -p 127.0.0.1:5050:5050 --name devnet shardlabs/starknet-devnet-rs:0.4.2-seed0
           #docker run --network host -d --name devnet shardlabs/starknet-devnet-rs:0.4.0-seed0
           sleep 30
           echo "Devnet logs:"
@@ -102,13 +77,11 @@ jobs:
           echo "Using account address: $ACCOUNT_ADDRESS"
           echo "Using private key: $ACCOUNT_PRIVATE_KEY"
 
-          # Set as environment variables for next steps
-          
-          
+          echo "Set as environment variables for next steps"
           echo "$ACCOUNT_PRIVATE_KEY"
           echo "address_imported=$ACCOUNT_ADDRESS" >> $GITHUB_OUTPUT
 
-          #import the account address and create files to user
+          echo "import the account address and create files to user"
           ACCOUNT_IMPORTED_OUTPUT=$(sncast account import --address=$ACCOUNT_ADDRESS --type=oz --url=http://127.0.0.1:5050 --private-key=$ACCOUNT_PRIVATE_KEY --add-profile=devnet)
 
           echo "Account imported output: $ACCOUNT_IMPORTED_OUTPUT"
@@ -206,10 +179,6 @@ jobs:
             exit 1
           fi
 
-          OWNER=$(sncast --profile devnet call --contract-address $CONTRACT_ADDRESS --function owner)
-          echo "Contract owner: $OWNER"
-          #echo "address=$CONTRACT_ADDRESS" >> $GITHUB_OUTPUT
-
           echo "VITE_CONTRACT_ADDRESS=$CONTRACT_ADDRESS" >> $GITHUB_ENV
           echo "VITE_TOKEN_ADDRESS=0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D" >> $GITHUB_ENV
           echo "VITE_RPC_URL=http://127.0.0.1:5050" >> $GITHUB_ENV
@@ -221,11 +190,7 @@ jobs:
           start: npm run dev
           wait-on: 'http://localhost:5173'
           browser: chrome
-        # env:
-        #   RPC_URL: ${{ steps.deploy_step.outputs.VITE_RPC_URL }}
-        #   CONTRACT_ADDRESS: ${{ steps.deploy_step.outputs.VITE_CONTRACT_ADDRESS }}
-        #   TOKEN_ADDRESS: ${{ steps.deploy_step.outputs.VITE_TOKEN_ADDRESS }}
-          
+
       - uses: actions/upload-artifact@v4
         # add the line below to store screenshots only on failures
         if: failure()

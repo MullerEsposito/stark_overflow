@@ -1,5 +1,6 @@
 import { defineConfig } from "cypress";
 import dotenv from 'dotenv';
+import { exec } from 'child_process';
 
 dotenv.config({ path: '.env.local' });
 dotenv.config();

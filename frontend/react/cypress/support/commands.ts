@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 import { MOCK_ACCOUNT, MOCK_CHAIN_ID } from "./constants";
-import { Account, CallData, RpcProvider, stark } from "starknet";
+import { Account, CallData, RpcProvider, stark  } from "starknet";
 
 const TESTER_ACCOUNT_ADDRESS = MOCK_ACCOUNT;
 const TESTER_PRIVATE_KEY = "0x0000000000000000000000000000000071d7bb07b9a64f6f78ac4c816aff4da9";
@@ -60,217 +60,64 @@ Cypress.Commands.add("setupE2E", ({ walletInstalled }) => {
             case "starknet_addInvokeTransaction": {
               console.log(`[Cypress Mock] Processando ${type}...`);
               try {
-                let calls = [];
-                
-                // Se é starknet_addInvokeTransaction, extrair do formato RPC
-                if (type === "starknet_addInvokeTransaction") {
-                  const invokeTransaction = params.invoke_transaction;
-                  const calldata = invokeTransaction.calldata;
-                  
-                  // Parse da calldata
-                  const numCalls = parseInt(calldata[0], 16);
-                  let index = 1;
-                  
-                  for (let i = 0; i < numCalls; i++) {
-                    const contractAddress = calldata[index++];
-                    const entrypoint = calldata[index++];
-                    const calldataLength = parseInt(calldata[index++], 16);
-                    const callCalldata = calldata.slice(index, index + calldataLength);
-                    index += calldataLength;
-                    
-                    calls.push({
-                      contractAddress,
-                      entrypoint,
-                      calldata: callCalldata
-                    });
-                  }
-                } else {
-                  // wallet_addInvokeTransaction format - já vem no formato correto
-                  calls = params.calls || params;
-                  
-                  console.log("[Cypress Mock] Formato wallet_addInvokeTransaction recebido:", calls);
-                  console.log("[Cypress Mock] Params completo:", params);
-                  
-                  // Se calls é um array de uma única call, verificar estrutura
-                  if (Array.isArray(calls) && calls.length === 1 && calls[0]) {
-                    console.log("[Cypress Mock] Estrutura da call:", calls[0]);
-                    
-                    // Verificar se os campos essenciais existem
-                    const call = calls[0];
-                    if (!call.contractAddress && !call.contract_address) {
-                      console.error("[Cypress Mock] ERRO: contractAddress não encontrado!", call);
-                    }
-                    if (!call.entrypoint && !call.entry_point) {
-                      console.error("[Cypress Mock] ERRO: entrypoint não encontrado!", call);
-                    }
-                  }
+                const calls = params.calls || params;
+                if (!calls || calls.length === 0) {
+                  throw new Error("Nenhuma chamada (call) foi fornecida para a transação.");
                 }
                 
-                console.log("[Cypress Mock] Calls extraídas:", calls);
-                console.log("[Cypress Mock] Tipo de calls:", typeof calls, Array.isArray(calls));
-                console.log("[Cypress Mock] Primeira call detalhada:", calls[0]);
-                
-                // Verificar se as calls estão no formato correto para o starknet.js
-                const processedCalls = calls.map((call, index) => {
-                  console.log(`[Cypress Mock] Processando call ${index}:`, call);
-                  console.log(`[Cypress Mock] Keys da call:`, Object.keys(call));
-                  
-                  // Detectar formato da propriedade contractAddress
-                  let contractAddress = call.contractAddress || call.contract_address || call.to;
-                  let entrypoint = call.entrypoint || call.entry_point || call.selector;
-                  let calldata = call.calldata || call.callData || [];
-                  
-                  console.log(`[Cypress Mock] Valores extraídos:`, {
-                    contractAddress,
-                    entrypoint, 
-                    calldata: Array.isArray(calldata) ? `Array(${calldata.length})` : calldata
-                  });
-                  
-                  // Garantir que contractAddress está com formato correto
-                  if (typeof contractAddress === 'string' && contractAddress && !contractAddress.startsWith('0x')) {
-                    contractAddress = '0x' + contractAddress;
-                  }
-                  
-                  // Se ainda não temos contractAddress, tentar encontrar nos outros campos
-                  if (!contractAddress) {
-                    console.error(`[Cypress Mock] ERRO: Não foi possível encontrar contractAddress na call:`, call);
-                    // Procurar em todos os campos da call
-                    for (const [key, value] of Object.entries(call)) {
-                      if (typeof value === 'string' && value.length > 20 && value.startsWith('0x')) {
-                        console.log(`[Cypress Mock] Possível contractAddress encontrado em '${key}':`, value);
-                      }
-                    }
-                  }
-                  
-                  // Se ainda não temos entrypoint, procurar
-                  if (!entrypoint) {
-                    console.error(`[Cypress Mock] ERRO: Não foi possível encontrar entrypoint na call:`, call);
-                  }
-                  
-                  // CRÍTICO: Filtrar valores undefined/null da calldata
-                  let cleanCalldata = [];
-                  if (Array.isArray(calldata)) {
-                    cleanCalldata = calldata
-                      .filter(item => {
-                        const isValid = item !== undefined && item !== null && item !== '';
-                        if (!isValid) {
-                          console.warn(`[Cypress Mock] Removendo item inválido da calldata:`, item);
-                        }
-                        return isValid;
-                      })
-                      .map(item => {
-                        // Garantir que todos os itens são strings válidas
-                        if (typeof item === 'number') {
-                          return `0x${item.toString(16)}`;
-                        }
-                        if (typeof item === 'string') {
-                          // Se não começar com 0x e for numérico, adicionar
-                          if (!item.startsWith('0x') && /^[0-9]+$/.test(item)) {
-                            return `0x${parseInt(item).toString(16)}`;
-                          }
-                          return item;
-                        }
-                        // Fallback para outros tipos
-                        return String(item);
-                      });
-                    
-                    console.log(`[Cypress Mock] Calldata original length: ${calldata.length}, após limpeza: ${cleanCalldata.length}`);
-                    console.log(`[Cypress Mock] Calldata limpa:`, cleanCalldata);
-                  }
-                  
-                  return {
-                    contractAddress: contractAddress,
-                    entrypoint: entrypoint,
-                    calldata: cleanCalldata
-                  };
-                });
-                
-                console.log("[Cypress Mock] Calls processadas:", processedCalls);
-                
-                // Validação final antes de executar
-                processedCalls.forEach((call, index) => {
-                  console.log(`[Cypress Mock] Validando call ${index}:`);
-                  console.log(`  - Contract: ${call.contractAddress}`);
-                  console.log(`  - Entrypoint: ${call.entrypoint}`);
-                  console.log(`  - Calldata length: ${call.calldata.length}`);
-                  
-                  call.calldata.forEach((item, itemIndex) => {
-                    if (item === undefined || item === null) {
-                      console.error(`  - ERRO: Item ${itemIndex} é ${item}`);
-                    } else {
-                      console.log(`  - Item ${itemIndex}: ${item} (tipo: ${typeof item})`);
-                    }
-                  });
-                });
-              
-                  console.log(`[Mock Híbrido] Tentando estimar fee primeiro...`);
-                  const feeEstimate = await signerAccount.estimateInvokeFee(processedCalls, { version: "0x3" });
-                  console.log(`[Mock Híbrido] Fee estimado:`, feeEstimate);
-                  
-                  // Usar valores estimados para resource bounds mais precisos
-                  const betterResourceBounds = {
-                    l1_gas: {
-                      max_amount: feeEstimate.gas_consumed || "0x5208",
-                      max_price_per_unit: feeEstimate.gas_price || "0x174876e800"
-                    },
-                    l2_gas: {
-                      max_amount: "0x0",
-                      max_price_per_unit: "0x0"
-                    },
-                    data_gas: {
-                      max_amount: feeEstimate.data_gas_consumed || "0x186a0",
-                      max_price_per_unit: "0x1"
-                    }
-                  };
-                const nonce = await signerAccount.getNonce();
-                console.log(`[Mock Híbrido] Nonce: ${nonce}`);
+                const call = calls[0];
 
+                const contractAddress = call.contractAddress || call.contract_address;
+                const entrypoint = call.entrypoint || call.entry_point;
+                const rawCalldata = call.calldata || call.callData || [];
+
+                if (!contractAddress) throw new Error("ERRO: contractAddress não encontrado!");
+                if (!entrypoint) throw new Error("ERRO: entrypoint não encontrado!");
                 
-                const transactionOptions = {
-                  version: "0x3",
-                  feeD_data_availability_mode: "L1",
-                  nonce_data_availability_mode: "L1",
-                  nonce: nonce,
-                  resource_bounds: betterResourceBounds
-              }
-              
-                const result = await signerAccount.execute(processedCalls, undefined, transactionOptions);
-                console.log(`[Mock Híbrido] Transação enviada: ${result.transaction_hash}. Aguardando confirmação...`);
+                const calldataForSncast = rawCalldata
+                .filter(item => item !== undefined && item !== null && item !== '')
+                .join(' ');
+   
+                const sncastCommand = 
+                `sncast --account account-1 invoke --url http://127.0.0.1:5050 --contract-address ${contractAddress} --function ${entrypoint} --calldata "${calldataForSncast}"`;
                 
-                await provider.waitForTransaction(result.transaction_hash);
-                console.log(`[Mock Híbrido] Transação confirmada! Hash: ${result.transaction_hash}`);
-                
-                return { transaction_hash: result.transaction_hash };
-                
+                console.log(`[Cypress Mock] Executando comando sncast: ${sncastCommand}`);
+                return new Promise((resolve, reject) => {
+                  cy.exec(sncastCommand, { log: true, failOnNonZeroExit: false }).then((result) => {
+                    if (result.code !== 0) {
+                      console.error('Erro ao executar sncast:', result.stderr);
+                      // Rejeita a promise com o erro
+                      reject(new Error(`Falha no sncast: ${result.stderr}`));
+                      return;
+                    }
+
+                    console.log('[Cypress Mock] sncast executado com sucesso:', result.stdout);
+                    
+                    const match = result.stdout.match(/Transaction hash: (0x[0-9a-fA-F]+)/);
+                    if (!match || !match[1]) {
+                      reject(new Error("Não foi possível encontrar o transaction_hash na saída do sncast."));
+                      return;
+                    }
+
+                    const transactionHash = match[1];
+                    
+                    resolve({ transaction_hash: transactionHash });
+                  });
+                });
               } catch (error) {
                 console.error(`[Mock Híbrido ${type}] ERRO NA EXECUÇÃO:`, error);
                 console.error(`[Mock Híbrido ${type}] Stack trace:`, error.stack);
                 console.error(`[Mock Híbrido ${type}] Error message:`, error.message);
                 console.error(`[Mock Híbrido ${type}] Error name:`, error.name);
-                
-                // Log das calls que causaram erro
                 console.error(`[Mock Híbrido ${type}] Calls que causaram erro:`, calls);
                 
                 throw error;
               }
             }
 
-            case 'starknet_getNonce':
-              console.log(`[Mock Híbrido ${type}] TESTE`);
-              return Promise.resolve("0x0");
-            case 'wallet_getNonce':
-              console.log(`[Mock Híbrido ${type}] TESTE`);
-              return Promise.resolve("0x0");
-            case 'starknet_estimateFee':
-              console.log(`[Mock Híbrido ${type}] TESTE`);
-              return Promise.resolve("0x0");
-            case 'wallet_estimateFee':
-              console.log(`[Mock Híbrido ${type}] TESTE`);
-              return Promise.resolve("0x0");
-
-              
+                 
             case 'wallet_getPermissions':
-              return Promise.resolve(['accounts']);
+              return Promise.resolve([MOCK_ACCOUNT]);
               
             case 'wallet_watchAsset':
               return Promise.resolve(true);
