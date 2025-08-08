@@ -162,4 +162,3 @@ Müller Esposito Nunes
 Community
 
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)]([https://t.me/seu_usuario](https://t.me/starkoverflow))
-
