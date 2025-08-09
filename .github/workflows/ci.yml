@@ -1,0 +1,206 @@
+name: CI Pipeline
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  test-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend/react
+        #run: npm ci
+        run: npm install
+
+      - name: Install Starknet Foundry (sncast)
+        run: |
+          curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh
+          #export PATH="$HOME/.foundry/bin:$PATH"
+          echo "$HOME/.foundry/bin" >> $GITHUB_PATH
+          echo "$HOME/.cairo/bin" >> $GITHUB_PATH
+          source "$HOME/.bashrc"
+          # Try to install 0.44.0, fallback to latest if not available
+          snfoundryup --version 0.44.0 || snfoundryup
+          sncast --version
+          #snfoundryup
+
+      - name: Install Scarb
+        uses: software-mansion/setup-scarb@v1
+        with:
+          scarb-version: "2.9.2"
+      - run: scarb --version
+
+      - name: Start Starknet Devnet in a Docker Container
+        run: |
+          # Install jq for JSON processing
+          sudo apt-get update && sudo apt-get install -y jq
+          docker run -d -p 127.0.0.1:5050:5050 --name devnet shardlabs/starknet-devnet-rs:0.4.2-seed0
+          #docker run --network host -d --name devnet shardlabs/starknet-devnet-rs:0.4.0-seed0
+          sleep 30
+          echo "Devnet logs:"
+          #docker logs devnet --tail 50
+          docker logs devnet
+          echo "Checking Devnet health:"
+          curl -v http://127.0.0.1:5050/is_alive
+          for i in {1..10}; do
+            if curl -s http://127.0.0.1:5050/is_alive | grep -q "Alive"; then
+              echo "Devnet is ready!"
+              break
+            fi
+            echo "Waiting for devnet... attempt $i"
+            sleep 5
+          done
+
+      - name: Setup Starknet Account Configuration
+        working-directory: smartcontract
+        id: account_setup_step
+        run: |
+          echo "Getting predeployed accounts from devnet..."
+          ACCOUNTS_RESPONSE=$(curl -s -X POST \
+          -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","method":"devnet_getPredeployedAccounts","params":[],"id":1}' \
+            http://127.0.0.1:5050)
+
+          echo "Available devnet accounts: $ACCOUNTS_RESPONSE"
+          ACCOUNT_ADDRESS=$(echo "$ACCOUNTS_RESPONSE" | jq -r '.result[0].address')
+          ACCOUNT_PRIVATE_KEY=$(echo "$ACCOUNTS_RESPONSE" | jq -r '.result[0].private_key')
+          
+          echo "Using account address: $ACCOUNT_ADDRESS"
+          echo "Using private key: $ACCOUNT_PRIVATE_KEY"
+
+          echo "Set as environment variables for next steps"
+          echo "$ACCOUNT_PRIVATE_KEY"
+          echo "address_imported=$ACCOUNT_ADDRESS" >> $GITHUB_OUTPUT
+
+          echo "import the account address and create files to user"
+          ACCOUNT_IMPORTED_OUTPUT=$(sncast account import --address=$ACCOUNT_ADDRESS --type=oz --url=http://127.0.0.1:5050 --private-key=$ACCOUNT_PRIVATE_KEY --add-profile=devnet)
+
+          echo "Account imported output: $ACCOUNT_IMPORTED_OUTPUT"
+          echo "$ACCOUNT_IMPORTED_OUTPUT"
+
+
+          echo "snfoundry.toml contents:"
+          cat snfoundry.toml
+
+      - name: Verify Devnet Connection and Get Predeployed Accounts
+        working-directory: smartcontract
+        run: |
+          echo "Testing Devnet connection..."
+          curl -v http://127.0.0.1:5050/is_alive
+          
+          echo "Getting predeployed accounts..."
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","method":"devnet_getPredeployedAccounts","params":[],"id":1}' \
+            http://127.0.0.1:5050 | jq '.'
+
+      - name: Deploy Contract and Capture Address
+        id: deploy_step 
+        working-directory: smartcontract
+        run: |
+          source $HOME/.cargo/env
+          echo "Current dir: $(pwd)"
+          ls -la
+
+          # Verify configuration files
+          echo "Contents of snfoundry.toml:"
+          cat snfoundry.toml || echo "snfoundry.toml not found"
+                    
+          if [ ! -f Scarb.toml ]; then
+            echo "Error: Scarb.toml not found in $(pwd)"
+            exit 1
+          fi
+
+          echo "Compiling contract..."
+          rm -rf ~/.cache/scarb || true
+          scarb build
+
+          echo "mostrando devnet config..."
+          sncast show-config
+          
+
+          for i in {1..3}; do
+            echo "Tentativa $i de declare..."
+            if DECLARE_OUTPUT=$(sncast --profile devnet declare --contract-name StarkOverflow); then
+              echo "Declare bem-sucedido!"
+              echo "$DECLARE_OUTPUT"
+              CLASS_HASH=$(echo "$DECLARE_OUTPUT" | grep "class_hash" | awk '{print $2}')
+              echo "Class Hash: $CLASS_HASH"
+              break
+            else
+              echo "Declare falhou, tentando novamente em 10 segundos..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 3 ]; then
+              echo "Todas as tentativas de declare falharam"
+              exit 1
+            fi
+          done
+          
+          if [ -z "$CLASS_HASH" ]; then
+            echo "Falha ao obter o Class Hash!"
+            exit 1
+          fi
+
+          echo "Deploying contract..."
+          
+          # Deploy com retry também
+          for i in {1..3}; do
+            echo "Tentativa $i de deploy..."
+            if DEPLOY_OUTPUT=$(sncast --profile devnet deploy --class-hash $CLASS_HASH --arguments "${{ steps.account_setup_step.outputs.address_imported }}, 0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D"); then
+              echo "Deploy bem-sucedido!"
+              echo "$DEPLOY_OUTPUT"
+              CONTRACT_ADDRESS=$(echo "$DEPLOY_OUTPUT" | grep "contract_address" | awk '{print $2}')
+              echo "Contract Address Captured: $CONTRACT_ADDRESS"
+              break
+            else
+              echo "Deploy falhou, tentando novamente em 10 segundos..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 3 ]; then
+              echo "Todas as tentativas de deploy falharam"
+              exit 1
+            fi
+          done
+          
+          if [ -z "$CONTRACT_ADDRESS" ]; then
+            echo "Falha ao capturar o endereço do contrato!"
+            exit 1
+          fi
+
+          echo "VITE_CONTRACT_ADDRESS=$CONTRACT_ADDRESS" >> $GITHUB_ENV
+          echo "VITE_TOKEN_ADDRESS=0x4718F5A0FC34CC1AF16A1CDEE98FFB20C31F5CD61D6AB07201858F4287C938D" >> $GITHUB_ENV
+          echo "VITE_RPC_URL=http://127.0.0.1:5050" >> $GITHUB_ENV
+
+      - name: Run Cypress Tests
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: frontend/react
+          start: npm run dev
+          wait-on: 'http://localhost:5173'
+          browser: chrome
+
+      - uses: actions/upload-artifact@v4
+        # add the line below to store screenshots only on failures
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: frontend/react/cypress/screenshots
+          if-no-files-found: ignore # 'warn' or 'error' are also available, defaults to `warn`
+      - uses: actions/upload-artifact@v4
+        if: always() 
+        with:
+          name: cypress-videos
+          path: frontend/react/cypress/videos
+          if-no-files-found: ignore # 'warn' or 'error' are also available, defaults to `warn`  
