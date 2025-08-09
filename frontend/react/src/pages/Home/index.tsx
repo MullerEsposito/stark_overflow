@@ -90,7 +90,7 @@ export function Home() {
         <h1>Fóruns</h1>
         {isOwner && (
           <Link to="/admin/create-forum">
-            <button style={{
+            <button data-cy="create-forum" style={{
               padding: "10px 20px",
               backgroundColor: "#7c3aed",
               color: "white",
