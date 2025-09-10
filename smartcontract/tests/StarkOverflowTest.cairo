@@ -27,9 +27,9 @@ fn it_should_be_possible_to_deploy_starkoverflow_contract() {
 #[test]
 fn it_should_be_able_to_create_a_forum() {
   let (_, stark_token_address) = deploy_mock_stark_token();
-  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);  
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);
   let ownable_dispatcher = IOwnableDispatcher { contract_address: starkoverflow_contract_address };
-  
+
   let owner = ownable_dispatcher.owner();
   let forum_name = "Forum of test";
   let forum_icon_url = "https://example.com/icon.png";
@@ -47,9 +47,9 @@ fn it_should_be_able_to_create_a_forum() {
 #[test]
 fn it_should_be_able_to_update_a_forum() {
   let (_, stark_token_address) = deploy_mock_stark_token();
-  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);  
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);
   let ownable_dispatcher = IOwnableDispatcher { contract_address: starkoverflow_contract_address };
-  
+
   let owner = ownable_dispatcher.owner();
 
   let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
@@ -99,7 +99,7 @@ fn it_should_be_able_to_retrieve_all_not_deleted_forums() {
   let forum_icon_url_2 = "https://example.com/icon.png";
   let forum_name_3 = "Forum of test 3";
   let forum_icon_url_3 = "https://example.com/icon.png";
-  
+
   cheat_caller_address(starkoverflow_contract_address, owner, CheatSpan::TargetCalls(3));
   starkoverflow_dispatcher.create_forum(forum_name_1.clone(), forum_icon_url_1.clone());
   let forum_id_2 = starkoverflow_dispatcher.create_forum(forum_name_2.clone(), forum_icon_url_2.clone());
@@ -146,7 +146,7 @@ fn it_should_be_able_to_ask_a_question() {
     repository_url.clone(),
     tags.clone(),
     amount
-  );  
+  );
 
   let question = starkoverflow_dispatcher.get_question(question_id);
   let forum = starkoverflow_dispatcher.get_forum(forum_id);
@@ -181,11 +181,11 @@ fn it_should_be_able_to_add_funds_to_a_question() {
   let question_id = ask_question(starkoverflow_dispatcher, stark_token_dispatcher, forum_id);
   let mut question = starkoverflow_dispatcher.get_question(question_id);
   let question_initial_amount = question.amount;
-  
+
   let additionally_funds = 2 * EIGHTEEN_DECIMALS;
 
   approve_as_spender(starkoverflow_contract_address, sponsor, stark_token_dispatcher, additionally_funds);
-  
+
   cheat_caller_address(starkoverflow_contract_address, sponsor, CheatSpan::TargetCalls(1));
   starkoverflow_dispatcher.stake_on_question(question_id, additionally_funds);
 
@@ -228,7 +228,7 @@ fn it_should_be_able_to_mark_answer_as_correct() {
 
   let (stark_token_dispatcher, stark_token_address) = deploy_mock_stark_token();
   let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);
-  
+
   assert_eq!(stark_token_dispatcher.balance_of(starkoverflow_contract_address), 0, "Starkoverflow contract should initially have 0 balance");
 
   let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
@@ -236,7 +236,7 @@ fn it_should_be_able_to_mark_answer_as_correct() {
   let question_id = ask_question(starkoverflow_dispatcher, stark_token_dispatcher, forum_id);
 
   let answer_id = submit_answer(starkoverflow_dispatcher, starkoverflow_contract_address, question_id, "Answer of test.");
-  
+
   cheat_caller_address(starkoverflow_contract_address, asker, CheatSpan::TargetCalls(1));
   starkoverflow_dispatcher.mark_answer_as_correct(question_id, answer_id);
 
@@ -294,7 +294,7 @@ fn it_should_not_be_able_to_tag_an_answer_as_correct_but_the_owner() {
       let error_message = try_deserialize_bytearray_error(panic_data.span()).expect('wrong format');
       assert_eq!(error_message, "Only the author of the question can mark the answer as correct", "Wrong error message received");
     }
-  }; 
+  };
 }
 
 #[test]
@@ -360,7 +360,7 @@ fn it_should_not_be_able_to_retrieve_answers_for_a_non_existent_question() {
 fn it_should_return_void_values_for_when_no_questions() {
   let (_, stark_token_address) = deploy_mock_stark_token();
   let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(stark_token_address);
-  
+
   let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
 
   let (questions, total, has_next) = starkoverflow_dispatcher.get_questions(forum_id, 10, 1);
@@ -415,4 +415,335 @@ fn it_should_return_paginated_questions_for_a_forum() {
   assert_eq!(questions_page1.len(), 1, "Page 1: Should have 1 question");
   assert_eq!(has_next, false, "Page 1: Should NOT have next page");
   assert_eq!(*questions_page1.at(0).id, 4, "Page 1: First ID should be 4");
+}
+
+//  ========== REPUTATION SYSTEM TESTS ==========
+
+#[test]
+fn test_initial_user_reputation_is_zero() {
+  let (_, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, _) = deploy_starkoverflow_contract(stark_token_address);
+
+  let user = ADDRESSES::RESPONDER1.get();
+  let reputation = starkoverflow_dispatcher.get_user_reputation(user);
+  assert_eq!(reputation, 0, "Initial user reputation should be 0");
+
+  let user_struct = starkoverflow_dispatcher.get_user(user);
+  assert_eq!(user_struct.reputation, 0, "User struct reputation should be 0");
+  assert_eq!(user_struct.address_wallet, user, "User struct address should match");
+}
+
+#[test]
+fn test_vote_on_answer_upvote_increases_reputation() {
+  let (token_dispatcher, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  // Setup: Create forum and question
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+  let question_id = ask_question(starkoverflow_dispatcher, token_dispatcher, forum_id);
+
+  // Submit an answer
+  let answer_description = "This is my answer";
+  let answer_id = submit_answer(
+    starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description,
+  );
+  let answer = starkoverflow_dispatcher.get_answer(answer_id);
+  let answer_author = answer.author;
+
+  // Check initial reputation
+  let initial_reputation = starkoverflow_dispatcher.get_user_reputation(answer_author);
+  assert_eq!(initial_reputation, 0, "Initial reputation should be 0");
+
+  // Vote on the answer (upvote)
+  let voter = ADDRESSES::SPONSOR.get();
+  cheat_caller_address(starkoverflow_contract_address, voter, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, true); // true = upvote
+
+  // Check reputation increased
+  let new_reputation = starkoverflow_dispatcher.get_user_reputation(answer_author);
+  assert_eq!(new_reputation, 1, "Reputation should increase by 1 after upvote");
+
+  // Check answer vote counts
+  let updated_answer = starkoverflow_dispatcher.get_answer(answer_id);
+  assert_eq!(updated_answer.upvotes, 1, "Answer should have 1 upvote");
+  assert_eq!(updated_answer.downvotes, 0, "Answer should have 0 downvotes");
+
+  // Check voting status
+  let has_voted = starkoverflow_dispatcher.has_voted(voter, answer_id);
+  assert!(has_voted, "Voter should be marked as having voted");
+
+  let vote = starkoverflow_dispatcher.get_vote(voter, answer_id);
+  assert!(vote, "Vote should be true (upvote)");
+}
+
+#[test]
+fn test_vote_on_answer_downvote_decreases_reputation() {
+  let (token_dispatcher, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  // Setup: Create forum and question
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+  let question_id = ask_question(starkoverflow_dispatcher, token_dispatcher, forum_id);
+
+  // Submit an answer
+  let answer_description = "This is my answer";
+  let answer_id = submit_answer(
+    starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description,
+  );
+  let answer = starkoverflow_dispatcher.get_answer(answer_id);
+  let answer_author = answer.author;
+
+  // Vote on the answer (downvote)
+  let voter = ADDRESSES::SPONSOR.get();
+  cheat_caller_address(starkoverflow_contract_address, voter, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, false); // false = downvote
+
+  // Check reputation (should remain 0, not go negative)
+  let new_reputation = starkoverflow_dispatcher.get_user_reputation(answer_author);
+  assert_eq!(new_reputation, 0, "Reputation should remain 0 when downvoted from 0");
+
+  // Check answer vote counts
+  let updated_answer = starkoverflow_dispatcher.get_answer(answer_id);
+  assert_eq!(updated_answer.upvotes, 0, "Answer should have 0 upvotes");
+  assert_eq!(updated_answer.downvotes, 1, "Answer should have 1 downvote");
+
+  // Check voting status
+  let has_voted = starkoverflow_dispatcher.has_voted(voter, answer_id);
+  assert!(has_voted, "Voter should be marked as having voted");
+
+  let vote = starkoverflow_dispatcher.get_vote(voter, answer_id);
+  assert!(!vote, "Vote should be false (downvote)");
+}
+
+#[test]
+#[should_panic(expected: "User has already voted on this answer")]
+fn test_cannot_vote_twice_on_same_answer() {
+  let (token_dispatcher, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  // Setup: Create forum and question
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+  let question_id = ask_question(starkoverflow_dispatcher, token_dispatcher, forum_id);
+
+  // Submit an answer
+  let answer_description = "This is my answer";
+  let answer_id = submit_answer(
+    starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description,
+  );
+
+  // First vote (upvote)
+  let voter = ADDRESSES::SPONSOR.get();
+  cheat_caller_address(starkoverflow_contract_address, voter, CheatSpan::TargetCalls(2));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, true); // true = upvote
+
+  // Try to vote again (should panic) - requirement: "Each user can only vote once per answer"
+  starkoverflow_dispatcher
+    .vote_on_answer(answer_id, false); // Should panic with "User has already voted"
+}
+
+#[test]
+#[should_panic(expected: "User has already voted on this answer")]
+fn test_cannot_vote_again_with_same_vote() {
+  let (token_dispatcher, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  // Setup: Create forum and question
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+  let question_id = ask_question(starkoverflow_dispatcher, token_dispatcher, forum_id);
+
+  // Submit an answer
+  let answer_description = "This is my answer";
+  let answer_id = submit_answer(
+    starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description,
+  );
+
+  // First vote (upvote)
+  let voter = ADDRESSES::SPONSOR.get();
+  cheat_caller_address(starkoverflow_contract_address, voter, CheatSpan::TargetCalls(2));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, true); // true = upvote
+
+  // Try to vote again with same vote (should panic) - requirement: "Prevent double voting"
+  starkoverflow_dispatcher.vote_on_answer(answer_id, true); // Should panic
+}
+
+#[test]
+#[should_panic(expected: "Cannot vote on your own answer")]
+fn test_cannot_vote_on_own_answer() {
+  let (token_dispatcher, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  // Setup: Create forum and question
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+  let question_id = ask_question(starkoverflow_dispatcher, token_dispatcher, forum_id);
+
+  // Submit an answer
+  let answer_description = "This is my answer";
+  let answer_id = submit_answer(
+    starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description,
+  );
+  let answer = starkoverflow_dispatcher.get_answer(answer_id);
+  let answer_author = answer.author;
+
+  // Try to vote on own answer (should panic)
+  cheat_caller_address(starkoverflow_contract_address, answer_author, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, true); // Should panic
+}
+
+#[test]
+#[should_panic(expected: "Answer does not exist")]
+fn test_cannot_vote_on_nonexistent_answer() {
+  let (_, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  let voter = ADDRESSES::SPONSOR.get();
+  cheat_caller_address(starkoverflow_contract_address, voter, CheatSpan::TargetCalls(1));
+
+  // Try to vote on non-existent answer (should panic)
+  starkoverflow_dispatcher.vote_on_answer(999, true); // Should panic
+}
+
+#[test]
+fn test_multiple_users_can_vote_on_same_answer() {
+  let (token_dispatcher, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  // Setup: Create forum and question
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+  let question_id = ask_question(starkoverflow_dispatcher, token_dispatcher, forum_id);
+
+  // Submit an answer
+  let answer_description = "This is my answer";
+  let answer_id = submit_answer(
+    starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description,
+  );
+  let answer = starkoverflow_dispatcher.get_answer(answer_id);
+  let answer_author = answer.author;
+
+  // Multiple users vote
+  let voter1 = ADDRESSES::SPONSOR.get();
+  let voter2 = ADDRESSES::INTRUDER.get();
+
+  // Voter 1 upvotes
+  cheat_caller_address(starkoverflow_contract_address, voter1, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, true);
+
+  // Voter 2 upvotes
+  cheat_caller_address(starkoverflow_contract_address, voter2, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, true);
+
+  // Check reputation increased by 2
+  let reputation = starkoverflow_dispatcher.get_user_reputation(answer_author);
+  assert_eq!(reputation, 2, "Reputation should be 2 after two upvotes");
+
+  // Check answer vote counts
+  let updated_answer = starkoverflow_dispatcher.get_answer(answer_id);
+  assert_eq!(updated_answer.upvotes, 2, "Answer should have 2 upvotes");
+  assert_eq!(updated_answer.downvotes, 0, "Answer should have 0 downvotes");
+
+  // Check individual voting status
+  assert!(
+    starkoverflow_dispatcher.has_voted(voter1, answer_id),
+    "Voter1 should be marked as having voted",
+  );
+  assert!(
+    starkoverflow_dispatcher.has_voted(voter2, answer_id),
+    "Voter2 should be marked as having voted",
+  );
+  assert!(starkoverflow_dispatcher.get_vote(voter1, answer_id), "Voter1 vote should be upvote");
+  assert!(starkoverflow_dispatcher.get_vote(voter2, answer_id), "Voter2 vote should be upvote");
+}
+
+#[test]
+fn test_mixed_votes_on_answer() {
+  let (token_dispatcher, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  // Setup: Create forum and question
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+  let question_id = ask_question(starkoverflow_dispatcher, token_dispatcher, forum_id);
+
+  // Submit an answer
+  let answer_description = "This is my answer";
+  let answer_id = submit_answer(
+    starkoverflow_dispatcher, starkoverflow_contract_address, question_id, answer_description,
+  );
+  let answer = starkoverflow_dispatcher.get_answer(answer_id);
+  let answer_author = answer.author;
+
+  // Multiple users vote differently
+  let voter1 = ADDRESSES::SPONSOR.get();
+  let voter2 = ADDRESSES::INTRUDER.get();
+
+  // Voter 1 upvotes
+  cheat_caller_address(starkoverflow_contract_address, voter1, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, true);
+
+  // Voter 2 downvotes
+  cheat_caller_address(starkoverflow_contract_address, voter2, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer_id, false);
+
+  // Check reputation (should be 0: +1 from upvote, -1 from downvote)
+  let reputation = starkoverflow_dispatcher.get_user_reputation(answer_author);
+  assert_eq!(reputation, 0, "Reputation should be 0 after one upvote and one downvote");
+
+  // Check answer vote counts
+  let updated_answer = starkoverflow_dispatcher.get_answer(answer_id);
+  assert_eq!(updated_answer.upvotes, 1, "Answer should have 1 upvote");
+  assert_eq!(updated_answer.downvotes, 1, "Answer should have 1 downvote");
+}
+
+#[test]
+fn test_reputation_persistence_across_multiple_answers() {
+  let (token_dispatcher, stark_token_address) = deploy_mock_stark_token();
+  let (starkoverflow_dispatcher, starkoverflow_contract_address) = deploy_starkoverflow_contract(
+    stark_token_address,
+  );
+
+  // Setup: Create forum and question
+  let forum_id = create_forum(starkoverflow_dispatcher, starkoverflow_contract_address);
+  let question_id = ask_question(starkoverflow_dispatcher, token_dispatcher, forum_id);
+
+  // Submit first answer
+  let answer1_id = submit_answer(
+    starkoverflow_dispatcher, starkoverflow_contract_address, question_id, "First answer",
+  );
+  let answer1 = starkoverflow_dispatcher.get_answer(answer1_id);
+  let answer_author = answer1.author;
+
+  // Submit second answer by same author
+  cheat_caller_address(starkoverflow_contract_address, answer_author, CheatSpan::TargetCalls(1));
+  let answer2_id = starkoverflow_dispatcher.submit_answer(question_id, "Second answer");
+
+  // Vote on first answer
+  let voter = ADDRESSES::SPONSOR.get();
+  cheat_caller_address(starkoverflow_contract_address, voter, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer1_id, true);
+
+  // Check reputation after first vote
+  let reputation_after_first = starkoverflow_dispatcher.get_user_reputation(answer_author);
+  assert_eq!(reputation_after_first, 1, "Reputation should be 1 after first vote");
+
+  // Vote on second answer
+  cheat_caller_address(starkoverflow_contract_address, voter, CheatSpan::TargetCalls(1));
+  starkoverflow_dispatcher.vote_on_answer(answer2_id, true);
+
+  // Check reputation accumulated across answers
+  let final_reputation = starkoverflow_dispatcher.get_user_reputation(answer_author);
+  assert_eq!(final_reputation, 2, "Reputation should accumulate across multiple answers");
 }

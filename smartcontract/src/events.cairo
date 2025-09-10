@@ -51,3 +51,14 @@ pub struct StakeWithdrawn {
   pub amount: u256,
   pub rewards: u256
 }
+
+#[derive(Drop, starknet::Event)]
+pub struct VoteCast {
+  #[key]
+  pub voter: ContractAddress,
+  #[key]
+  pub answer_id: u256,
+  pub is_upvote: bool,
+  pub answer_author: ContractAddress,
+  pub reputation_change: u256,
+}

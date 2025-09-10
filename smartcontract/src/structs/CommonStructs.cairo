@@ -16,6 +16,14 @@ pub struct Answer {
   pub author: ContractAddress,
   pub description: ByteArray,
   pub question_id: u256,
+  pub upvotes: u256,
+  pub downvotes: u256,
+}
+
+#[derive(Drop, Serde, starknet::Store)]
+pub struct User {
+  pub address_wallet: ContractAddress,
+  pub reputation: u256,
 }
 
 #[derive(Drop, Serde, PartialEq, starknet::Store)]
