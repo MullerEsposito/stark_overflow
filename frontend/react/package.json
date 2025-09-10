@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "preinstall": "node -e \"const m=parseInt(process.versions.node,10); if(m!==22){console.error('Use Node 22'); process.exit(1)}\""
     "dev": "vite",
     "build": "tsc -b && vite build",
     "cy:open": "cypress open",
