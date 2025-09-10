@@ -18,8 +18,8 @@ jobs:
 
       - name: Install Frontend Dependencies
         working-directory: ./frontend/react
-        #run: npm ci
-        run: npm install
+        run: npm ci
+        #run: npm install
 
       - name: Install Starknet Foundry (sncast)
         run: |
