@@ -9,6 +9,10 @@ export const formatters = {
     return `0x${hex.padStart(64, '0')}`;
   },
 
+
+
+
+
   // Truncate address for display
   truncateAddress: (address: string, startChars = 6, endChars = 4) => {
     if (!address || address.length <= startChars + endChars) return address;
@@ -20,6 +24,10 @@ export const formatters = {
     if (!bigInt) return 0;
     return Number(bigInt);
   },
+
+
+
+
 
   // Keep BigInt as string for very large numbers
   bigIntToString: (bigInt: bigint | number | Uint256) => {
@@ -40,6 +48,10 @@ export const formatters = {
     return Number(integerPart) + Number(fractionalPart) / 10 ** 18;
   },
 
+
+
+
+  
   convertStringDecimalToWei: (decimal: string) => {
     const [integerPart, fractionalPart = '0'] = decimal.toString().split('.');
     
