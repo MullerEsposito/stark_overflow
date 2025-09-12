@@ -42,7 +42,8 @@ jobs:
         run: npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reporter=json --coverage.reporter=json-summary
 
       - name: Vitest coverage report (PR)
-        if: ${{ github.event_name == 'pull_request' }}
+        # if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ always() && github.event_name == 'pull_request' }}
         uses: davelosert/vitest-coverage-report-action@v2
         with:
           working-directory: frontend/react
