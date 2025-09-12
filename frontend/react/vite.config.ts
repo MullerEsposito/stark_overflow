@@ -25,7 +25,9 @@ export default defineConfig({
     globals: true,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['lcov', 'json-summary', 'text-summary', 'text', 'json', 'html'],
+      reportsDirectory: 'coverage',
+      thresholds: { lines: 80, functions: 80, branches: 80, statements: 80 },
       include: ['src/**/*.{ts,tsx}'],
       all: true,
       exclude: [

@@ -4,17 +4,93 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  unit-tests:
+    name: Unit (Vitest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/react
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/react/package.json
+
+      - name: Install
+        #run: npm ci
+        run: npm install
+
+      - name: Test (Vitest + Coverage)
+        run: npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reporter=json --coverage.reporter=json-summary
+
+      - name: Vitest coverage report (PR)
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: frontend/react
+          file-coverage-mode: changes
+              
+      - name: Changed files
+        id: changes
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: tj-actions/changed-files@v45
+        with:
+          files: |
+            frontend/react/src/**/*.ts
+            frontend/react/src/**/*.tsx
+            frontend/react/src/**/*.js
+            frontend/react/src/**/*.jsx
+
+      - name: Enforce patch coverage ≥ 80%
+        if: ${{ github.event_name == 'pull_request' }}
+        working-directory: .
+        run: |
+          node .github/scripts/check-patch-coverage.mjs \
+            --coverage-file frontend/react/coverage/coverage-final.json \
+            --threshold 80 \
+            --workspace "$GITHUB_WORKSPACE" \
+            --changed "${{ steps.changes.outputs.all_changed_files }}"
+
+      - name: Upload coverage artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-coverage
+          path: frontend/react/coverage
   test-e2e:
+    needs: unit-tests
+    name: E2E (Cypress)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/react/package.json
 
       - name: Install Frontend Dependencies
         working-directory: ./frontend/react
