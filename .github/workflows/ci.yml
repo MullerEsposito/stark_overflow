@@ -4,6 +4,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -63,14 +64,24 @@ jobs:
             }
           '
 
+      # - name: Vitest coverage report (PR)
+      #   # if: ${{ github.event_name == 'pull_request' }}
+      #   if: ${{ always() && github.event_name == 'pull_request' }}
+      #   uses: davelosert/vitest-coverage-report-action@v2
+      #   with:
+      #     working-directory: frontend/react
+      #     file-coverage-mode: changes
 
       - name: Vitest coverage report (PR)
-        # if: ${{ github.event_name == 'pull_request' }}
         if: ${{ always() && github.event_name == 'pull_request' }}
         uses: davelosert/vitest-coverage-report-action@v2
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           working-directory: frontend/react
           file-coverage-mode: changes
+          comment-on: pr
+          name: "Coverage • ${{ github.sha }}"
+
               
       - name: Changed files
         id: changes
