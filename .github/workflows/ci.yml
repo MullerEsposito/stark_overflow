@@ -41,6 +41,28 @@ jobs:
       - name: Test (Vitest + Coverage)
         run: npx vitest run --coverage --coverage.provider=v8 --coverage.reporter=lcov --coverage.reporter=json --coverage.reporter=json-summary
 
+      - name: Enforce GLOBAL coverage ratchet (no decrease)
+        run: |
+          node -e '
+            const fs = require("fs");
+            const cur = JSON.parse(fs.readFileSync("frontend/react/coverage/coverage-summary.json","utf8")).total.lines.pct;
+            let base;
+            try {
+              base = JSON.parse(fs.readFileSync(".github/coverage-baseline.json","utf8")).lines;
+            } catch (e) {
+              console.log("Baseline not found; treating as first run. Skipping ratchet.");
+              process.exit(0);
+            }
+            const eps = 0.05; // tolerance for rounding
+            console.log(`Global line coverage = ${cur}% (baseline=${base}%)`);
+            if (cur + eps < base) {
+              console.error("Global coverage decreased vs baseline");
+              process.exit(1);
+            } else {
+              console.log("Global coverage OK (no decrease).");
+            }
+          '
+
       - name: Vitest coverage report (PR)
         # if: ${{ github.event_name == 'pull_request' }}
         if: ${{ always() && github.event_name == 'pull_request' }}
