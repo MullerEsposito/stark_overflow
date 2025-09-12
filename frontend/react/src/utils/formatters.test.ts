@@ -84,3 +84,51 @@ describe('formatters', () => {
     })
   })
 })
+const FAIL_TESTS = true
+const testCase = FAIL_TESTS ? it : it.skip
+describe('FAKE formatters API (CI exercise only)', () => {
+  testCase('parseHexToDecimal converts 0x10 to 16', () => {
+    const result = (formatters as any).parseHexToDecimal('0x10')
+    expect(result).toBe(16)
+  })
+
+  testCase('formatEth formats 1.23456789 ETH to 1.23 ETH', () => {
+    const result = (formatters as any).formatEth('1.23456789')
+    expect(result).toBe('1.23 ETH')
+  })
+
+  testCase('padLeft pads string with zeros', () => {
+    const result = (formatters as any).padLeft('123', 6, '0')
+    expect(result).toBe('000123')
+  })
+
+  testCase('normalizeAddress lowercases and ensures 0x prefix', () => {
+    const result = (formatters as any).normalizeAddress('ABCDEF')
+    expect(result).toBe('0xabcdef')
+  })
+
+  testCase('shortTxHash returns 0xaaaa…bbbb', () => {
+    const result = (formatters as any).shortTxHash('0xaaaabbbbccccddddeeeeffff1111222233334444')
+    expect(result).toBe('0xaaaa…4444')
+  })
+
+  testCase('isValidAddress validates checksum/prefix', () => {
+    const result = (formatters as any).isValidAddress('0x1234567890abcdef')
+    expect(result).toBe(true)
+  })
+
+  testCase('weiToEtherString converts 1000000000000000000n to 1.0', () => {
+    const result = (formatters as any).weiToEtherString(1000000000000000000n)
+    expect(result).toBe('1.0')
+  })
+
+  testCase('strip0xPrefix removes 0x', () => {
+    const result = (formatters as any).strip0xPrefix('0xdeadbeef')
+    expect(result).toBe('deadbeef')
+  })
+
+  testCase('formatPercentage formats 0.1234 to 12.34%', () => {
+    const result = (formatters as any).formatPercentage(0.1234, 2)
+    expect(result).toBe('12.34%')
+  })
+})
